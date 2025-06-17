@@ -1,0 +1,16 @@
+{
+  "name": "wrapped-ccop",
+  "version": "1.0.0",
+  "scripts": {
+    "compile": "hardhat compile"
+  },
+  "dependencies": {
+    "@chainlink/contracts-ccip": "^0.8.0",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@openzeppelin/contracts": "^5.0.0",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.8.0",
+    "hardhat": "^2.21.0",
+    "typescript": "^5.4.0"
+  }
+}
