@@ -1,11 +1,12 @@
 {
-  "name": "wrapped-ccop",
+  "name": "wrapped-ccop-contracts",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
     "compile": "hardhat compile"
   },
   "dependencies": {
-    "@chainlink/contracts-ccip": "0.0.1",
+    "@chainlink/contracts-ccip": "^0.1.0",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@openzeppelin/contracts": "^5.0.0",
     "dotenv": "^16.3.1",
