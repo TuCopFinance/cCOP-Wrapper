@@ -27,3 +27,4 @@ yarn-error.log*
 # Optional
 frontend/.env.local
 contracts/.env
+.vercel
