@@ -1,6 +1,8 @@
 'use client';
-import { useState } from 'react';
-import { ethers } from 'ethers';
+import { useCallback, useState } from 'react';
+import { useWalletClient, usePublicClient } from 'wagmi';
+import { parseEther } from 'viem';
+import { CCIPWrapper } from './contracts/CCIPWrapper';
 
 const VAULT_ABI = [
   'function deposit(uint64 dstChainSelector, address receiver, uint256 amount) external',
@@ -10,40 +12,86 @@ const BURNER_ABI = [
   'function burnAndNotify(uint64 dstChainSelector, address receiver, uint256 amount) external',
 ];
 
-export function useWrapCCOP(provider, signer) {
+export function useWrapCCOP() {
+  const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient();
   const [status, setStatus] = useState('');
 
-  const depositToBase = async (ccopAddr, vaultAddr, dstSelector, receiver, amount) => {
-    try {
-      setStatus('Aprobando cCOP...');
-      const ccop = new ethers.Contract(ccopAddr, W_COP_ABI, signer);
-      await ccop.approve(vaultAddr, amount);
+  const burnAndRedeem = useCallback(
+    async (selector: string, vault: string, amount: bigint) => {
+      if (!walletClient || !publicClient) {
+        setStatus('Wallet not connected');
+        return;
+      }
 
-      setStatus('Enviando depósito a Celo...');
-      const vault = new ethers.Contract(vaultAddr, VAULT_ABI, signer);
-      const tx = await vault.deposit(dstSelector, receiver, amount);
-      await tx.wait();
+      try {
+        setStatus('Iniciando transacción...');
+        
+        const wrapper = new CCIPWrapper(
+          process.env.NEXT_PUBLIC_WRAPPER_ADDRESS as `0x${string}`,
+          walletClient,
+          publicClient
+        );
 
-      setStatus('✅ Depósito enviado. Espera wCOP en Base...');
-    } catch (err) {
-      console.error(err);
-      setStatus('❌ Error en depósito: ' + err.message);
-    }
-  };
+        const tx = await wrapper.burnAndRedeem(selector, vault, amount);
+        setStatus('Transacción enviada: ' + tx.hash);
+        
+        const receipt = await tx.wait();
+        setStatus('Transacción completada: ' + receipt.transactionHash);
+      } catch (error) {
+        console.error('Error:', error);
+        setStatus('Error: ' + (error as Error).message);
+      }
+    },
+    [walletClient, publicClient]
+  );
 
-  const burnAndRedeem = async (burnerAddr, dstSelector, receiver, amount) => {
-    try {
-      setStatus('Ejecutando burn...');
-      const burner = new ethers.Contract(burnerAddr, BURNER_ABI, signer);
-      const tx = await burner.burnAndNotify(dstSelector, receiver, amount);
-      await tx.wait();
+  // Nueva función para depositar cCOP de Celo a Base
+  const depositToBase = useCallback(
+    async (
+      ccopAddr: string,
+      vaultAddr: string,
+      dstSelector: bigint,
+      receiver: string,
+      amount: bigint
+    ) => {
+      if (!walletClient || !publicClient) {
+        setStatus('Wallet not connected');
+        return;
+      }
+      try {
+        setStatus('Aprobando cCOP...');
+        // Aprobar el vault para gastar cCOP
+        const approveHash = await walletClient.writeContract({
+          address: ccopAddr as `0x${string}`,
+          abi: W_COP_ABI,
+          functionName: 'approve',
+          args: [vaultAddr, amount],
+          account: walletClient.account,
+          chain: undefined,
+        });
+        await publicClient.waitForTransactionReceipt({ hash: approveHash });
 
-      setStatus('✅ wCOP quemado. Recibirás cCOP en Celo pronto.');
-    } catch (err) {
-      console.error(err);
-      setStatus('❌ Error en burn: ' + err.message);
-    }
-  };
+        setStatus('Enviando depósito a Celo...');
+        // Llamar a deposit en el vault
+        const depositHash = await walletClient.writeContract({
+          address: vaultAddr as `0x${string}`,
+          abi: VAULT_ABI,
+          functionName: 'deposit',
+          args: [dstSelector, receiver, amount],
+          account: walletClient.account,
+          chain: undefined,
+        });
+        await publicClient.waitForTransactionReceipt({ hash: depositHash });
 
-  return { depositToBase, burnAndRedeem, status };
+        setStatus('✅ Depósito enviado. Espera wCOP en Base...');
+      } catch (err) {
+        console.error(err);
+        setStatus('❌ Error en depósito: ' + (err as Error).message);
+      }
+    },
+    [walletClient, publicClient]
+  );
+
+  return { burnAndRedeem, depositToBase, status };
 }

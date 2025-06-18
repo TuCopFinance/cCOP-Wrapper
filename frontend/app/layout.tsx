@@ -1,13 +1,12 @@
 'use client';
 import './globals.css';
-import { WagmiConfig } from 'wagmi';
-import config from './wagmi';
+import { Providers } from './providers';
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <WagmiConfig config={config}>{children}</WagmiConfig>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
