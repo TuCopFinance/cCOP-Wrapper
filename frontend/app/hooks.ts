@@ -59,8 +59,8 @@ export function useWrapCCOP() {
         setStatus('Wallet not connected');
         return;
       }
-      try {
-        setStatus('Aprobando cCOP...');
+    try {
+      setStatus('Aprobando cCOP...');
         // Aprobar el vault para gastar cCOP
         const approveHash = await walletClient.writeContract({
           address: ccopAddr as `0x${string}`,
@@ -72,7 +72,7 @@ export function useWrapCCOP() {
         });
         await publicClient.waitForTransactionReceipt({ hash: approveHash });
 
-        setStatus('Enviando depósito a Celo...');
+      setStatus('Enviando depósito a Celo...');
         // Llamar a deposit en el vault
         const depositHash = await walletClient.writeContract({
           address: vaultAddr as `0x${string}`,
@@ -84,9 +84,9 @@ export function useWrapCCOP() {
         });
         await publicClient.waitForTransactionReceipt({ hash: depositHash });
 
-        setStatus('✅ Depósito enviado. Espera wCOP en Base...');
-      } catch (err) {
-        console.error(err);
+      setStatus('✅ Depósito enviado. Espera wCOP en Base...');
+    } catch (err) {
+      console.error(err);
         setStatus('❌ Error en depósito: ' + (err as Error).message);
       }
     },

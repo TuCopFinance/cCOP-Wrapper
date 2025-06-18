@@ -45,19 +45,19 @@ export default function CeloHistory() {
           {loading && <p className="text-green-700">Cargando...</p>}
           <ul className="space-y-2 w-full">
             {txs.length === 0 && !loading && <li className="text-gray-500">No hay transacciones recientes.</li>}
-            {txs.map((tx, i) => (
+        {txs.map((tx, i) => (
               <li key={i} className="text-green-900 text-sm bg-green-50 rounded p-2 flex justify-between items-center">
-                <a
-                  href={`https://explorer.celo.org/tx/${tx.hash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-green-600 underline"
-                >
-                  {tx.hash.slice(0, 12)}... — {parseFloat(tx.value) / 1e18} CELO
-                </a>
-              </li>
-            ))}
-          </ul>
+            <a
+              href={`https://explorer.celo.org/tx/${tx.hash}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-green-600 underline"
+            >
+              {tx.hash.slice(0, 12)}... — {parseFloat(tx.value) / 1e18} CELO
+            </a>
+          </li>
+        ))}
+      </ul>
         </div>
       </main>
       <footer className="w-full text-center py-4 text-blue-900/80 font-medium text-sm">

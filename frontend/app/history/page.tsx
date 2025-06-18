@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
+import Image from 'next/image';
 
 export default function History() {
   const { address } = useAccount();
@@ -31,9 +32,10 @@ export default function History() {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-blue-400 to-yellow-300 flex flex-col">
-      <nav className="w-full bg-white/80 backdrop-blur-md shadow-md py-4 px-8 flex justify-between items-center fixed top-0 left-0 z-10">
-        <Link href="/" className="text-2xl font-extrabold text-blue-900 tracking-tight hover:underline focus:outline-none">Wrapped cCOP</Link>
-        <div className="flex gap-6">
+      <nav className="w-full bg-white/80 backdrop-blur-md shadow-md py-4 px-4 sm:px-8 flex flex-col sm:flex-row justify-between items-center fixed top-0 left-0 z-10">
+        <Link href="/" className="text-xl sm:text-2xl font-extrabold text-blue-900 tracking-tight hover:underline focus:outline-none mb-4 sm:mb-0">Wrapped cCOP</Link>
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-6">
+          <Link href="/" className="text-sm sm:text-base text-blue-700 hover:text-yellow-500 font-medium transition">Home</Link>
           <Link href="/dashboard" className="text-blue-700 hover:text-yellow-500 font-medium transition">Dashboard</Link>
           <Link href="/deposit" className="text-blue-700 hover:text-yellow-500 font-medium transition">Deposit</Link>
           <Link href="/burn" className="text-blue-700 hover:text-yellow-500 font-medium transition">Burn</Link>
@@ -72,17 +74,17 @@ export default function History() {
                 {baseTxs.length === 0 && !loadingBase && <li className="text-gray-500">No hay transacciones recientes.</li>}
                 {baseTxs.map((tx, i) => (
                   <li key={i} className="text-blue-900 text-sm bg-white/80 rounded p-2 flex justify-between items-center border border-blue-200">
-                    <a
-                      href={`https://basescan.org/tx/${tx.hash}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 underline"
-                    >
-                      {tx.hash.slice(0, 12)}... — {parseFloat(tx.value) / 1e18} ETH
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            <a
+              href={`https://basescan.org/tx/${tx.hash}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 underline"
+            >
+              {tx.hash.slice(0, 12)}... — {parseFloat(tx.value) / 1e18} ETH
+            </a>
+          </li>
+        ))}
+      </ul>
             </div>
           ) : (
             <div className="w-full">
@@ -106,8 +108,13 @@ export default function History() {
           )}
         </div>
       </main>
-      <footer className="w-full text-center py-4 text-blue-900/80 font-medium text-sm">
-        Powered by Celo Colombia &middot; Chainlink CCIP Demo
+      <footer className="w-full text-center py-4 text-blue-900/80 font-medium text-xs sm:text-sm flex justify-center items-center gap-1">
+        Powered by&nbsp;
+        <span className="inline-flex items-center">
+          <Image src="/assets/CeloColLogo.png" alt="C" width={18} height={18} className="inline-block mx-0.5" />elo&nbsp;
+          <Image src="/assets/CeloColLogo.png" alt="C" width={18} height={18} className="inline-block mx-0.5" />olombia
+        </span>
+        &nbsp;&middot;&nbsp;Chainlink CCIP Demo
       </footer>
     </div>
   );
