@@ -1,35 +1,66 @@
-# Smart Contracts – Wrapped cCOP Bridge
+## Foundry
 
-Este paquete contiene los contratos de Solidity para implementar:
+**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
 
-- ✅ Vault de cCOP en Celo (respaldo 1:1)
-- ✅ Wrapped cCOP (wCOP) en Base
-- 🔄 Conexión vía Chainlink CCIP
+Foundry consists of:
 
-## 🛠️ Requisitos
+-   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
+-   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
+-   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
+-   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
 
-- Node.js >= 18
-- Hardhat
-- Celo y Base RPCs
+## Documentation
 
-## 🚀 Comandos útiles
+https://book.getfoundry.sh/
 
-```bash
-npm install
-npx hardhat compile
-npx hardhat test
-npx hardhat run scripts/deploy.ts --network celo
+## Usage
+
+### Build
+
+```shell
+$ forge build
 ```
 
-## 🔐 Variables de entorno
+### Test
 
-Crea un archivo `.env`:
-
-```
-PRIVATE_KEY=tu_clave_privada
+```shell
+$ forge test
 ```
 
-## 📁 Estructura
+### Format
 
-- `/contracts/` – código fuente
-- `/scripts/` – scripts de despliegue
+```shell
+$ forge fmt
+```
+
+### Gas Snapshots
+
+```shell
+$ forge snapshot
+```
+
+### Anvil
+
+```shell
+$ anvil
+```
+
+### Deploy
+
+```shell
+$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+```
+
+### Cast
+
+```shell
+$ cast <subcommand>
+```
+
+### Help
+
+```shell
+$ forge --help
+$ anvil --help
+$ cast --help
+```
