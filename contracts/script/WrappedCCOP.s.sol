@@ -2,17 +2,20 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {Counter} from "../src/Counter.sol";
+import {WrappedCCOP} from "../src/WrappedCCOP.sol";
 
-contract CounterScript is Script {
-    Counter public counter;
+contract WrappedCCOPScript is Script {
+    WrappedCCOP public wrappedCCOP;
 
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
 
-        counter = new Counter();
+        wrappedCCOP = new WrappedCCOP(
+            msg.sender,
+            address(0) // mailbox address
+        );
 
         vm.stopBroadcast();
     }
