@@ -37,8 +37,7 @@ contract Treasury is Ownable {
 
         (address to, uint256 amount) = abi.decode(_data, (address, uint256));
 
-        // transferir los cCOP a la dirección `to`
-        if (amount == 0) revert amountMustBeGreaterThanZero();
+        
         IERC20(cCOPAddress).transfer(to, amount);
     }
 
