@@ -42,7 +42,8 @@ contract WrappedCCOP is ERC20, Ownable {
 
         _mint(to, amount);
     }
-    function unwrap(address receiver, uint256 amount) internal {
+    
+    function unwrap(address receiver, uint256 amount) external payable {
 
         if (amount == 0) revert amountMustBeGreaterThanZero();
 
@@ -92,5 +93,8 @@ contract WrappedCCOP is ERC20, Ownable {
     function getMailbox() external view returns (address) {
         return mailboxAddress;
     }
-    
+
+    function getTreasuryAddress() external view returns (bytes32) {
+        return treasury.Address;
+    }
 }

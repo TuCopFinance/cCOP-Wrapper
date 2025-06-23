@@ -45,7 +45,7 @@ contract Treasury is Ownable {
         uint32 domainID,
         address receiver,
         uint256 amount
-    ) internal {
+    ) external payable {
         if (amount == 0) revert amountMustBeGreaterThanZero();
 
         bytes memory payload = abi.encode(receiver, amount);
@@ -92,5 +92,9 @@ contract Treasury is Ownable {
 
     function getMailbox() external view returns (address) {
         return mailboxAddress;
+    }
+
+    function getCCOPAddress() external view returns (address) {
+        return cCOPAddress;
     }
 }

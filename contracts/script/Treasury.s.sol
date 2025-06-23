@@ -13,7 +13,7 @@ contract TreasuryScript is Script {
         vm.startBroadcast();
 
         treasury = new Treasury(
-            msg.sender,
+            0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309,
             // si el id es 44787 usa 0xEf9F292fcEBC3848bF4bB92a96a04F9ECBb78E59
             block.chainid == 44787
                 ? 0xEf9F292fcEBC3848bF4bB92a96a04F9ECBb78E59  // mailbox for celo alfajores (testnet)
