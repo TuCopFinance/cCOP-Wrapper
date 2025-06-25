@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import styles from "./TokenMenu.module.css";
+import { Spinner } from "react-spinner-toolkit";
 
 export const TokenMenu = () => {
   const [actionFlag, setActionFlag] = React.useState(true);
@@ -34,7 +35,6 @@ export const TokenMenu = () => {
         onChange={(e) =>
           setDifferentAddressFlag(e.target.value === "differentAddress")
         }
-
         className={styles.addressSelector}
       >
         <option value="sameAddress">
@@ -44,16 +44,39 @@ export const TokenMenu = () => {
           Send ${actionFlag ? "wcCOP" : "cCOP"} tokens to a different address
         </option>
       </select>
-      {differentAddressFlag && <input className={styles.addressInput} placeholder="Enter address" />}
+      {differentAddressFlag && (
+        <input className={styles.addressInput} placeholder="Enter address" />
+      )}
+
+      {actionFlag && (
+        <div>
+          <p className={styles.wrapToLabel}>
+            Wrap on:{" "}
+            <select className={styles.wrapToSelector}>
+              <option value="base">Base</option>
+            </select>
+          </p>
+        </div>
+      )}
+      <p className={styles.priceLabel}>
+        Price for {actionFlag ? "wrapping" : "unwrapping"}: 0.01 ETH
+      </p>
       {actionFlag ? (
         <>
-          <p>Price for wrapping: 0.01 ETH</p>
-          <button>Approve</button>
-          <button>Wrap</button>
+          <button className={styles.actionButtonInactive}>
+            Approve{" "}
+            {<Spinner
+              shape="fading"
+              color="#ffe600"
+              loading
+              speed={1}
+              size={20}
+            />}
+          </button>
+          <button className={styles.actionButtonActive}>Wrap</button>
         </>
       ) : (
         <>
-          <p>Price for unwrapping: 0.01 ETH</p>
           <button className={styles.actionButton}>Unwrap</button>
         </>
       )}
