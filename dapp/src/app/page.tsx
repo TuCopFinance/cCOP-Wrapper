@@ -13,8 +13,8 @@ export default function Home() {
           <Image
             src="/cCOP_token.png"
             alt="cCOP Token"
-            width={50}
-            height={50}
+            width={40}
+            height={40}
             priority
           />
           <h1>cCOP Wrapper</h1>
@@ -34,8 +34,9 @@ export default function Home() {
           This projectId only works on localhost. <br/>Go to <a href="https://cloud.reown.com" target="_blank" className="link-button" rel="Reown Cloud">Reown Cloud</a> to get your own.
         </p>
       </div>*/}
-      <TokenMenu />
-
+      <div className="content">
+        <TokenMenu />
+      </div>
       {/*<InfoList />*/}
     </div>
   );
