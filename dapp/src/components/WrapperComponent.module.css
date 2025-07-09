@@ -1,7 +1,6 @@
-
 .amountLabel {
   font-weight: bold;
-  margin-top:  8px;
+  margin-top: 8px;
   margin-bottom: 4px;
 }
 .amountInput {
@@ -72,6 +71,9 @@
   border: none;
   border-radius: 4px;
   cursor: not-allowed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .actionButtonActive {
@@ -81,4 +83,3 @@
   border-radius: 4px;
   cursor: pointer;
 }
-
