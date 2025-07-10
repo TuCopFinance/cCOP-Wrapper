@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import styles from "./WrapperComponent.module.css";
 import { Spinner } from "react-spinner-toolkit";
-import { erc20Abi } from "viem";
+import { erc20Abi, formatEther } from "viem";
 import { getAccount, readContract, readContracts } from "@wagmi/core";
 import { config } from "@/config";
 import { address } from "../../constants/address";
@@ -24,6 +24,8 @@ export const WrapperComponent = () => {
   const [amount, setAmount] = useState("");
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [tokenAllowanceIsLoading, setTokenAllowanceIsLoading] = useState(false);
+  const [tokenAllowance, setTokenAllowance] = useState<bigint | null>(null);
+  const [quote, setQuote] = useState<bigint | null>(null);
 
   // ver si tiene permission to transfer cCOP tokens
   function verifyTokenAllowanceAndPriceForSend() {
@@ -79,6 +81,10 @@ export const WrapperComponent = () => {
     })
       .then((data: any) => {
         console.log(data);
+        console.log("Allowance:", data[0].result);
+        console.log("Quote:", data[1].result);
+        setTokenAllowance(data[0].result as bigint);
+        setQuote(data[1].result as bigint);
       })
       .catch((error: any) => {
         console.error("Error checking token allowance:", error);
@@ -143,8 +149,11 @@ export const WrapperComponent = () => {
           </select>
         </p>
       </div>
-      <p className={styles.priceLabel}>Price for wrapping: 0.01 ETH</p>
-
+      {quote ? (
+        <p className={styles.priceLabel}>
+          Price for wrapping: {formatEther(quote)} CELO
+        </p>
+      ) : null}
       <button className={styles.actionButtonActive}>
         Set Allowance
         {
