@@ -1,26 +1,28 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./WrapperComponent.module.css";
 import { Spinner } from "react-spinner-toolkit";
 import { erc20Abi, formatEther } from "viem";
-import { getAccount, readContract, readContracts } from "@wagmi/core";
+import { getAccount, readContracts, writeContract } from "@wagmi/core";
 import { config } from "@/config";
 import { address } from "../../constants/address";
 import treasury from "../../constants/abis/Treasury.json";
+import { write } from "fs";
 
 export const WrapperComponent = () => {
+  // Contract configs
   const treasuryContract = {
     address: address.testnet.treasury as `0x${string}`,
     abi: treasury.abi as any,
   } as const;
-
   const cCopContract = {
     address: address.testnet.cCOP as `0x${string}`,
     abi: erc20Abi,
   } as const;
 
-  const [domainID, setDomainID] = useState("84532"); // Default to Base domain ID
-  const [differentAddressFlag, setDifferentAddressFlag] = React.useState(false);
+  // State
+  const [domainID, setDomainID] = useState("84532");
+  const [differentAddressFlag, setDifferentAddressFlag] = useState(false);
   const [amount, setAmount] = useState("");
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [tokenAllowanceIsLoading, setTokenAllowanceIsLoading] = useState(false);
@@ -29,35 +31,42 @@ export const WrapperComponent = () => {
   >(null);
   const [quote, setQuote] = useState<bigint | null>(null);
 
-  // ver si tiene permission to transfer cCOP tokens
+  // Auto-update on input change
+  useEffect(() => {
+    if (!amount) return;
+    if (timeoutId) clearTimeout(timeoutId);
+    const newTimeoutId = setTimeout(() => {
+      verifyTokenAllowanceAndPriceForSend();
+    }, 500); // más responsivo
+    setTimeoutId(newTimeoutId);
+    return () => clearTimeout(newTimeoutId);
+  }, [amount, domainID, differentAddressFlag]);
+
+  // Handler: Amount input change
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setAmount(e.target.value);
+  }
+
+  //Check allowance and get quote
   function verifyTokenAllowanceAndPriceForSend() {
-    if (tokenAllowanceIsLoading) {
-      console.log("Token allowance check already in progress.");
-      return;
-    }
-
+    if (tokenAllowanceIsLoading) return;
     setTokenAllowanceIsLoading(true);
-    console.log("Starting token allowance check...");
-
     const account = getAccount(config);
-
-    //como amount se pone en float y tiene 15 decimals, se multiplica por 10^15
     let amountFixed: bigint;
     try {
-      // Parse as float, multiply, then convert to BigInt
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
     } catch (e) {
-      console.error("Invalid amount input for BigInt conversion:", amount);
       setTokenAllowanceIsLoading(false);
       return;
     }
 
-    console.log("Amount fixed:", amountFixed.toString());
-
+    console.log(
+      "Checking allowance and getting quote for amount:",
+      amountFixed
+    );
     const differentAddressInput = document.getElementById(
       "wrapperAddressInput"
     ) as HTMLInputElement | null;
-
     readContracts(config, {
       contracts: [
         {
@@ -65,7 +74,7 @@ export const WrapperComponent = () => {
           functionName: "allowance",
           args: [
             account.address as `0x${string}`,
-            address.testnet.cCOP as `0x${string}`,
+            address.testnet.treasury as `0x${string}`,
           ],
         },
         {
@@ -82,47 +91,89 @@ export const WrapperComponent = () => {
       ],
     })
       .then((data: any) => {
-        console.log(data);
-        console.log("Allowance:", data[0].result);
-        console.log("Quote:", data[1].result);
+        console.log("Allowance and quote data:", data);
         setQuote(data[1].result as bigint);
-        if (amountFixed > data[0].result) {
-          setAllowanceIsMoreThanAmount(false);
-          console.log("Allowance is less than the amount.");
-        } else {
-          setAllowanceIsMoreThanAmount(true);
-        }
+        setAllowanceIsMoreThanAmount(amountFixed <= data[0].result);
       })
-      .catch((error: any) => {
-        console.error("Error checking token allowance:", error);
-      })
-      .finally(() => {
-        console.log("Token allowance check completed.");
-        setTokenAllowanceIsLoading(false);
-      });
+      .catch(() => {})
+      .finally(() => setTokenAllowanceIsLoading(false));
   }
 
-  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const newAmount = e.target.value;
-    setAmount(newAmount);
-
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+  function setAllowance() {
+    if (tokenAllowanceIsLoading) return;
+    setTokenAllowanceIsLoading(true);
+    const account = getAccount(config);
+    let amountFixed: bigint;
+    try {
+      amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
+    } catch (e) {
+      setTokenAllowanceIsLoading(false);
+      return;
     }
 
-    const newTimeoutId = setTimeout(() => {
-      verifyTokenAllowanceAndPriceForSend();
-    }, 2000);
-
-    setTimeoutId(newTimeoutId);
+    console.log("Setting allowance for amount:", amountFixed);
+    writeContract(config, {
+      abi: erc20Abi,
+      address: address.testnet.cCOP as `0x${string}`,
+      functionName: "approve",
+      args: [address.testnet.treasury as `0x${string}`, amountFixed],
+    })
+      .then(() => {
+        console.log("Allowance set successfully");
+        verifyTokenAllowanceAndPriceForSend();
+      })
+      .catch((error) => {
+        console.error("Error setting allowance:", error);
+      })
+      .finally(() => setTokenAllowanceIsLoading(false));
   }
 
+  function wrap() {
+    if (quote === null) return;
+    if (tokenAllowanceIsLoading) return;
+    setTokenAllowanceIsLoading(true);
+    const account = getAccount(config);
+    let amountFixed: bigint;
+    try {
+      amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
+    } catch (e) {
+      setTokenAllowanceIsLoading(false);
+      return;
+    }
+    const differentAddressInput = document.getElementById(
+      "wrapperAddressInput"
+    ) as HTMLInputElement | null;
+    console.log("Wrapping cCOP tokens for amount:", amountFixed);
+    writeContract(config, {
+      abi: treasury.abi,
+      address: address.testnet.treasury as `0x${string}`,
+      functionName: "wrap",
+      args: [
+        domainID,
+        differentAddressFlag
+          ? differentAddressInput?.value || account.address || ""
+          : (account.address as `0x${string}`),
+        amountFixed,
+      ],
+      value: quote + BigInt(1), // Ensure value is set to quote if available
+    })
+      .then(() => {
+        console.log("cCOP tokens wrapped successfully");
+        // Optionally, you can reset the form or show a success message here
+      })
+      .catch((error) => {
+        console.error("Error wrapping cCOP tokens:", error);
+      })
+      .finally(() => setTokenAllowanceIsLoading(false));
+  }
+
+  // Render
   return (
     <>
       <label className={styles.amountLabel}>Amount</label>
       <input
         className={styles.amountInput}
-        placeholder={`Enter amount of cCOP tokens to wrap`}
+        placeholder="Enter amount of cCOP tokens to wrap"
         value={amount}
         onChange={handleAmountChange}
       />
@@ -161,15 +212,15 @@ export const WrapperComponent = () => {
           Price for wrapping: {formatEther(quote)} CELO
         </p>
       )}
-
       {allowanceIsMoreThanAmount !== null && (
         <>
           <button
             className={
-              allowanceIsMoreThanAmount
-                ? styles.actionButtonInactive
-                : styles.actionButtonActive
+              !allowanceIsMoreThanAmount
+                ? styles.actionButtonActive
+                : styles.actionButtonInactive
             }
+            onClick={!allowanceIsMoreThanAmount ? setAllowance : undefined}
           >
             Set Allowance
           </button>
@@ -179,6 +230,7 @@ export const WrapperComponent = () => {
                 ? styles.actionButtonActive
                 : styles.actionButtonInactive
             }
+            onClick={allowanceIsMoreThanAmount ? wrap : undefined}
           >
             Wrap
           </button>
