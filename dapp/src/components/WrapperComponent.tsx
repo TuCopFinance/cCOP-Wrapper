@@ -3,12 +3,28 @@ import React, { useState } from "react";
 import styles from "./WrapperComponent.module.css";
 import { Spinner } from "react-spinner-toolkit";
 import { erc20Abi } from "viem";
-import { getAccount, readContract } from "@wagmi/core";
+import { getAccount, readContract, readContracts } from "@wagmi/core";
 import { config } from "@/config";
-
 import { address } from "../../constants/address";
+import treasury from "../../constants/abis/Treasury.json";
 
 export const WrapperComponent = () => {
+  const treasuryContract = {
+    address: address.testnet.treasury as `0x${string}`,
+    abi: treasury.abi as any,
+  } as const;
+
+  const cCopContract = {
+    address: address.testnet.cCOP as `0x${string}`,
+    abi: erc20Abi,
+  } as const;
+
+  const [domainID, setDomainID] = useState("84532"); // Default to Base domain ID
+  const [differentAddressFlag, setDifferentAddressFlag] = React.useState(false);
+  const [amount, setAmount] = useState("");
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [tokenAllowanceIsLoading, setTokenAllowanceIsLoading] = useState(false);
+
   // ver si tiene permission to transfer cCOP tokens
   function verifyTokenAllowanceAndPriceForSend() {
     if (tokenAllowanceIsLoading) {
@@ -20,30 +36,58 @@ export const WrapperComponent = () => {
     console.log("Starting token allowance check...");
 
     const account = getAccount(config);
-    readContract(config, {
-      address: address.testnet.treasury as `0x${string}`, // Replace with your contract address
-      abi: erc20Abi,
-      functionName: "allowance",
-      args: [
-        account.address as `0x${string}`,
-        address.testnet.treasury as `0x${string}`,
-      ], // Replace with the spender address
+
+    //como amount se pone en float y tiene 15 decimals, se multiplica por 10^15
+    let amountFixed: bigint;
+    try {
+      // Parse as float, multiply, then convert to BigInt
+      amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
+    } catch (e) {
+      console.error("Invalid amount input for BigInt conversion:", amount);
+      setTokenAllowanceIsLoading(false);
+      return;
+    }
+
+    console.log("Amount fixed:", amountFixed.toString());
+
+    const differentAddressInput = document.getElementById(
+      "wrapperAddressInput"
+    ) as HTMLInputElement | null;
+
+    readContracts(config, {
+      contracts: [
+        {
+          ...cCopContract,
+          functionName: "allowance",
+          args: [
+            account.address as `0x${string}`,
+            address.testnet.cCOP as `0x${string}`,
+          ],
+        },
+        {
+          ...treasuryContract,
+          functionName: "getQuote",
+          args: [
+            domainID,
+            differentAddressFlag
+              ? differentAddressInput?.value || account.address || ""
+              : (account.address as `0x${string}`),
+            amountFixed,
+          ],
+        },
+      ],
     })
       .then((data: any) => {
-        console.log("Token allowance data:", data);
+        console.log(data);
       })
       .catch((error: any) => {
         console.error("Error checking token allowance:", error);
       })
       .finally(() => {
         console.log("Token allowance check completed.");
+        setTokenAllowanceIsLoading(false);
       });
   }
-
-  const [differentAddressFlag, setDifferentAddressFlag] = React.useState(false);
-  const [amount, setAmount] = useState("");
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const [tokenAllowanceIsLoading, setTokenAllowanceIsLoading] = useState(false);
 
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newAmount = e.target.value;
@@ -81,13 +125,21 @@ export const WrapperComponent = () => {
         </select>
       </div>
       {differentAddressFlag && (
-        <input className={styles.addressInput} placeholder="Enter address" />
+        <input
+          className={styles.addressInput}
+          placeholder="Enter address"
+          id="wrapperAddressInput"
+        />
       )}
       <div>
         <p className={styles.wrapToLabel}>
           Wrap on:{" "}
-          <select className={styles.wrapToSelector}>
-            <option value="base">Base</option>
+          <select
+            className={styles.wrapToSelector}
+            value={domainID}
+            onChange={(e) => setDomainID(e.target.value)}
+          >
+            <option value="84532">Base</option>
           </select>
         </p>
       </div>
