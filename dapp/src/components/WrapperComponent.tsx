@@ -24,7 +24,9 @@ export const WrapperComponent = () => {
   const [amount, setAmount] = useState("");
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [tokenAllowanceIsLoading, setTokenAllowanceIsLoading] = useState(false);
-  const [tokenAllowance, setTokenAllowance] = useState<bigint | null>(null);
+  const [allowanceIsMoreThanAmount, setAllowanceIsMoreThanAmount] = useState<
+    boolean | null
+  >(null);
   const [quote, setQuote] = useState<bigint | null>(null);
 
   // ver si tiene permission to transfer cCOP tokens
@@ -83,8 +85,13 @@ export const WrapperComponent = () => {
         console.log(data);
         console.log("Allowance:", data[0].result);
         console.log("Quote:", data[1].result);
-        setTokenAllowance(data[0].result as bigint);
         setQuote(data[1].result as bigint);
+        if (amountFixed > data[0].result) {
+          setAllowanceIsMoreThanAmount(false);
+          console.log("Allowance is less than the amount.");
+        } else {
+          setAllowanceIsMoreThanAmount(true);
+        }
       })
       .catch((error: any) => {
         console.error("Error checking token allowance:", error);
@@ -149,18 +156,34 @@ export const WrapperComponent = () => {
           </select>
         </p>
       </div>
-      {quote ? (
+      {quote && (
         <p className={styles.priceLabel}>
           Price for wrapping: {formatEther(quote)} CELO
         </p>
-      ) : null}
-      <button className={styles.actionButtonActive}>
-        Set Allowance
-        {
-          //<Spinner shape="fading" color="#ffe600" loading speed={1} size={20} />
-        }
-      </button>
-      <button className={styles.actionButtonActive}>Wrap</button>
+      )}
+
+      {allowanceIsMoreThanAmount !== null && (
+        <>
+          <button
+            className={
+              allowanceIsMoreThanAmount
+                ? styles.actionButtonInactive
+                : styles.actionButtonActive
+            }
+          >
+            Set Allowance
+          </button>
+          <button
+            className={
+              allowanceIsMoreThanAmount
+                ? styles.actionButtonActive
+                : styles.actionButtonInactive
+            }
+          >
+            Wrap
+          </button>
+        </>
+      )}
     </>
   );
 };
