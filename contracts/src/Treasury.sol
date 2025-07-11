@@ -14,8 +14,7 @@ contract Treasury is Ownable {
     address private mailboxAddress;
     address private cCOPAddress;
 
-    mapping(uint32 DomainID => bytes32 WrappedTokenAddress)
-        public wrappedToken;
+    mapping(uint32 DomainID => bytes32 WrappedTokenAddress) public wrappedToken;
 
     constructor(
         address _initialOwner,
@@ -37,7 +36,6 @@ contract Treasury is Ownable {
 
         (address to, uint256 amount) = abi.decode(_data, (address, uint256));
 
-        
         IERC20(cCOPAddress).transfer(to, amount);
     }
 
@@ -45,24 +43,22 @@ contract Treasury is Ownable {
         uint32 domainID,
         address receiver,
         uint256 amount
-    ) external payable {
+    ) external payable returns (bytes32) {
         if (amount == 0) revert amountMustBeGreaterThanZero();
 
         bytes memory payload = abi.encode(receiver, amount);
 
-        uint256 quote = getQuote(
-            domainID,
-            receiver,
-            amount
-        );
+        uint256 quote = getQuote(domainID, receiver, amount);
 
-        IMailbox(mailboxAddress).dispatch{value: quote}(
+        bytes32 messageId = IMailbox(mailboxAddress).dispatch{value: quote}(
             domainID,
             wrappedToken[domainID],
             payload
         );
 
         IERC20(cCOPAddress).transferFrom(msg.sender, address(this), amount);
+
+        return messageId;
     }
 
     function setWrappedToken(

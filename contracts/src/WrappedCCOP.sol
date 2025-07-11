@@ -42,29 +42,36 @@ contract WrappedCCOP is ERC20, Ownable {
 
         _mint(to, amount);
     }
-    
-    function unwrap(address receiver, uint256 amount) external payable {
 
+    function unwrap(
+        address receiver,
+        uint256 amount
+    ) external payable returns (bytes32) {
         if (amount == 0) revert amountMustBeGreaterThanZero();
 
         bytes memory payload = abi.encode(receiver, amount);
 
         uint256 quote = getQuote(receiver, amount);
 
-        IMailbox(mailboxAddress).dispatch{value: quote}(
+        bytes32 messageId = IMailbox(mailboxAddress).dispatch{value: quote}(
             treasury.DomainID,
             treasury.Address,
             payload
         );
 
         _burn(msg.sender, amount);
+
+        return messageId;
     }
 
     function decimals() public view override returns (uint8) {
         return 15;
     }
 
-    function setTreasury(address _address, uint32 _domainId) external onlyOwner {
+    function setTreasury(
+        address _address,
+        uint32 _domainId
+    ) external onlyOwner {
         treasury = TreasuryMetadata({
             Address: bytes32(uint256(uint160(_address))),
             DomainID: _domainId
@@ -87,9 +94,11 @@ contract WrappedCCOP is ERC20, Ownable {
                 payload
             );
     }
+
     function getTreasury() external view returns (TreasuryMetadata memory) {
         return treasury;
     }
+
     function getMailbox() external view returns (address) {
         return mailboxAddress;
     }
