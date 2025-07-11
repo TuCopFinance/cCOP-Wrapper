@@ -1,10 +1,12 @@
+
+
 .menuBox {
   display: flex;
   flex-direction: column;
   width: 100%;
   max-width: 500px;
   color: #ffffff;
-  background-color: #363636;
+  background-color: var(--box);
   border: 1px solid #444444;
   border-radius: 8px;
   padding: 20px;

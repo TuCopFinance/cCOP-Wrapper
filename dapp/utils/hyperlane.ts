@@ -35,7 +35,7 @@ export async function getIsDelivered(messageId: string): Promise<boolean | null>
 export async function waitForIsDelivered(
   messageId: string,
   intervalMs: number = 5000,
-  maxAttempts: number = 20
+  maxAttempts: number = 30
 ): Promise<boolean> {
   let attempt = 0;
   while (attempt < maxAttempts) {
