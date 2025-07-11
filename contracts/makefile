@@ -1,8 +1,17 @@
 include .env
 export
 
-CELO_ALFAJORES_ARGS := --rpc-url "https://celo-alfajores.drpc.org" --account defaultKey --broadcast --verify --verifier-url 'https://api-alfajores.celoscan.io/api' --etherscan-api-key ${CELO_API_KEY} -vvvv
-BASE_SEPOLIA_ARGS := --rpc-url "https://base-sepolia.drpc.org" --account defaultKey --broadcast --verify --verifier-url 'https://api.etherscan.io/v2/api?chainid=84532' --etherscan-api-key ${ETHERSCAN_API_KEY} -vvvv
+CELO_ALFAJORES_ARGS := --rpc-url $(RPC_URL_CELO_ALFAJORES) \
+                        --account defaultKey \
+                        --broadcast \
+                        --verify \
+                        --etherscan-api-key $(ETHERSCAN_API) \
+
+BASE_SEPOLIA_ARGS := --rpc-url $(RPC_URL_BASE_SEPOLIA) \
+					 --account defaultKey \
+					 --broadcast \
+					 --verify \
+					 --etherscan-api-key $(ETHERSCAN_API) \
 
 deployCCOPMock:
 	@forge clean
