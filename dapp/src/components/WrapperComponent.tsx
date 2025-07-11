@@ -15,19 +15,41 @@ import { address } from "../../constants/address";
 import { chainID } from "../../constants/chainID";
 import treasury from "../../constants/abis/Treasury.json";
 import toast from "react-hot-toast";
+import { getIsDelivered, waitForIsDelivered } from "../../utils/hyperlane";
 
+// --- Notification helpers ---
 const notifyChangeChain = () =>
   toast("Changing to Celo network", {
     duration: 2000,
     position: "bottom-right",
-    style: {
-      background: "#333",
-      color: "#fff",
-    },
+    style: { background: "#333", color: "#fff" },
   });
 
+const notifyWrapSuccess = () =>
+  toast.success("cCOP tokens wrapped successfully!", {
+    duration: 3000,
+    position: "bottom-right",
+    style: { background: "#333", color: "#fff" },
+  });
+
+const notifyWrapAction = (deliveredPromise: Promise<any>) =>
+  toast.promise(
+    deliveredPromise,
+    {
+      loading: "Wrapping cCOP tokens...",
+      success: `cCOP tokens wrapped successfully!`,
+      error: `Error wrapping cCOP tokens, please check hyperlane explorer using your transaction hash`,
+    },
+    {
+      position: "bottom-right",
+      style: { background: "#707070", color: "#fff" },
+      success: { duration: 5000, icon: "✅" },
+      error: { duration: 10000, icon: "❌" },
+    }
+  );
+
 export const WrapperComponent = () => {
-  // Contract configs
+  // --- Contract configs ---
   const treasuryContract = {
     address: address.testnet.treasury as `0x${string}`,
     abi: treasury.abi as any,
@@ -39,7 +61,7 @@ export const WrapperComponent = () => {
     chainId: chainID.testnet.celo,
   } as const;
 
-  // State
+  // --- State ---
   const [domainID, setDomainID] = useState("84532");
   const [differentAddressFlag, setDifferentAddressFlag] = useState(false);
   const [amount, setAmount] = useState("");
@@ -50,18 +72,18 @@ export const WrapperComponent = () => {
   >(null);
   const [quote, setQuote] = useState<bigint | null>(null);
 
-  // Auto-update on input change
+  // --- Auto-update on input change ---
   useEffect(() => {
     if (!amount) return;
     if (timeoutId) clearTimeout(timeoutId);
     const newTimeoutId = setTimeout(() => {
       verifyTokenAllowanceAndPriceForSend();
-    }, 500); // más responsivo
+    }, 500);
     setTimeoutId(newTimeoutId);
     return () => clearTimeout(newTimeoutId);
   }, [amount, domainID, differentAddressFlag]);
 
-  // Handler: Amount input change
+  // --- Handlers ---
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     setAmount(e.target.value);
   }
@@ -69,16 +91,12 @@ export const WrapperComponent = () => {
   function checkChainAndChange() {
     const account = getAccount(config);
     if (account.chainId !== chainID.testnet.celo) {
-      //change to celo chain
-      switchChain(config, {
-        chainId: chainID.testnet.celo,
-      }).then(() => {
-        notifyChangeChain();
-      });
+      switchChain(config, { chainId: chainID.testnet.celo }).then(
+        notifyChangeChain
+      );
     }
   }
 
-  //Check allowance and get quote
   function verifyTokenAllowanceAndPriceForSend() {
     if (tokenAllowanceIsLoading) return;
     setTokenAllowanceIsLoading(true);
@@ -86,15 +104,10 @@ export const WrapperComponent = () => {
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
-    } catch (e) {
+    } catch {
       setTokenAllowanceIsLoading(false);
       return;
     }
-
-    console.log(
-      "Checking allowance and getting quote for amount:",
-      amountFixed
-    );
     const differentAddressInput = document.getElementById(
       "wrapperAddressInput"
     ) as HTMLInputElement | null;
@@ -122,15 +135,12 @@ export const WrapperComponent = () => {
       ],
     })
       .then((data: any) => {
-        console.log("Allowance and quote data:", data);
         setQuote(data[1].result as bigint);
         setAllowanceIsMoreThanAmount(amountFixed <= data[0].result);
       })
       .catch(() => {})
       .finally(() => {
         setTokenAllowanceIsLoading(false);
-
-        const account = getAccount(config);
         checkChainAndChange();
       });
   }
@@ -140,17 +150,13 @@ export const WrapperComponent = () => {
     setTokenAllowanceIsLoading(true);
     const account = getAccount(config);
     checkChainAndChange();
-
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
-    } catch (e) {
+    } catch {
       setTokenAllowanceIsLoading(false);
       return;
     }
-
-    console.log("Setting allowance for amount:", amountFixed);
-
     writeContract(config, {
       chainId: chainID.testnet.celo,
       abi: erc20Abi,
@@ -158,33 +164,25 @@ export const WrapperComponent = () => {
       functionName: "approve",
       args: [address.testnet.treasury as `0x${string}`, amountFixed],
     })
-      .then(() => {
-        console.log("Allowance set successfully");
-        verifyTokenAllowanceAndPriceForSend();
-      })
-      .catch((error) => {
-        console.error("Error setting allowance:", error);
-      })
+      .then(verifyTokenAllowanceAndPriceForSend)
+      .catch(() => {})
       .finally(() => setTokenAllowanceIsLoading(false));
   }
 
   function wrap() {
-    if (quote === null) return;
-    if (tokenAllowanceIsLoading) return;
+    if (quote === null || tokenAllowanceIsLoading) return;
     setTokenAllowanceIsLoading(true);
     const account = getAccount(config);
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
-    } catch (e) {
+    } catch {
       setTokenAllowanceIsLoading(false);
       return;
     }
     const differentAddressInput = document.getElementById(
       "wrapperAddressInput"
     ) as HTMLInputElement | null;
-    console.log("Wrapping cCOP tokens for amount:", amountFixed);
-
     simulateContract(config, {
       chainId: chainID.testnet.celo,
       abi: treasury.abi,
@@ -197,41 +195,34 @@ export const WrapperComponent = () => {
           : (account.address as `0x${string}`),
         amountFixed,
       ],
-      value: quote + BigInt(1), // Ensure value is set to quote if available
+      value: quote + BigInt(1),
     })
       .then((data: any) => {
-        console.log("Simulation successful:", data);
+        const msgIdentifier = data.result;
+        writeContract(config, {
+          chainId: chainID.testnet.celo,
+          abi: treasury.abi,
+          address: address.testnet.treasury as `0x${string}`,
+          functionName: "wrap",
+          args: [
+            domainID,
+            differentAddressFlag
+              ? differentAddressInput?.value || account.address || ""
+              : (account.address as `0x${string}`),
+            amountFixed,
+          ],
+          value: quote + BigInt(1),
+        })
+          .then(() => {
+            notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20));
+          })
+          .catch(() => {})
+          .finally(() => setTokenAllowanceIsLoading(false));
       })
-      .catch((error) => {
-        console.error("Error simulating wrap:", error);
-      });
-
-    writeContract(config, {
-      chainId: chainID.testnet.celo,
-      abi: treasury.abi,
-      address: address.testnet.treasury as `0x${string}`,
-      functionName: "wrap",
-      args: [
-        domainID,
-        differentAddressFlag
-          ? differentAddressInput?.value || account.address || ""
-          : (account.address as `0x${string}`),
-        amountFixed,
-      ],
-      value: quote + BigInt(1), // Ensure value is set to quote if available
-    })
-      .then((data: any) => {
-        console.log("cCOP tokens wrapped successfully");
-        console.log(data.result);
-        // Optionally, you can reset the form or show a success message here
-      })
-      .catch((error) => {
-        console.error("Error wrapping cCOP tokens:", error);
-      })
-      .finally(() => setTokenAllowanceIsLoading(false));
+      .catch(() => {});
   }
 
-  // Render
+  // --- Render ---
   return (
     <>
       <label className={styles.amountLabel}>Amount</label>
