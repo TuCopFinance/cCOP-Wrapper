@@ -10,6 +10,7 @@ contract Treasury is Ownable {
     error mailboxNotAuthorized();
     error senderNotAuthorized();
     error amountMustBeGreaterThanZero();
+    error wrappedTokenNotSet();
 
     address private mailboxAddress;
     address private cCOPAddress;
@@ -45,6 +46,8 @@ contract Treasury is Ownable {
         uint256 amount
     ) external payable returns (bytes32) {
         if (amount == 0) revert amountMustBeGreaterThanZero();
+
+        if (wrappedToken[domainID] == bytes32(0)) revert wrappedTokenNotSet();
 
         bytes memory payload = abi.encode(receiver, amount);
 

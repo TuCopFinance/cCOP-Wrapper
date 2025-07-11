@@ -11,6 +11,7 @@ contract WrappedCCOP is ERC20, Ownable {
     error senderNotAuthorized();
     error chainIdNotAuthorized();
     error amountMustBeGreaterThanZero();
+    error unwrappedTokenNotSet();
 
     struct TreasuryMetadata {
         bytes32 Address;
@@ -48,6 +49,8 @@ contract WrappedCCOP is ERC20, Ownable {
         uint256 amount
     ) external payable returns (bytes32) {
         if (amount == 0) revert amountMustBeGreaterThanZero();
+
+        if (treasury.Address == bytes32(0)) revert unwrappedTokenNotSet();
 
         bytes memory payload = abi.encode(receiver, amount);
 
