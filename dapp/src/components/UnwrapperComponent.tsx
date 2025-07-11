@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import styles from "./WrapperComponent.module.css";
+import styles from "./UnwrapperComponent.module.css";
 import { Spinner } from "react-spinner-toolkit";
-import { erc20Abi, formatEther } from "viem";
+import { formatEther } from "viem";
 import {
   getAccount,
   readContracts,
@@ -12,7 +12,7 @@ import {
 import { config } from "@/config";
 import { address } from "../../constants/address";
 import { chainID } from "../../constants/chainID";
-import treasury from "../../constants/abis/Treasury.json";
+import WrappedCCOP from "../../constants/abis/WrappedCCOP.json";
 import toast from "react-hot-toast";
 
 const notifyChangeChain = () =>
@@ -25,28 +25,22 @@ const notifyChangeChain = () =>
     },
   });
 
-export const WrapperComponent = () => {
+export const UnwrapperComponent = () => {
   // Contract configs
-  const treasuryContract = {
-    address: address.testnet.treasury as `0x${string}`,
-    abi: treasury.abi as any,
-    chainId: chainID.testnet.celo,
-  } as const;
-  const cCopContract = {
-    address: address.testnet.cCOP as `0x${string}`,
-    abi: erc20Abi,
-    chainId: chainID.testnet.celo,
+
+  const wrappedCCOPContractBase = {
+    address: address.testnet.wrapToken.base as `0x${string}`,
+    abi: WrappedCCOP.abi as any,
+    chainId: chainID.testnet.base,
   } as const;
 
   // State
-  const [domainID, setDomainID] = useState("84532");
   const [differentAddressFlag, setDifferentAddressFlag] = useState(false);
   const [amount, setAmount] = useState("");
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [tokenAllowanceIsLoading, setTokenAllowanceIsLoading] = useState(false);
-  const [allowanceIsMoreThanAmount, setAllowanceIsMoreThanAmount] = useState<
-    boolean | null
-  >(null);
+  const [hasSufficientAmount, setHasSufficientAmount] =
+    useState<boolean>(false);
   const [quote, setQuote] = useState<bigint | null>(null);
 
   // Auto-update on input change
@@ -58,7 +52,7 @@ export const WrapperComponent = () => {
     }, 500); // más responsivo
     setTimeoutId(newTimeoutId);
     return () => clearTimeout(newTimeoutId);
-  }, [amount, domainID, differentAddressFlag]);
+  }, [amount, differentAddressFlag]);
 
   // Handler: Amount input change
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -67,10 +61,10 @@ export const WrapperComponent = () => {
 
   function checkChainAndChange() {
     const account = getAccount(config);
-    if (account.chainId !== chainID.testnet.celo) {
-      //change to celo chain
+    if (account.chainId !== chainID.testnet.base) {
+      //change to base chain
       switchChain(config, {
-        chainId: chainID.testnet.celo,
+        chainId: chainID.testnet.base,
       }).then(() => {
         notifyChangeChain();
       });
@@ -95,23 +89,19 @@ export const WrapperComponent = () => {
       amountFixed
     );
     const differentAddressInput = document.getElementById(
-      "wrapperAddressInput"
+      "unwrapperAddressInput"
     ) as HTMLInputElement | null;
     readContracts(config, {
       contracts: [
         {
-          ...cCopContract,
-          functionName: "allowance",
-          args: [
-            account.address as `0x${string}`,
-            address.testnet.treasury as `0x${string}`,
-          ],
+          ...wrappedCCOPContractBase,
+          functionName: "balanceOf",
+          args: [account.address as `0x${string}`],
         },
         {
-          ...treasuryContract,
+          ...wrappedCCOPContractBase,
           functionName: "getQuote",
           args: [
-            domainID,
             differentAddressFlag
               ? differentAddressInput?.value || account.address || ""
               : (account.address as `0x${string}`),
@@ -123,7 +113,7 @@ export const WrapperComponent = () => {
       .then((data: any) => {
         console.log("Allowance and quote data:", data);
         setQuote(data[1].result as bigint);
-        setAllowanceIsMoreThanAmount(amountFixed <= data[0].result);
+        setHasSufficientAmount(data[0].result >= amountFixed);
       })
       .catch(() => {})
       .finally(() => {
@@ -134,39 +124,7 @@ export const WrapperComponent = () => {
       });
   }
 
-  function setAllowance() {
-    if (tokenAllowanceIsLoading) return;
-    setTokenAllowanceIsLoading(true);
-    const account = getAccount(config);
-    checkChainAndChange();
-
-    let amountFixed: bigint;
-    try {
-      amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
-    } catch (e) {
-      setTokenAllowanceIsLoading(false);
-      return;
-    }
-
-    console.log("Setting allowance for amount:", amountFixed);
-    writeContract(config, {
-      chainId: chainID.testnet.celo,
-      abi: erc20Abi,
-      address: address.testnet.cCOP as `0x${string}`,
-      functionName: "approve",
-      args: [address.testnet.treasury as `0x${string}`, amountFixed],
-    })
-      .then(() => {
-        console.log("Allowance set successfully");
-        verifyTokenAllowanceAndPriceForSend();
-      })
-      .catch((error) => {
-        console.error("Error setting allowance:", error);
-      })
-      .finally(() => setTokenAllowanceIsLoading(false));
-  }
-
-  function wrap() {
+  function unwrap() {
     if (quote === null) return;
     if (tokenAllowanceIsLoading) return;
     setTokenAllowanceIsLoading(true);
@@ -179,16 +137,15 @@ export const WrapperComponent = () => {
       return;
     }
     const differentAddressInput = document.getElementById(
-      "wrapperAddressInput"
+      "unwrapperAddressInput"
     ) as HTMLInputElement | null;
     console.log("Wrapping cCOP tokens for amount:", amountFixed);
     writeContract(config, {
-      chainId: chainID.testnet.celo,
-      abi: treasury.abi,
-      address: address.testnet.treasury as `0x${string}`,
-      functionName: "wrap",
+      chainId: chainID.testnet.base,
+      abi: WrappedCCOP.abi,
+      address: address.testnet.wrapToken.base as `0x${string}`,
+      functionName: "unwrap",
       args: [
-        domainID,
         differentAddressFlag
           ? differentAddressInput?.value || account.address || ""
           : (account.address as `0x${string}`),
@@ -197,11 +154,11 @@ export const WrapperComponent = () => {
       value: quote + BigInt(1), // Ensure value is set to quote if available
     })
       .then(() => {
-        console.log("cCOP tokens wrapped successfully");
+        console.log("cCOP tokens unwrapped successfully");
         // Optionally, you can reset the form or show a success message here
       })
       .catch((error) => {
-        console.error("Error wrapping cCOP tokens:", error);
+        console.error("Error unwrapping cCOP tokens:", error);
       })
       .finally(() => setTokenAllowanceIsLoading(false));
   }
@@ -231,50 +188,26 @@ export const WrapperComponent = () => {
         <input
           className={styles.addressInput}
           placeholder="Enter address"
-          id="wrapperAddressInput"
+          id="unwrapperAddressInput"
         />
       )}
-      <div>
-        <p className={styles.wrapToLabel}>
-          Wrap on:{" "}
-          <select
-            className={styles.wrapToSelector}
-            value={domainID}
-            onChange={(e) => setDomainID(e.target.value)}
-          >
-            <option value="84532">Base</option>
-          </select>
-        </p>
-      </div>
+
       {quote && (
         <p className={styles.priceLabel}>
-          Price for wrapping: {formatEther(quote)} CELO
+          Price for wrapping: {formatEther(quote)} ETH
         </p>
       )}
-      {allowanceIsMoreThanAmount !== null && (
-        <>
-          <button
-            className={
-              !allowanceIsMoreThanAmount
-                ? styles.actionButtonActive
-                : styles.actionButtonInactive
-            }
-            onClick={!allowanceIsMoreThanAmount ? setAllowance : undefined}
-          >
-            Set Allowance
-          </button>
-          <button
-            className={
-              allowanceIsMoreThanAmount
-                ? styles.actionButtonActive
-                : styles.actionButtonInactive
-            }
-            onClick={allowanceIsMoreThanAmount ? wrap : undefined}
-          >
-            Wrap
-          </button>
-        </>
-      )}
+
+      <button
+        className={
+          hasSufficientAmount
+            ? styles.actionButtonActive
+            : styles.actionButtonInactive
+        }
+        onClick={hasSufficientAmount ? unwrap : undefined}
+      >
+        Wrap
+      </button>
     </>
   );
 };

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import toast, { Toaster } from 'react-hot-toast';
 
 import { headers } from "next/headers"; // added
 import "./globals.css";
@@ -20,7 +21,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ContextProvider cookies={cookies}>{children}</ContextProvider>
+        <ContextProvider cookies={cookies}>{children}<Toaster/></ContextProvider>
       </body>
     </html>
   );
