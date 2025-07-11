@@ -6,14 +6,16 @@ import { formatEther } from "viem";
 import {
   getAccount,
   readContracts,
+  simulateContract,
   switchChain,
   writeContract,
 } from "@wagmi/core";
 import { config } from "@/config";
-import { address } from "../../constants/address";
-import { chainID } from "../../constants/chainID";
-import WrappedCCOP from "../../constants/abis/WrappedCCOP.json";
+import { address } from "@/constants/address";
+import { chainID } from "@/constants/chainID";
+import WrappedCCOP from "@/constants/abis/WrappedCCOP.json";
 import toast from "react-hot-toast";
+import { waitForIsDelivered } from "@/utils/hyperlane";
 
 const notifyChangeChain = () =>
   toast("Changing to Celo network", {
@@ -24,6 +26,22 @@ const notifyChangeChain = () =>
       color: "#fff",
     },
   });
+
+const notifyUnwrapAction = (deliveredPromise: Promise<any>) =>
+  toast.promise(
+    deliveredPromise,
+    {
+      loading: "Unwrapping cCOP tokens...",
+      success: `cCOP tokens unwrapped successfully!`,
+      error: `Error unwrapping cCOP tokens, please check hyperlane explorer using your transaction hash`,
+    },
+    {
+      position: "bottom-right",
+      style: { background: "#707070", color: "#fff" },
+      success: { duration: 5000, icon: "✅" },
+      error: { duration: 10000, icon: "❌" },
+    }
+  );
 
 export const UnwrapperComponent = () => {
   // Contract configs
@@ -140,7 +158,8 @@ export const UnwrapperComponent = () => {
       "unwrapperAddressInput"
     ) as HTMLInputElement | null;
     console.log("Wrapping cCOP tokens for amount:", amountFixed);
-    writeContract(config, {
+
+    simulateContract(config, {
       chainId: chainID.testnet.base,
       abi: WrappedCCOP.abi,
       address: address.testnet.wrapToken.base as `0x${string}`,
@@ -151,16 +170,31 @@ export const UnwrapperComponent = () => {
           : (account.address as `0x${string}`),
         amountFixed,
       ],
-      value: quote + BigInt(1), // Ensure value is set to quote if available
-    })
-      .then(() => {
-        console.log("cCOP tokens unwrapped successfully");
-        // Optionally, you can reset the form or show a success message here
+      value: quote + BigInt(1),
+    }).then((data: any) => {
+      const msgIdentifier = data.result;
+
+      writeContract(config, {
+        chainId: chainID.testnet.base,
+        abi: WrappedCCOP.abi,
+        address: address.testnet.wrapToken.base as `0x${string}`,
+        functionName: "unwrap",
+        args: [
+          differentAddressFlag
+            ? differentAddressInput?.value || account.address || ""
+            : (account.address as `0x${string}`),
+          amountFixed,
+        ],
+        value: quote + BigInt(1), // Ensure value is set to quote if available
       })
-      .catch((error) => {
-        console.error("Error unwrapping cCOP tokens:", error);
-      })
-      .finally(() => setTokenAllowanceIsLoading(false));
+        .then(() => {
+          notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20));
+        })
+        .catch((error) => {
+          console.error("Error unwrapping cCOP tokens:", error);
+        })
+        .finally(() => setTokenAllowanceIsLoading(false));
+    });
   }
 
   // Render

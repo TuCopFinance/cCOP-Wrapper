@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./WrapperComponent.module.css";
-import { Spinner } from "react-spinner-toolkit";
 import { erc20Abi, formatEther } from "viem";
 import {
   getAccount,
@@ -11,23 +10,16 @@ import {
   writeContract,
 } from "@wagmi/core";
 import { config } from "@/config";
-import { address } from "../../constants/address";
-import { chainID } from "../../constants/chainID";
-import treasury from "../../constants/abis/Treasury.json";
+import { address } from "@/constants/address";
+import { chainID } from "@/constants/chainID";
+import treasury from "@/constants/abis/Treasury.json";
 import toast from "react-hot-toast";
-import { getIsDelivered, waitForIsDelivered } from "../../utils/hyperlane";
+import { waitForIsDelivered } from "../utils/hyperlane";
 
 // --- Notification helpers ---
 const notifyChangeChain = () =>
   toast("Changing to Celo network", {
     duration: 2000,
-    position: "bottom-right",
-    style: { background: "#333", color: "#fff" },
-  });
-
-const notifyWrapSuccess = () =>
-  toast.success("cCOP tokens wrapped successfully!", {
-    duration: 3000,
     position: "bottom-right",
     style: { background: "#333", color: "#fff" },
   });
