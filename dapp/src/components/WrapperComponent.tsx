@@ -6,6 +6,7 @@ import { erc20Abi, formatEther } from "viem";
 import {
   getAccount,
   readContracts,
+  simulateContract,
   switchChain,
   writeContract,
 } from "@wagmi/core";
@@ -149,6 +150,7 @@ export const WrapperComponent = () => {
     }
 
     console.log("Setting allowance for amount:", amountFixed);
+
     writeContract(config, {
       chainId: chainID.testnet.celo,
       abi: erc20Abi,
@@ -182,6 +184,28 @@ export const WrapperComponent = () => {
       "wrapperAddressInput"
     ) as HTMLInputElement | null;
     console.log("Wrapping cCOP tokens for amount:", amountFixed);
+
+    simulateContract(config, {
+      chainId: chainID.testnet.celo,
+      abi: treasury.abi,
+      address: address.testnet.treasury as `0x${string}`,
+      functionName: "wrap",
+      args: [
+        domainID,
+        differentAddressFlag
+          ? differentAddressInput?.value || account.address || ""
+          : (account.address as `0x${string}`),
+        amountFixed,
+      ],
+      value: quote + BigInt(1), // Ensure value is set to quote if available
+    })
+      .then((data: any) => {
+        console.log("Simulation successful:", data);
+      })
+      .catch((error) => {
+        console.error("Error simulating wrap:", error);
+      });
+
     writeContract(config, {
       chainId: chainID.testnet.celo,
       abi: treasury.abi,
@@ -196,8 +220,9 @@ export const WrapperComponent = () => {
       ],
       value: quote + BigInt(1), // Ensure value is set to quote if available
     })
-      .then(() => {
+      .then((data: any) => {
         console.log("cCOP tokens wrapped successfully");
+        console.log(data.result);
         // Optionally, you can reset the form or show a success message here
       })
       .catch((error) => {
