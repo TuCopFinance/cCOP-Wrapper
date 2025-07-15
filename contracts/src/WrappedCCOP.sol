@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts ^5.0.0
+pragma solidity ^0.8.20;
 
 /**
  _       __                                __        __________  ____ 
@@ -13,7 +14,6 @@
  * @author jistro.eth
  * @notice This contract wraps the Celo Colombian Peso (COP) token for cross-chain transfers.
  */
-pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IMailbox} from "@hyperlane-xyz/core/contracts/interfaces/IMailbox.sol";
