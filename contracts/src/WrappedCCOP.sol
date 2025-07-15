@@ -24,17 +24,16 @@ contract WrappedCCOP is ERC20 {
     event AdminChanged(address indexed previousAdmin, address indexed newAdmin);
 
     //🬳🬀🬮🬣🬭🬸🬦🬐🬤🬨🬯🬲🬠🬰🬒🬓🬩🬅🬓🬮🬦🬠🬇🬨🬖🬧🬵🬬🬨🬌🬥🬨 Errors 🬂🬹🬾🬁🬬🬫🬸🬸🬉🬼🬅🬩🬂🬤🬶🬨🬣🬴🬙🬑🬽🬧🬠🬷🬭🬊🬽🬢🬜🬏🬹🬹
-    error mailboxNotAuthorized();
-    error senderNotAuthorized();
-    error chainIdNotAuthorized();
-    error amountMustBeGreaterThanZero();
-    error unwrappedTokenNotSet();
-    error UnauthorizedAccount();
-    error EmergencyStop();
-    error WaitingPeriodNotExpired();
+    error MailboxNotAuthorized(); // Only the authorized mailbox can call this function
+    error SenderNotAuthorized(); // Only the authorized sender can call this function
+    error ChainIdNotAuthorized(); // Chain ID is not authorized
+    error AmountMustBeGreaterThanZero(); // Amount must be greater than zero
+    error UnwrappedTokenNotSet(); // Unwrapped token address is not set
+    error UnauthorizedAccount(); // Caller is not authorized
+    error EmergencyStop(); // Contract is paused
+    error WaitingPeriodNotExpired(); // Waiting period has not expired
 
     //🬘🬾🬹🬠🬓🬺🬎🬋🬉🬲🬂🬯🬚🬉🬯🬜🬏🬃🬿🬋🬅🬲🬽🬯🬊🬃🬒🬏🬮🬰🬌🬥 Structs 🬻🬗🬍🬎🬠🬷🬹🬅🬧🬡🬥🬞🬈🬨🬑🬉🬢🬯🬹🬚🬊🬏🬥🬭🬕🬡🬯🬵🬥🬘🬝🬉
-
     struct AddressTypeProposal {
         address current;
         address proposal;
@@ -54,7 +53,6 @@ contract WrappedCCOP is ERC20 {
     }
 
     //🬡🬂🬱🬿🬒🬐🬳🬳🬳🬍🬎🬍🬯🬸🬵🬝🬈🬺🬌🬎🬋🬯🬈🬙🬝🬟🬴🬍 State Variables 🬄🬩🬐🬕🬚🬮🬤🬴🬖🬵🬶🬔🬄🬩🬪🬸🬿🬆🬽🬠🬳🬰🬁🬻🬼🬀🬳🬝
-
     uint256 private constant WAITING_PERIOD = 1 days;
     AddressTypeProposal private admin;
     Bytes32Proposal private treasuryAddress;
@@ -63,7 +61,6 @@ contract WrappedCCOP is ERC20 {
     bool private fuse = true;
 
     //🬦🬧🬷🬑🬣🬺🬭🬽🬍🬩🬭🬱🬛🬩🬎🬇🬪🬕🬲🬇🬈🬤🬁🬗🬱🬰🬍🬊🬎🬐🬆 Modifier 🬷🬓🬤🬭🬹🬢🬶🬇🬟🬲🬘🬑🬖🬼🬂🬭🬧🬝🬒🬨🬂🬄🬼🬌🬖🬤🬟🬓🬍🬻🬹
-
     modifier onlyAdmin() {
         if (msg.sender != admin.current) {
             revert UnauthorizedAccount();
@@ -100,7 +97,6 @@ contract WrappedCCOP is ERC20 {
     }
 
     //🬨🬟🬣🬡🬋🬴🬹🬉🬮🬣🬆🬫🬨🬺🬊🬠🬒🬛🬀🬱🬱🬐🬘🬃🬑🬶🬬🬔🬛 Token Handling 🬜🬲🬁🬜🬻🬻🬀🬃🬺🬊🬆🬩🬡🬈🬻🬮🬅🬬🬰🬐🬳🬥🬱🬼🬲🬝🬟🬺🬺
-
     /**
      *  @notice Handles incoming messages from the Hyperlane mailbox.
      *  @param _origin The origin domain ID of the message.
@@ -112,11 +108,11 @@ contract WrappedCCOP is ERC20 {
         bytes32 _sender,
         bytes calldata _data
     ) external payable virtual {
-        if (msg.sender != mailboxAddress.current) revert mailboxNotAuthorized();
+        if (msg.sender != mailboxAddress.current) revert MailboxNotAuthorized();
 
-        if (_sender != treasuryAddress.current) revert senderNotAuthorized();
+        if (_sender != treasuryAddress.current) revert SenderNotAuthorized();
 
-        if (_origin != cCOPDomainId.current) revert chainIdNotAuthorized();
+        if (_origin != cCOPDomainId.current) revert ChainIdNotAuthorized();
 
         (address to, uint256 amount) = abi.decode(_data, (address, uint256));
 
@@ -135,7 +131,7 @@ contract WrappedCCOP is ERC20 {
         address receiver,
         uint256 amount
     ) external payable checkFuse returns (bytes32 messageId) {
-        if (amount == 0) revert amountMustBeGreaterThanZero();
+        if (amount == 0) revert AmountMustBeGreaterThanZero();
 
         bytes memory payload = abi.encode(receiver, amount);
 
@@ -170,7 +166,6 @@ contract WrappedCCOP is ERC20 {
     }
 
     //🬆🬛🬆🬍🬢🬇🬖🬉🬼🬆🬊🬤🬙🬼🬩🬣🬼🬽🬑🬐🬚🬬🬃🬁🬝🬀🬯🬻 Admin Functions 🬿🬫🬉🬣🬡🬝🬴🬉🬻🬩🬛🬬🬫🬔🬈🬺🬊🬤🬔🬲🬥🬬🬼🬠🬘🬵🬱🬝
-
     /**
      * @dev These functions allow some vital variables to be changed by the admin.
      *      They include:
@@ -178,7 +173,7 @@ contract WrappedCCOP is ERC20 {
      *      - Celo Colombian Peso address
      *      - Celo Colombian Peso domain ID
      *      - Mailbox address
-     * 
+     *
      *      Each function goes through the following steps:
      *      1. Propose a new value.
      *      2. Set a waiting period for the proposal to be accepted.
@@ -230,12 +225,12 @@ contract WrappedCCOP is ERC20 {
     /**
      * @notice Proposes a new treasury address.
      * @dev Only the current admin can call this. Sets the candidate and the acceptance time.
-     * @param _newAddress The proposed new treasury address (as bytes32).
+     * @param _newAddress The proposed new treasury address.
      */
     function proposeNewTreasuryAddressProposal(
-        bytes32 _newAddress
+        address _newAddress
     ) external onlyAdmin {
-        treasuryAddress.proposal = _newAddress;
+        treasuryAddress.proposal = bytes32(uint256(uint160(_newAddress)));
         treasuryAddress.timeToAccept = block.timestamp + WAITING_PERIOD;
     }
 
@@ -350,7 +345,11 @@ contract WrappedCCOP is ERC20 {
     }
 
     //🬺🬸🬌🬬🬨🬒🬒🬥🬞🬍🬱🬎🬜🬻🬧🬯🬝🬁🬃🬏🬿🬯🬄🬫🬭🬒🬍🬍🬬🬁🬝🬒 Getters 🬑🬚🬡🬿🬭🬙🬕🬪🬜🬐🬒🬽🬣🬉🬬🬓🬱🬕🬤🬒🬐🬨🬻🬻🬂🬉🬉🬴🬔🬄🬁🬙
-
+    /**
+     * @notice Returns the current admin structure.
+     * @dev Provides the current, proposed, and acceptance time for the admin address.
+     * @return The AddressTypeProposal struct for the admin.
+     */
     function getAdminStructure()
         external
         view
@@ -359,6 +358,11 @@ contract WrappedCCOP is ERC20 {
         return admin;
     }
 
+    /**
+     * @notice Returns the current treasury address structure.
+     * @dev Provides the current, proposed, and acceptance time for the treasury address.
+     * @return The Bytes32Proposal struct for the treasury address.
+     */
     function getTreasuryAddressStructure()
         external
         view
@@ -367,6 +371,11 @@ contract WrappedCCOP is ERC20 {
         return treasuryAddress;
     }
 
+    /**
+     * @notice Returns the current cCOP domain ID structure.
+     * @dev Provides the current, proposed, and acceptance time for the cCOP domain ID.
+     * @return The Uint32Proposal struct for the cCOP domain ID.
+     */
     function getCCOPDomainIdStructure()
         external
         view
@@ -375,6 +384,11 @@ contract WrappedCCOP is ERC20 {
         return cCOPDomainId;
     }
 
+    /**
+     * @notice Returns the current mailbox address structure.
+     * @dev Provides the current, proposed, and acceptance time for the mailbox address.
+     * @return The AddressTypeProposal struct for the mailbox address.
+     */
     function getMailboxAddressStructure()
         external
         view
@@ -383,11 +397,20 @@ contract WrappedCCOP is ERC20 {
         return mailboxAddress;
     }
 
+    /**
+     * @notice Returns the current state of the fuse.
+     * @dev Indicates whether the emergency stop mechanism is active.
+     * @return True if the fuse is on, false otherwise.
+     */
     function getFuse() external view returns (bool) {
         return fuse;
     }
 
-    //🬏🬘🬹🬚🬣🬔🬂🬆🬌🬚🬏🬬🬢🬊🬯🬷🬍🬲🬩🬂🬐🬪🬳🬠🬷🬺🬛🬅 ERC20 Overrides 🬌🬊🬸🬆🬀🬀🬥🬊🬻🬞🬿🬾🬸🬪🬶🬄🬸🬦🬹🬈🬌🬘🬼🬸🬚🬕🬣🬪
+    /**
+     * @notice Returns the number of decimals used by the token.
+     * @dev Overrides the ERC20 decimals function to return 15.
+     * @return The number of decimals (15).
+     */
     function decimals() public view override returns (uint8) {
         return 15;
     }
