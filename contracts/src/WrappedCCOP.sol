@@ -46,7 +46,7 @@ contract WrappedCCOP is ERC20 {
     Bytes32Proposal private cCOPAddress;
     Uint32Proposal private cCOPDomainId;
     AddressTypeProposal private mailboxAddress;
-    bytes1 private fuse = 0x01;
+    bool private fuse = true;
 
     //🬦🬧🬷🬑🬣🬺🬭🬽🬍🬩🬱🬛🬩🬎🬇🬪🬕🬲🬇🬈🬤🬁🬗🬱🬰🬍🬊🬎🬐🬆 Modifier 🬷🬓🬤🬭🬹🬢🬶🬇🬟🬲🬘🬑🬖🬼🬂🬧🬝🬒🬨🬂🬄🬼🬌🬖🬤🬟🬓🬍🬻🬹
 
@@ -58,7 +58,7 @@ contract WrappedCCOP is ERC20 {
     }
 
     modifier checkFuse() {
-        if (fuse != 0x01) {
+        if (!fuse) {
             revert EmergencyStop();
         }
         _;
@@ -230,6 +230,49 @@ contract WrappedCCOP is ERC20 {
         });
     }
 
+    function setFuse() external onlyAdmin {
+        fuse = !fuse;
+    }
+
+    //🬺🬸🬌🬬🬨🬒🬒🬥🬞🬍🬎🬜🬻🬧🬯🬝🬁🬃🬏🬿🬯🬄🬫🬒🬍🬍🬬🬁🬝🬒 Getters 🬑🬚🬡🬿🬙🬕🬪🬜🬐🬒🬽🬣🬉🬓🬱🬕🬤🬒🬐🬨🬻🬻🬂🬉🬉🬴🬔🬄🬁🬙
+
+    function getAdminStructure()
+        external
+        view
+        returns (AddressTypeProposal memory)
+    {
+        return admin;
+    }
+
+    function getCCOPAddressStructure()
+        external
+        view
+        returns (Bytes32Proposal memory)
+    {
+        return cCOPAddress;
+    }
+
+    function getCCOPDomainIdStructure()
+        external
+        view
+        returns (Uint32Proposal memory)
+    {
+        return cCOPDomainId;
+    }
+
+    function getMailboxAddressStructure()
+        external
+        view
+        returns (AddressTypeProposal memory)
+    {
+        return mailboxAddress;
+    }
+
+    function getFuse() external view returns (bool) {
+        return fuse;
+    }
+
+    //🬏🬘🬽🬹🬚🬣🬔🬂🬆🬌🬚🬏🬬🬢🬊🬯🬨🬷🬍🬲🬩🬂🬐🬪🬳🬠🬷🬺🬛🬅 ERC20 Overrides 🬌🬊🬸🬆🬀🬀🬥🬊🬻🬞🬾🬿🬾🬸🬪🬶🬄🬸🬦🬹🬈🬌🬘🬼🬸🬚🬕🬣🬪🬙
     function decimals() public view override returns (uint8) {
         return 15;
     }
