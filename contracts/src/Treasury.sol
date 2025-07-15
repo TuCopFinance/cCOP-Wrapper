@@ -139,7 +139,7 @@ contract Treasury {
     }
 
     //🬒🬾🬖🬹🬸🬠🬪🬛🬪🬛🬈🬍🬸🬃🬣🬁🬏🬔🬹🬡🬂🬞🬘🬩🬗🬫🬌🬶 Admin Functions 🬋🬣🬼🬆🬓🬄🬳🬆🬬🬶🬀🬸🬪🬄🬄🬰🬁🬍🬗🬯🬚🬏🬎🬭🬪🬣🬃🬽
-        /**
+    /**
      * @dev These functions allow some vital variables to be changed by the admin.
      *      They include:
      *      - Admin address
@@ -401,7 +401,7 @@ contract Treasury {
      * @dev Provides the current wrapped token address as an address type.
      * @param _domainID The domain ID of the wrapped token.
      * @return The current wrapped token address as an address type.
-     */    
+     */
     function getWrappedTokenAddress(
         uint32 _domainID
     ) external view returns (address) {
@@ -416,5 +416,4 @@ contract Treasury {
     function getFuse() external view returns (bool) {
         return fuse;
     }
-
 }
