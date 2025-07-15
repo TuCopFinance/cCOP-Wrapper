@@ -12,7 +12,8 @@ pragma solidity ^0.8.20;
 
  * @title Wrapped Celo Colombian Peso (wcCOP)
  * @author jistro.eth
- * @notice This contract wraps the Celo Colombian Peso (COP) token for cross-chain transfers.
+ * @notice ERC20 wrapper for the Celo Colombian Peso (cCOP) token, enabling secure cross-chain 
+ *         transfers and management via Hyperlane.
  */
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -56,7 +57,7 @@ contract WrappedCCOP is ERC20 {
 
     uint256 private constant WAITING_PERIOD = 1 days;
     AddressTypeProposal private admin;
-    Bytes32Proposal private cCOPAddress;
+    Bytes32Proposal private treasuryAddress;
     Uint32Proposal private cCOPDomainId;
     AddressTypeProposal private mailboxAddress;
     bool private fuse = true;
@@ -84,18 +85,18 @@ contract WrappedCCOP is ERC20 {
      *  @param _initialAdmin The address of the initial admin.
      *  @param _mailbox The address of the hyperlane mailbox contract.
      *  @param _domainId The domain ID of the Celo Colombian Peso.
-     *  @param _address The address of the Celo Colombian Peso token.
+     *  @param _treasuryAddress The address of the treasury contract.
      */
     constructor(
         address _initialAdmin,
         address _mailbox,
         uint32 _domainId,
-        address _address
+        address _treasuryAddress
     ) ERC20("Wrapped Celo Colombian Peso", "wcCOP") {
         admin.current = _initialAdmin;
         mailboxAddress.current = _mailbox;
         cCOPDomainId.current = _domainId;
-        cCOPAddress.current = bytes32(uint256(uint160(_address)));
+        treasuryAddress.current = bytes32(uint256(uint160(_treasuryAddress)));
     }
 
     //🬨🬟🬣🬡🬋🬴🬹🬉🬮🬣🬆🬫🬨🬺🬊🬠🬒🬛🬀🬱🬱🬐🬘🬃🬑🬶🬬🬔🬛 Token Handling 🬜🬲🬁🬜🬻🬻🬀🬃🬺🬊🬆🬩🬡🬈🬻🬮🬅🬬🬰🬐🬳🬥🬱🬼🬲🬝🬟🬺🬺
@@ -113,7 +114,7 @@ contract WrappedCCOP is ERC20 {
     ) external payable virtual {
         if (msg.sender != mailboxAddress.current) revert mailboxNotAuthorized();
 
-        if (_sender != cCOPAddress.current) revert senderNotAuthorized();
+        if (_sender != treasuryAddress.current) revert senderNotAuthorized();
 
         if (_origin != cCOPDomainId.current) revert chainIdNotAuthorized();
 
@@ -144,7 +145,7 @@ contract WrappedCCOP is ERC20 {
 
         messageId = IMailbox(mailboxAddress.current).dispatch{value: quote}(
             cCOPDomainId.current,
-            cCOPAddress.current,
+            treasuryAddress.current,
             payload
         );
     }
@@ -163,7 +164,7 @@ contract WrappedCCOP is ERC20 {
         return
             IMailbox(mailboxAddress.current).quoteDispatch(
                 cCOPDomainId.current,
-                cCOPAddress.current,
+                treasuryAddress.current,
                 payload
             );
     }
@@ -227,37 +228,37 @@ contract WrappedCCOP is ERC20 {
     }
 
     /**
-     * @notice Proposes a new cCOP token address.
+     * @notice Proposes a new treasury address.
      * @dev Only the current admin can call this. Sets the candidate and the acceptance time.
-     * @param _newAddress The proposed new cCOP token address (as bytes32).
+     * @param _newAddress The proposed new treasury address (as bytes32).
      */
-    function proposeNewCCOPAddressProposal(
+    function proposeNewTreasuryAddressProposal(
         bytes32 _newAddress
     ) external onlyAdmin {
-        cCOPAddress.proposal = _newAddress;
-        cCOPAddress.timeToAccept = block.timestamp + WAITING_PERIOD;
+        treasuryAddress.proposal = _newAddress;
+        treasuryAddress.timeToAccept = block.timestamp + WAITING_PERIOD;
     }
 
     /**
-     * @notice Cancels the current cCOP address proposal.
+     * @notice Cancels the current treasury address proposal.
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      */
-    function cancelCCOPAddressProposal() external onlyAdmin {
-        cCOPAddress.proposal = bytes32(0);
-        cCOPAddress.timeToAccept = 0;
+    function cancelTreasuryAddressProposal() external onlyAdmin {
+        treasuryAddress.proposal = bytes32(0);
+        treasuryAddress.timeToAccept = 0;
     }
 
     /**
-     * @notice Accepts the cCOP address proposal after the waiting period has expired.
-     * @dev Only the admin can call this. Changes the cCOP address if the waiting period has passed.
+     * @notice Accepts the treasury address proposal after the waiting period has expired.
+     * @dev Only the admin can call this. Changes the treasury address if the waiting period has passed.
      */
-    function acceptCCOPAddressProposal() external onlyAdmin {
-        if (block.timestamp < cCOPAddress.timeToAccept) {
+    function acceptTreasuryAddressProposal() external onlyAdmin {
+        if (block.timestamp < treasuryAddress.timeToAccept) {
             revert WaitingPeriodNotExpired();
         }
 
-        cCOPAddress = Bytes32Proposal({
-            current: cCOPAddress.proposal,
+        treasuryAddress = Bytes32Proposal({
+            current: treasuryAddress.proposal,
             proposal: bytes32(0),
             timeToAccept: 0
         });
@@ -358,12 +359,12 @@ contract WrappedCCOP is ERC20 {
         return admin;
     }
 
-    function getCCOPAddressStructure()
+    function getTreasuryAddressStructure()
         external
         view
         returns (Bytes32Proposal memory)
     {
-        return cCOPAddress;
+        return treasuryAddress;
     }
 
     function getCCOPDomainIdStructure()
