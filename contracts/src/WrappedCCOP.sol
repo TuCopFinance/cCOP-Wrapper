@@ -1,5 +1,18 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts ^5.0.0
+
+/**
+ _       __                                __        __________  ____ 
+| |     / _________ _____  ____  ___  ____/ /  _____/ ____/ __ \/ __ \
+| | /| / / ___/ __ `/ __ \/ __ \/ _ \/ __  /  / ___/ /   / / / / /_/ /
+| |/ |/ / /  / /_/ / /_/ / /_/ /  __/ /_/ /  / /__/ /___/ /_/ / ____/ 
+|__/|__/_/   \__,_/ .___/ .___/\___/\__,_/   \___/\____/\____/_/      
+                 /_/   /_/                                            
+
+ * @title Wrapped Celo Colombian Peso (wcCOP)
+ * @author jistro.eth
+ * @notice This contract wraps the Celo Colombian Peso (COP) token for cross-chain transfers.
+ */
 pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
