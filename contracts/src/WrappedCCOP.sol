@@ -81,18 +81,18 @@ contract WrappedCCOP is ERC20 {
      *  @dev Sets the initial admin, mailbox address, Celo Colombian Peso domain ID
      *  @param _initialAdmin The address of the initial admin.
      *  @param _mailbox The address of the hyperlane mailbox contract.
-     *  @param _domainId The domain ID of the Celo Colombian Peso.
+     *  @param _celoDomainId The domain ID of the Celo Colombian Peso.
      *  @param _treasuryAddress The address of the treasury contract.
      */
     constructor(
         address _initialAdmin,
         address _mailbox,
-        uint32 _domainId,
+        uint32 _celoDomainId,
         address _treasuryAddress
     ) ERC20("Wrapped Celo Colombian Peso", "wcCOP") {
         admin.current = _initialAdmin;
         mailboxAddress.current = _mailbox;
-        cCOPDomainId.current = _domainId;
+        cCOPDomainId.current = _celoDomainId;
         treasuryAddress.current = bytes32(uint256(uint160(_treasuryAddress)));
     }
 
