@@ -3,41 +3,93 @@
 pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IMailbox} from "@hyperlane-xyz/core/contracts/interfaces/IMailbox.sol";
 
-contract WrappedCCOP is ERC20, Ownable {
+contract WrappedCCOP is ERC20 {
+    //🬥🬱🬢🬽🬺🬰🬑🬰🬚🬄🬓🬨🬘🬪🬹🬥🬁🬱🬎🬅🬟🬞🬔🬷🬁🬶🬸🬔🬴🬥 Events 🬏🬏🬢🬺🬱🬋🬿🬪🬙🬒🬽🬃🬻🬥🬑🬬🬄🬳🬥🬠🬷🬕🬆🬳🬜🬼🬓🬷🬬🬴
+    event AdminChanged(address indexed previousAdmin, address indexed newAdmin);
+
+    //🬳🬀🬮🬣🬭🬦🬐🬤🬨🬯🬲🬰🬒🬓🬩🬅🬓🬮🬦🬠🬇🬨🬖🬧🬵🬬🬨🬌🬥🬨 Errors 🬂🬹🬾🬁🬬🬫🬸🬉🬼🬅🬩🬂🬤🬶🬨🬣🬴🬙🬑🬽🬧🬷🬭🬊🬽🬢🬜🬏🬹🬹
     error mailboxNotAuthorized();
     error senderNotAuthorized();
     error chainIdNotAuthorized();
     error amountMustBeGreaterThanZero();
     error unwrappedTokenNotSet();
+    error UnauthorizedAccount();
+    error EmergencyStop();
+    error WaitingPeriodNotExpired();
 
-    struct TreasuryMetadata {
-        bytes32 Address;
-        uint32 DomainID;
+    //🬘🬾🬠🬓🬺🬎🬋🬲🬂🬯🬚🬉🬯🬜🬏🬃🬿🬋🬅🬲🬽🬯🬊🬃🬒🬏🬮🬰🬌🬥 Structs 🬻🬗🬍🬎🬠🬷🬹🬅🬧🬡🬥🬞🬈🬨🬑🬢🬯🬚🬊🬏🬥🬭🬕🬡🬯🬵🬥🬘🬝🬉
+
+    struct AddressTypeProposal {
+        address current;
+        address proposal;
+        uint256 timeToAccept;
     }
 
-    TreasuryMetadata private treasury;
-    address private mailboxAddress;
+    struct Bytes32Proposal {
+        bytes32 current;
+        bytes32 proposal;
+        uint256 timeToAccept;
+    }
+
+    struct Uint32Proposal {
+        uint32 current;
+        uint32 proposal;
+        uint256 timeToAccept;
+    }
+
+    //🬡🬂🬱🬿🬒🬐🬳🬳🬳🬍🬎🬍🬯🬸🬵🬝🬈🬺🬌🬌🬎🬋🬯🬈🬈🬙🬝🬟🬴🬍 State Variables 🬄🬩🬐🬕🬚🬮🬤🬴🬖🬵🬶🬔🬄🬩🬪🬸🬿🬆🬽🬠🬳🬰🬁🬻🬼🬀🬳🬝🬹🬞
+
+    uint256 private constant WAITING_PERIOD = 1 days;
+    AddressTypeProposal private admin;
+    Bytes32Proposal private cCOPAddress;
+    Uint32Proposal private cCOPDomainId;
+    AddressTypeProposal private mailboxAddress;
+    bytes1 private fuse = 0x01;
+
+    //🬦🬧🬷🬑🬣🬺🬭🬽🬍🬩🬱🬛🬩🬎🬇🬪🬕🬲🬇🬈🬤🬁🬗🬱🬰🬍🬊🬎🬐🬆 Modifier 🬷🬓🬤🬭🬹🬢🬶🬇🬟🬲🬘🬑🬖🬼🬂🬧🬝🬒🬨🬂🬄🬼🬌🬖🬤🬟🬓🬍🬻🬹
+
+    modifier onlyAdmin() {
+        if (msg.sender != admin.current) {
+            revert UnauthorizedAccount();
+        }
+        _;
+    }
+
+    modifier checkFuse() {
+        if (fuse != 0x01) {
+            revert EmergencyStop();
+        }
+        _;
+    }
+
+    // 🬩🬂🬆🬪🬖🬀🬨🬇🬳🬂🬶🬼🬪🬥🬃🬤🬈🬥🬢🬿🬉🬵🬄🬑🬅🬕🬄🬀🬖🬬 Constructor 🬤🬶🬍🬣🬇🬍🬴🬷🬻🬵🬘🬧🬇🬈🬔🬎🬽🬕🬞🬤🬡🬲🬖🬡🬛🬂🬞🬞🬧🬔
 
     constructor(
-        address _initialOwner,
-        address _mailbox
-    ) ERC20("Wrapped Celo Colombian Peso", "wcCOP") Ownable(_initialOwner) {
-        mailboxAddress = _mailbox;
+        address _initialAdmin,
+        address _mailbox,
+        uint32 _domainId,
+        address _address
+    ) ERC20("Wrapped Celo Colombian Peso", "wcCOP") {
+        admin.current = _initialAdmin;
+        mailboxAddress.current = _mailbox;
+        cCOPDomainId.current = _domainId;
+        cCOPAddress.current = bytes32(uint256(uint160(_address)));
     }
+
+    //🬨🬟🬣🬡🬋🬴🬹🬉🬮🬣🬆🬫🬨🬺🬊🬠🬒🬛🬀🬧🬱🬱🬐🬘🬃🬑🬶🬬🬔🬛 Token Handling 🬜🬲🬁🬜🬻🬻🬀🬃🬺🬊🬆🬩🬡🬈🬻🬮🬅🬬🬰🬐🬳🬥🬱🬼🬲🬝🬟🬺🬺🬥
 
     function handle(
         uint32 _origin,
         bytes32 _sender,
         bytes calldata _data
     ) external payable virtual {
-        if (msg.sender != mailboxAddress) revert mailboxNotAuthorized();
+        if (msg.sender != mailboxAddress.current) revert mailboxNotAuthorized();
 
-        if (_sender != treasury.Address) revert senderNotAuthorized();
+        if (_sender != cCOPAddress.current) revert senderNotAuthorized();
 
-        if (_origin != treasury.DomainID) revert chainIdNotAuthorized();
+        if (_origin != cCOPDomainId.current) revert chainIdNotAuthorized();
 
         (address to, uint256 amount) = abi.decode(_data, (address, uint256));
 
@@ -47,42 +99,20 @@ contract WrappedCCOP is ERC20, Ownable {
     function unwrap(
         address receiver,
         uint256 amount
-    ) external payable returns (bytes32) {
+    ) external payable checkFuse returns (bytes32 messageId) {
         if (amount == 0) revert amountMustBeGreaterThanZero();
-
-        if (treasury.Address == bytes32(0)) revert unwrappedTokenNotSet();
 
         bytes memory payload = abi.encode(receiver, amount);
 
         uint256 quote = getQuote(receiver, amount);
 
-        bytes32 messageId = IMailbox(mailboxAddress).dispatch{value: quote}(
-            treasury.DomainID,
-            treasury.Address,
-            payload
-        );
-
         _burn(msg.sender, amount);
 
-        return messageId;
-    }
-
-    function decimals() public view override returns (uint8) {
-        return 15;
-    }
-
-    function setTreasury(
-        address _address,
-        uint32 _domainId
-    ) external onlyOwner {
-        treasury = TreasuryMetadata({
-            Address: bytes32(uint256(uint160(_address))),
-            DomainID: _domainId
-        });
-    }
-
-    function changeMailbox(address _mailbox) external onlyOwner {
-        mailboxAddress = _mailbox;
+        messageId = IMailbox(mailboxAddress.current).dispatch{value: quote}(
+            cCOPDomainId.current,
+            cCOPAddress.current,
+            payload
+        );
     }
 
     function getQuote(
@@ -91,22 +121,116 @@ contract WrappedCCOP is ERC20, Ownable {
     ) public view returns (uint256) {
         bytes memory payload = abi.encode(receiver, amount);
         return
-            IMailbox(mailboxAddress).quoteDispatch(
-                treasury.DomainID,
-                treasury.Address,
+            IMailbox(mailboxAddress.current).quoteDispatch(
+                cCOPDomainId.current,
+                cCOPAddress.current,
                 payload
             );
     }
 
-    function getTreasury() external view returns (TreasuryMetadata memory) {
-        return treasury;
+    //🬆🬛🬆🬩🬍🬢🬇🬖🬉🬼🬆🬊🬤🬙🬼🬩🬣🬼🬽🬽🬑🬐🬚🬬🬃🬁🬝🬀🬯🬻 Admin Functions 🬿🬫🬉🬣🬡🬝🬴🬉🬻🬩🬛🬬🬫🬔🬈🬺🬊🬤🬔🬲🬥🬬🬺🬼🬠🬘🬵🬱🬝🬾
+
+    function proposeNewAdminProposal(address _newAdmin) external onlyAdmin {
+        admin.proposal = _newAdmin;
+        admin.timeToAccept = block.timestamp + WAITING_PERIOD;
     }
 
-    function getMailbox() external view returns (address) {
-        return mailboxAddress;
+    function cancelAdminProposal() external onlyAdmin {
+        admin.proposal = address(0);
+        admin.timeToAccept = 0;
     }
 
-    function getTreasuryAddress() external view returns (bytes32) {
-        return treasury.Address;
+    function acceptAdminProposal() external {
+        if (msg.sender != admin.proposal) {
+            revert UnauthorizedAccount();
+        }
+        if (block.timestamp < admin.timeToAccept) {
+            revert WaitingPeriodNotExpired();
+        }
+
+        address previousAdmin = admin.current;
+        admin = AddressTypeProposal({
+            current: admin.proposal,
+            proposal: address(0),
+            timeToAccept: 0
+        });
+
+        emit AdminChanged(previousAdmin, admin.current);
+    }
+
+    function proposeNewCCOPAddressProposal(
+        bytes32 _newAddress
+    ) external onlyAdmin {
+        cCOPAddress.proposal = _newAddress;
+        cCOPAddress.timeToAccept = block.timestamp + WAITING_PERIOD;
+    }
+
+    function cancelCCOPAddressProposal() external onlyAdmin {
+        cCOPAddress.proposal = bytes32(0);
+        cCOPAddress.timeToAccept = 0;
+    }
+
+    function acceptCCOPAddressProposal() external onlyAdmin {
+        if (block.timestamp < cCOPAddress.timeToAccept) {
+            revert WaitingPeriodNotExpired();
+        }
+
+        cCOPAddress = Bytes32Proposal({
+            current: cCOPAddress.proposal,
+            proposal: bytes32(0),
+            timeToAccept: 0
+        });
+    }
+
+    function proposeNewCCOPDomainIdProposal(
+        uint32 _newDomainId
+    ) external onlyAdmin {
+        cCOPDomainId.proposal = _newDomainId;
+        cCOPDomainId.timeToAccept = block.timestamp + WAITING_PERIOD;
+    }
+
+    function cancelCCOPDomainIdProposal() external onlyAdmin {
+        cCOPDomainId.proposal = 0;
+        cCOPDomainId.timeToAccept = 0;
+    }
+
+    function acceptCCOPDomainIdProposal() external onlyAdmin {
+        if (block.timestamp < cCOPDomainId.timeToAccept) {
+            revert WaitingPeriodNotExpired();
+        }
+
+        cCOPDomainId = Uint32Proposal({
+            current: cCOPDomainId.proposal,
+            proposal: 0,
+            timeToAccept: 0
+        });
+    }
+
+    function proposeNewMailboxAddressProposal(
+        address _newMailbox
+    ) external onlyAdmin {
+        mailboxAddress.proposal = _newMailbox;
+        mailboxAddress.timeToAccept = block.timestamp + WAITING_PERIOD;
+    }
+
+    function cancelMailboxAddressProposal() external onlyAdmin {
+        mailboxAddress.proposal = address(0);
+        mailboxAddress.timeToAccept = 0;
+    }
+
+    function acceptMailboxAddressProposal() external onlyAdmin {
+        if (block.timestamp < mailboxAddress.timeToAccept) {
+            revert WaitingPeriodNotExpired();
+        }
+
+        mailboxAddress = AddressTypeProposal({
+            current: mailboxAddress.proposal,
+            proposal: address(0),
+            timeToAccept: 0
+        });
+    }
+
+    function decimals() public view override returns (uint8) {
+        return 15;
     }
 }
