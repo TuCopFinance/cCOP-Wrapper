@@ -33,6 +33,7 @@ contract Treasury {
     error WaitingPeriodNotExpired(); // Waiting period has not expired
     error MailboxAddressNotSet(); // Mailbox address is not set
     error CCOPAddressNotSet(); // cCOP address is not set
+    error QuoteNotEnough(); // The provided quote is not enough to cover the cross-chain message fee
 
     //🬘🬾🬹🬠🬓🬺🬎🬋🬉🬲🬂🬯🬚🬉🬯🬜🬏🬃🬿🬋🬅🬲🬽🬯🬊🬃🬒🬏🬮🬰🬌🬥 Structs 🬻🬗🬍🬎🬠🬷🬹🬅🬧🬡🬥🬞🬈🬨🬑🬉🬢🬯🬹🬚🬊🬏🬥🬭🬕🬡🬯🬵🬥🬘🬝🬉
     struct AddressTypeProposal {
@@ -80,7 +81,7 @@ contract Treasury {
 
     //🬨🬟🬣🬡🬋🬴🬹🬉🬮🬣🬆🬫🬨🬺🬊🬠🬒🬛🬀🬱🬱🬐🬘🬃🬑🬶🬬🬔🬛 Token Handling 🬜🬲🬁🬜🬻🬻🬀🬃🬺🬊🬆🬩🬡🬈🬻🬮🬅🬬🬰🬐🬳🬥🬱🬼🬲🬝🬟🬺🬺
     /**
-     *  @notice Handles the incoming cross-chain message to give back cCOP tokens 
+     *  @notice Handles the incoming cross-chain message to give back cCOP tokens
      *          after unwrapping.
      *  @param _origin The origin domain ID of the message.
      *  @param _sender The address of the sender.
@@ -94,7 +95,8 @@ contract Treasury {
     ) external payable virtual {
         if (msg.sender != mailboxAddress.current) revert MailboxNotAuthorized();
 
-        if (_sender != wrappedToken[_origin].current) revert SenderNotAuthorized();
+        if (_sender != wrappedToken[_origin].current)
+            revert SenderNotAuthorized();
 
         (address to, uint256 amount) = abi.decode(_data, (address, uint256));
 
@@ -120,9 +122,11 @@ contract Treasury {
         if (wrappedToken[domainID].current == bytes32(0))
             revert WrappedTokenNotSet();
 
-        bytes memory payload = abi.encode(receiver, amount);
-
         uint256 quote = getQuote(domainID, receiver, amount);
+
+        if (msg.value < quote) revert QuoteNotEnough();
+
+        bytes memory payload = abi.encode(receiver, amount);
 
         bytes32 messageId = IMailbox(mailboxAddress.current).dispatch{
             value: quote
@@ -249,7 +253,9 @@ contract Treasury {
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      * @param _domainID The domain ID of the wrapped token.
      */
-    function cancelNewWrappedTokenAddressProposal(uint32 _domainID) external onlyAdmin {
+    function cancelNewWrappedTokenAddressProposal(
+        uint32 _domainID
+    ) external onlyAdmin {
         wrappedToken[_domainID].proposal = bytes32(0);
         wrappedToken[_domainID].timeToAccept = 0;
     }
@@ -259,7 +265,9 @@ contract Treasury {
      * @dev Only the proposed admin can call this. Changes the wrapped token if the waiting period has passed.
      * @param _domainID The domain ID of the wrapped token.
      */
-    function acceptNewWrappedTokenAddressProposal(uint32 _domainID) external onlyAdmin {
+    function acceptNewWrappedTokenAddressProposal(
+        uint32 _domainID
+    ) external onlyAdmin {
         if (
             wrappedToken[_domainID].proposal ==
             bytes32(uint256(uint160(address(0))))
