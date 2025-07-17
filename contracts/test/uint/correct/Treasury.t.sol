@@ -50,41 +50,39 @@ contract TreasuryTest is Test, Constants {
     }
 
     modifier mintCCOP() {
-        cCOP.mint(ADMIN.Address, 10e15);
+        cCOP.mint(USER1.Address, 10e15);
         _;
     }
 
-    function test_wrap() public mintCCOP {
-        vm.startPrank(ADMIN.Address);
+    function test_correct_treasury_wrap() public mintCCOP {
+        vm.startPrank(USER1.Address);
 
         cCOP.approve(address(treasury), 10e15);
 
         uint256 quote = treasury.getQuote(
             domainID.baseMainnet,
-            ADMIN.Address,
+            USER1.Address,
             10e15
         );
 
         vm.stopPrank();
 
-        vm.deal(ADMIN.Address, quote + 1);
+        vm.deal(USER1.Address, quote);
 
-        vm.startPrank(ADMIN.Address);
+        vm.startPrank(USER1.Address);
 
-        treasury.wrap{value: quote + 1}(
-            domainID.baseMainnet,
-            ADMIN.Address,
-            10e15
-        );
+        treasury.wrap{value: quote}(domainID.baseMainnet, USER1.Address, 10e15);
 
         vm.stopPrank();
 
         baseMailbox.processNextInboundMessage();
 
-        assertEq(wrappedCCOP.balanceOf(ADMIN.Address), 10e15);
+        assertEq(wrappedCCOP.balanceOf(USER1.Address), 10e15);
+        assertEq(cCOP.balanceOf(USER1.Address), 0);
+        assertEq(cCOP.balanceOf(address(treasury)), 10e15);
     }
 
-    function test_NewAdminProposal_propose() public mintCCOP {
+    function test_correct_treasury_NewAdminProposal_propose() public mintCCOP {
         vm.startPrank(ADMIN.Address);
 
         treasury.proposeNewAdminProposal(USER1.Address);
@@ -99,7 +97,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(admin.timeToAccept, block.timestamp + 1 days);
     }
 
-    function test_NewAdminProposal_cancel() public mintCCOP {
+    function test_correct_treasury_NewAdminProposal_cancel() public mintCCOP {
         vm.startPrank(ADMIN.Address);
 
         treasury.proposeNewAdminProposal(USER1.Address);
@@ -118,7 +116,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(admin.timeToAccept, 0);
     }
 
-    function test_NewAdminProposal_accept() public mintCCOP {
+    function test_correct_treasury_NewAdminProposal_accept() public mintCCOP {
         vm.startPrank(ADMIN.Address);
 
         treasury.proposeNewAdminProposal(USER1.Address);
@@ -141,7 +139,10 @@ contract TreasuryTest is Test, Constants {
         assertEq(admin.timeToAccept, 0);
     }
 
-    function test_NewWrappedTokenAddress_directAdd() public mintCCOP {
+    function test_correct_treasury_NewWrappedTokenAddress_directAdd()
+        public
+        mintCCOP
+    {
         mockMailbox = new MockMailbox(1);
         mockWrappedCCOP = new WrappedCCOP(
             ADMIN.Address,
@@ -179,7 +180,10 @@ contract TreasuryTest is Test, Constants {
         _;
     }
 
-    function test_NewWrappedTokenAddress_propose() public makeMockWrappedCCOP {
+    function test_correct_treasury_NewWrappedTokenAddress_propose()
+        public
+        makeMockWrappedCCOP
+    {
         vm.startPrank(ADMIN.Address);
 
         treasury.proposeNewWrappedTokenAddressProposal(
@@ -208,7 +212,10 @@ contract TreasuryTest is Test, Constants {
         assertEq(wrappedToken.timeToAccept, block.timestamp + 1 days);
     }
 
-    function test_NewWrappedTokenAddress_cancel() public makeMockWrappedCCOP {
+    function test_correct_treasury_NewWrappedTokenAddress_cancel()
+        public
+        makeMockWrappedCCOP
+    {
         vm.startPrank(ADMIN.Address);
 
         treasury.proposeNewWrappedTokenAddressProposal(
@@ -238,7 +245,10 @@ contract TreasuryTest is Test, Constants {
         assertEq(wrappedToken.timeToAccept, 0);
     }
 
-    function test_NewWrappedTokenAddress_accept() public makeMockWrappedCCOP {
+    function test_correct_treasury_NewWrappedTokenAddress_accept()
+        public
+        makeMockWrappedCCOP
+    {
         vm.startPrank(ADMIN.Address);
 
         treasury.proposeNewWrappedTokenAddressProposal(
@@ -268,7 +278,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(wrappedToken.timeToAccept, 0);
     }
 
-    function test_NewMailboxAddress_propose() public {
+    function test_correct_treasury_NewMailboxAddress_propose() public {
         mockMailbox = new MockMailbox(domainID.celoMainnet);
 
         vm.startPrank(ADMIN.Address);
@@ -285,7 +295,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(mailboxProposal.timeToAccept, block.timestamp + 1 days);
     }
 
-    function test_NewMailboxAddress_cancel() public {
+    function test_correct_treasury_NewMailboxAddress_cancel() public {
         mockMailbox = new MockMailbox(domainID.celoMainnet);
 
         vm.startPrank(ADMIN.Address);
@@ -306,7 +316,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(mailboxProposal.timeToAccept, 0);
     }
 
-    function test_NewMailboxAddress_accept() public {
+    function test_correct_treasury_NewMailboxAddress_accept() public {
         mockMailbox = new MockMailbox(domainID.celoMainnet);
 
         vm.startPrank(ADMIN.Address);
@@ -327,8 +337,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(mailboxProposal.timeToAccept, 0);
     }
 
-
-    function test_NewCCOPAddress_propose() public {
+    function test_correct_treasury_NewCCOPAddress_propose() public {
         mockCCOP = new CCOPMock(ADMIN.Address);
 
         vm.startPrank(ADMIN.Address);
@@ -345,7 +354,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(ccopProposal.timeToAccept, block.timestamp + 1 days);
     }
 
-    function test_NewCCOPAddress_cancel() public {
+    function test_correct_treasury_NewCCOPAddress_cancel() public {
         mockCCOP = new CCOPMock(ADMIN.Address);
 
         vm.startPrank(ADMIN.Address);
@@ -366,7 +375,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(ccopProposal.timeToAccept, 0);
     }
 
-    function test_NewCCOPAddress_accept() public {
+    function test_correct_treasury_NewCCOPAddress_accept() public {
         mockCCOP = new CCOPMock(ADMIN.Address);
 
         vm.startPrank(ADMIN.Address);
@@ -387,12 +396,11 @@ contract TreasuryTest is Test, Constants {
         assertEq(ccopProposal.timeToAccept, 0);
     }
 
-    function test_toggleFuse() public {
+    function test_correct_treasury_toggleFuse() public {
         vm.startPrank(ADMIN.Address);
         treasury.toggleFuse();
         vm.stopPrank();
 
         assertEq(treasury.getFuse(), false);
     }
-
 }
