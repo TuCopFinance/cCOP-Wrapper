@@ -195,7 +195,7 @@ contract WrappedCCOP is ERC20 {
      * @notice Cancels the current admin proposal.
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      */
-    function cancelAdminProposal() external onlyAdmin {
+    function cancelNewAdminProposal() external onlyAdmin {
         admin.proposal = address(0);
         admin.timeToAccept = 0;
     }
@@ -204,7 +204,7 @@ contract WrappedCCOP is ERC20 {
      * @notice Accepts the admin proposal after the waiting period has expired.
      * @dev Only the proposed admin can call this. Changes the admin if the waiting period has passed.
      */
-    function acceptAdminProposal() external {
+    function acceptNewAdminProposal() external {
         if (msg.sender != admin.proposal) {
             revert UnauthorizedAccount();
         }
@@ -238,7 +238,7 @@ contract WrappedCCOP is ERC20 {
      * @notice Cancels the current treasury address proposal.
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      */
-    function cancelTreasuryAddressProposal() external onlyAdmin {
+    function cancelNewTreasuryAddressProposal() external onlyAdmin {
         treasuryAddress.proposal = bytes32(0);
         treasuryAddress.timeToAccept = 0;
     }
@@ -247,7 +247,7 @@ contract WrappedCCOP is ERC20 {
      * @notice Accepts the treasury address proposal after the waiting period has expired.
      * @dev Only the admin can call this. Changes the treasury address if the waiting period has passed.
      */
-    function acceptTreasuryAddressProposal() external onlyAdmin {
+    function acceptNewTreasuryAddressProposal() external onlyAdmin {
         if (block.timestamp < treasuryAddress.timeToAccept) {
             revert WaitingPeriodNotExpired();
         }
@@ -275,7 +275,7 @@ contract WrappedCCOP is ERC20 {
      * @notice Cancels the current cCOP domain ID proposal.
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      */
-    function cancelCCOPDomainIdProposal() external onlyAdmin {
+    function cancelNewCCOPDomainIdProposal() external onlyAdmin {
         cCOPDomainId.proposal = 0;
         cCOPDomainId.timeToAccept = 0;
     }
@@ -284,7 +284,7 @@ contract WrappedCCOP is ERC20 {
      * @notice Accepts the cCOP domain ID proposal after the waiting period has expired.
      * @dev Only the admin can call this. Changes the domain ID if the waiting period has passed.
      */
-    function acceptCCOPDomainIdProposal() external onlyAdmin {
+    function acceptNewCCOPDomainIdProposal() external onlyAdmin {
         if (block.timestamp < cCOPDomainId.timeToAccept) {
             revert WaitingPeriodNotExpired();
         }
@@ -312,7 +312,7 @@ contract WrappedCCOP is ERC20 {
      * @notice Cancels the current mailbox address proposal.
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      */
-    function cancelMailboxAddressProposal() external onlyAdmin {
+    function cancelNewMailboxAddressProposal() external onlyAdmin {
         mailboxAddress.proposal = address(0);
         mailboxAddress.timeToAccept = 0;
     }
@@ -321,7 +321,7 @@ contract WrappedCCOP is ERC20 {
      * @notice Accepts the mailbox address proposal after the waiting period has expired.
      * @dev Only the admin can call this. Changes the mailbox address if the waiting period has passed.
      */
-    function acceptMailboxAddressProposal() external onlyAdmin {
+    function acceptNewMailboxAddressProposal() external onlyAdmin {
         if (block.timestamp < mailboxAddress.timeToAccept) {
             revert WaitingPeriodNotExpired();
         }
@@ -340,7 +340,7 @@ contract WrappedCCOP is ERC20 {
      *      When the fuse is off, all unwrapping functions are disabled.
      *      This function can only be called by the admin.
      */
-    function setFuse() external onlyAdmin {
+    function toggleFuse() external onlyAdmin {
         fuse = !fuse;
     }
 
@@ -369,6 +369,19 @@ contract WrappedCCOP is ERC20 {
         returns (Bytes32Proposal memory)
     {
         return treasuryAddress;
+    }
+
+    /**
+     * @notice Returns the current Treasury address.
+     * @dev Converts the current treasury address from bytes32 to address.
+     * @return The current treasury address.
+     */
+    function getTreasuryAddress()
+        external
+        view
+        returns (address)
+    {
+        return address(uint160(uint256(treasuryAddress.current)));
     }
 
     /**

@@ -27,3 +27,7 @@ deployWrappedCCOP:
 	@forge clean
 	@echo "Deploying WrappedCCOP to Base Sepolia testnet"
 	@forge script script/WrappedCCOP.s.sol:WrappedCCOPScript $(BASE_SEPOLIA_ARGS)
+
+unitTest:
+	@forge test --match-path "test/uint/$(type)/$(contract).t.sol"
+
