@@ -168,7 +168,7 @@ contract Treasury {
      * @notice Cancels the current admin proposal.
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      */
-    function cancelAdminProposal() external onlyAdmin {
+    function cancelNewAdminProposal() external onlyAdmin {
         admin.proposal = address(0);
         admin.timeToAccept = 0;
     }
@@ -177,7 +177,7 @@ contract Treasury {
      * @notice Accepts the admin proposal after the waiting period has expired.
      * @dev Only the proposed admin can call this. Changes the admin if the waiting period has passed.
      */
-    function acceptAdminProposal() external {
+    function acceptNewAdminProposal() external {
         if (msg.sender != admin.proposal) {
             revert UnauthorizedAccount();
         }
@@ -228,7 +228,7 @@ contract Treasury {
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      * @param _domainID The domain ID of the wrapped token.
      */
-    function cancelWrappedTokenProposal(uint32 _domainID) external onlyAdmin {
+    function cancelNewWrappedTokenAddressProposal(uint32 _domainID) external onlyAdmin {
         wrappedToken[_domainID].proposal = bytes32(0);
         wrappedToken[_domainID].timeToAccept = 0;
     }
@@ -238,7 +238,7 @@ contract Treasury {
      * @dev Only the proposed admin can call this. Changes the wrapped token if the waiting period has passed.
      * @param _domainID The domain ID of the wrapped token.
      */
-    function acceptWrappedTokenProposal(uint32 _domainID) external onlyAdmin {
+    function acceptNewWrappedTokenAddressProposal(uint32 _domainID) external onlyAdmin {
         if (
             wrappedToken[_domainID].proposal ==
             bytes32(uint256(uint160(address(0))))
@@ -272,7 +272,7 @@ contract Treasury {
      * @notice Cancels the current mailbox address proposal.
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      */
-    function cancelMailboxAddressProposal() external onlyAdmin {
+    function cancelNewMailboxAddressProposal() external onlyAdmin {
         mailboxAddress.proposal = address(0);
         mailboxAddress.timeToAccept = 0;
     }
@@ -281,7 +281,7 @@ contract Treasury {
      * @notice Accepts the mailbox address proposal after the waiting period has expired.
      * @dev Only the current admin can call this. Changes the mailbox address if the waiting period has passed.
      */
-    function acceptMailboxAddressProposal() external onlyAdmin {
+    function acceptNewMailboxAddressProposal() external onlyAdmin {
         if (mailboxAddress.proposal == address(0)) {
             revert MailboxAddressNotSet();
         }
@@ -312,7 +312,7 @@ contract Treasury {
      * @notice Cancels the current cCOP address proposal.
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      */
-    function cancelCCOPAddressProposal() external onlyAdmin {
+    function cancelNewCCOPAddressProposal() external onlyAdmin {
         cCOPAddress.proposal = address(0);
         cCOPAddress.timeToAccept = 0;
     }
@@ -321,7 +321,7 @@ contract Treasury {
      * @notice Accepts the cCOP address proposal after the waiting period has expired.
      * @dev Only the current admin can call this. Changes the cCOP address if the waiting period has passed.
      */
-    function acceptCCOPAddressProposal() external onlyAdmin {
+    function acceptNewCCOPAddressProposal() external onlyAdmin {
         if (cCOPAddress.proposal == address(0)) {
             revert CCOPAddressNotSet();
         }
