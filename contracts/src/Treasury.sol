@@ -79,6 +79,27 @@ contract Treasury {
     }
 
     //🬨🬟🬣🬡🬋🬴🬹🬉🬮🬣🬆🬫🬨🬺🬊🬠🬒🬛🬀🬱🬱🬐🬘🬃🬑🬶🬬🬔🬛 Token Handling 🬜🬲🬁🬜🬻🬻🬀🬃🬺🬊🬆🬩🬡🬈🬻🬮🬅🬬🬰🬐🬳🬥🬱🬼🬲🬝🬟🬺🬺
+    /**
+     *  @notice Handles the incoming cross-chain message to give back cCOP tokens 
+     *          after unwrapping.
+     *  @param _origin The origin domain ID of the message.
+     *  @param _sender The address of the sender.
+     *  @param _data The data payload of the message.
+     */
+
+    function handle(
+        uint32 _origin,
+        bytes32 _sender,
+        bytes calldata _data
+    ) external payable virtual {
+        if (msg.sender != mailboxAddress.current) revert MailboxNotAuthorized();
+
+        if (_sender != wrappedToken[_origin].current) revert SenderNotAuthorized();
+
+        (address to, uint256 amount) = abi.decode(_data, (address, uint256));
+
+        IERC20(cCOPAddress.current).transfer(to, amount);
+    }
 
     /**
      * @notice Handles the wrapping of cCOP tokens and dispatches a cross-chain message.
