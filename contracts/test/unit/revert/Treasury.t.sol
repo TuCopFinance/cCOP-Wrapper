@@ -54,7 +54,7 @@ contract TreasuryTest is Test, Constants {
         _;
     }
 
-    function test_revert_treasury_noAmountToWrap() public {
+    function test_revert_treasury_wrap_noAmountToWrap() public {
         vm.startPrank(USER1.Address);
 
         cCOP.approve(address(treasury), 10e15);
@@ -85,7 +85,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(wrappedCCOP.balanceOf(USER1.Address), 0);
     }
 
-    function test_revert_treasury_noAllowance() public mintCCOP {
+    function test_revert_treasury_wrap_noAllowance() public mintCCOP {
         uint256 quote = treasury.getQuote(
             domainID.baseMainnet,
             USER1.Address,
@@ -109,7 +109,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(wrappedCCOP.balanceOf(USER1.Address), 0);
     }
 
-    function test_revert_treasury_AmountIsZero() public mintCCOP {
+    function test_revert_treasury_wrap_AmountIsZero() public mintCCOP {
         vm.startPrank(USER1.Address);
 
         cCOP.approve(address(treasury), 10e15);
@@ -139,7 +139,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(cCOP.balanceOf(address(treasury)), 0);
     }
 
-    function test_revert_treasury_WrappedTokenNotSet() public mintCCOP {
+    function test_revert_treasury_wrap_WrappedTokenNotSet() public mintCCOP {
         vm.startPrank(USER1.Address);
 
         cCOP.approve(address(treasury), 10e15);
@@ -169,7 +169,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(cCOP.balanceOf(address(treasury)), 0);
     }
 
-    /*function test_revert_treasury_QuoteNotEnough() public mintCCOP {
+    /*function test_revert_treasury_wrap_QuoteNotEnough() public mintCCOP {
         vm.startPrank(USER1.Address);
 
         cCOP.approve(address(treasury), 10e15);
@@ -199,7 +199,7 @@ contract TreasuryTest is Test, Constants {
         assertEq(cCOP.balanceOf(address(treasury)), 0);
     }*/
 
-   function test_revert_treasury_EmergencyStop() public mintCCOP {
+    function test_revert_treasury_wrap_EmergencyStop() public mintCCOP {
         vm.startPrank(ADMIN.Address);
         treasury.toggleFuse();
         vm.stopPrank();
