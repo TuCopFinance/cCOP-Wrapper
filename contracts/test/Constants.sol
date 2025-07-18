@@ -7,6 +7,8 @@ abstract contract Constants {
         uint32 celoAlfajores;
         uint32 celoMainnet;
         uint32 baseMainnet;
+        uint32 arbitrumMainnet;
+        uint32 arbitrumSepolia;
     }
 
     DomainIdMetadata domainID =
@@ -14,7 +16,9 @@ abstract contract Constants {
             baseSepolia: 84532,
             celoAlfajores: 44787,
             celoMainnet: 42220,
-            baseMainnet: 8453
+            baseMainnet: 8453,
+            arbitrumMainnet: 42161,
+            arbitrumSepolia: 421614
         });
 
     struct AccountData {
