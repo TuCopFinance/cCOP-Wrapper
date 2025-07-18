@@ -199,6 +199,40 @@ contract TreasuryTest is Test, Constants {
         assertEq(cCOP.balanceOf(address(treasury)), 0);
     }*/
 
+   function test_revert_treasury_EmergencyStop() public mintCCOP {
+        vm.startPrank(ADMIN.Address);
+        treasury.toggleFuse();
+        vm.stopPrank();
+
+        vm.startPrank(USER1.Address);
+
+        cCOP.approve(address(treasury), 10e15);
+
+        uint256 quote = treasury.getQuote(
+            domainID.baseMainnet,
+            USER1.Address,
+            10e15
+        );
+
+        vm.stopPrank();
+
+        vm.deal(USER1.Address, quote);
+
+        vm.startPrank(USER1.Address);
+
+        vm.expectRevert(Treasury.EmergencyStop.selector);
+        treasury.wrap{value: quote}(domainID.baseMainnet, USER1.Address, 10e15);
+
+        vm.stopPrank();
+
+        vm.expectRevert();
+        baseMailbox.processNextInboundMessage();
+
+        assertEq(wrappedCCOP.balanceOf(USER1.Address), 0);
+        assertEq(cCOP.balanceOf(USER1.Address), 10e15);
+        assertEq(cCOP.balanceOf(address(treasury)), 0);
+    }
+
     function test_revert_treasury_NewAdminProposal_propose_UnauthorizedAccount()
         public
     {
