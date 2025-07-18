@@ -29,5 +29,5 @@ deployWrappedCCOP:
 	@forge script script/WrappedCCOP.s.sol:WrappedCCOPScript $(BASE_SEPOLIA_ARGS)
 
 unitTest:
-	@forge test --match-path "test/$(type)/$(subType)/$(contract).t.sol"
+	@forge test --match-path "test/$(type)/$(subType)/$(contract).t.sol" -vvv
 
