@@ -117,7 +117,7 @@ contract Treasury {
         uint32 domainID,
         address receiver,
         uint256 amount
-    ) external payable returns (bytes32) {
+    ) external payable checkFuse returns (bytes32) {
         if (amount == 0) revert AmountMustBeGreaterThanZero();
 
         if (wrappedToken[domainID].current == bytes32(0))
