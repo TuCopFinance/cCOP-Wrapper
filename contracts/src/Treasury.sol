@@ -34,7 +34,8 @@ contract Treasury {
     error MailboxAddressNotSet(); // Mailbox address is not set
     error CCOPAddressNotSet(); // cCOP address is not set
     error QuoteNotEnough(); // The provided quote is not enough to cover the cross-chain message fee
-
+    error WrappedTokenInvalid(); // The wrapped token address is invalid
+    
     //🬘🬾🬹🬠🬓🬺🬎🬋🬉🬲🬂🬯🬚🬉🬯🬜🬏🬃🬿🬋🬅🬲🬽🬯🬊🬃🬒🬏🬮🬰🬌🬥 Structs 🬻🬗🬍🬎🬠🬷🬹🬅🬧🬡🬥🬞🬈🬨🬑🬉🬢🬯🬹🬚🬊🬏🬥🬭🬕🬡🬯🬵🬥🬘🬝🬉
     struct AddressTypeProposal {
         address current;
@@ -235,6 +236,10 @@ contract Treasury {
             wrappedToken[_domainID].current ==
             bytes32(uint256(uint160(address(0))))
         ) {
+            if (address(0) == _newAddress) {
+                revert WrappedTokenInvalid();
+            }
+
             wrappedToken[_domainID].current = bytes32(
                 uint256(uint160(_newAddress))
             );
