@@ -29,5 +29,8 @@ deployWrappedCCOP:
 	@forge script script/WrappedCCOP.s.sol:WrappedCCOPScript $(BASE_SEPOLIA_ARGS)
 
 unitTest:
-	@forge test --match-path "test/unit/$(type)/$(contract).t.sol" -vvv
+	@forge test --match-path "test/unit/$(type)/$(contract).t.sol" -vvv --show-progress --summary --detailed
+
+fuzzTest:
+	@forge test --match-path "test/fuzz/$(contract).t.sol" -vvv --show-progress --summary --detailed
 
