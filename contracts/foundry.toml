@@ -8,4 +8,8 @@ remappings = [
     '@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/',
     '@cCOP_wrapper/=src/',
 ]
+
+[fuzz]
+runs = 100
+max_test_rejects = 1000
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
