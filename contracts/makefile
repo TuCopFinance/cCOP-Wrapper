@@ -7,7 +7,31 @@ CELO_ALFAJORES_ARGS := --rpc-url $(RPC_URL_CELO_ALFAJORES) \
                         --verify \
                         --etherscan-api-key $(ETHERSCAN_API) \
 
+CELO_MAINNET_ARGS := --rpc-url $(RPC_URL_CELO_MAINNET) \
+                        --account defaultKey \
+                        --broadcast \
+                        --verify \
+                        --etherscan-api-key $(ETHERSCAN_API) \
+
 BASE_SEPOLIA_ARGS := --rpc-url $(RPC_URL_BASE_SEPOLIA) \
+					 --account defaultKey \
+					 --broadcast \
+					 --verify \
+					 --etherscan-api-key $(ETHERSCAN_API) \
+
+BASE_MAINNET_ARGS := --rpc-url $(RPC_URL_BASE_MAINNET) \
+					 --account defaultKey \
+					 --broadcast \
+					 --verify \
+					 --etherscan-api-key $(ETHERSCAN_API) \
+
+ARB_SEPOLIA_ARGS := --rpc-url $(RPC_URL_ARB_TESTNET) \
+					 --account defaultKey \
+					 --broadcast \
+					 --verify \
+					 --etherscan-api-key $(ETHERSCAN_API) \
+
+ARB_MAINNET_ARGS := --rpc-url $(RPC_URL_ARB_MAINNET) \
 					 --account defaultKey \
 					 --broadcast \
 					 --verify \
@@ -18,15 +42,35 @@ deployCCOPMock:
 	@echo "Deploying CCOPMock to Celo Alfajores testnet"
 	@forge script script/CCOPMock.s.sol:CCOPMockScript $(CELO_ALFAJORES_ARGS)
 
-deployTreasury:
+deployTreasury_TEST:
 	@forge clean
 	@echo "Deploying Treasury to Celo Alfajores testnet"
 	@forge script script/Treasury.s.sol:TreasuryScript $(CELO_ALFAJORES_ARGS)
 
-deployWrappedCCOP:
+deployWrappedCCOP_BaseTest:
 	@forge clean
-	@echo "Deploying WrappedCCOP to Base Sepolia testnet"
-	@forge script script/WrappedCCOP.s.sol:WrappedCCOPScript $(BASE_SEPOLIA_ARGS)
+	@echo "Deploying WrappedCCOP to Base Sepolia"
+	@forge script script/WrappedCCOP_BASE.s.sol:WrappedCCOP_Base_Script $(BASE_SEPOLIA_ARGS)
+
+deployWrappedCCOP_ArbTest:
+	@forge clean
+	@echo "Deploying WrappedCCOP to Arbitrum Sepolia"
+	@forge script script/WrappedCCOP_ARB.s.sol:WrappedCCOP_ARB_Script $(ARB_SEPOLIA_ARGS)
+
+deployTreasury:
+	@forge clean
+	@echo "Deploying Treasury to Celo Mainnet"
+	@forge script script/Treasury.s.sol:TreasuryScript $(CELO_MAINNET_ARGS)
+
+deployWrappedCCOP_Base:
+	@forge clean
+	@echo "Deploying WrappedCCOP to Base Mainnet"
+	@forge script script/WrappedCCOP_BASE.s.sol:WrappedCCOP_Base_Script $(BASE_MAINNET_ARGS)
+
+deployWrappedCCOP_Arb:
+	@forge clean
+	@echo "Deploying WrappedCCOP to Arbitrum Mainnet"
+	@forge script script/WrappedCCOP_ARB.s.sol:WrappedCCOP_Arb_Script $(ARB_MAINNET_ARGS)
 
 unitTest:
 	@forge test --match-path "test/unit/$(type)/$(contract).t.sol" -vvv --show-progress --summary --detailed
