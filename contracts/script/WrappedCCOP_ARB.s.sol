@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Script, console} from "forge-std/Script.sol";
 import {WrappedCCOP} from "../src/WrappedCCOP.sol";
 
-contract WrappedCCOPScript is Script {
+contract WrappedCCOP_Arb_Script is Script {
     WrappedCCOP public wrappedCCOP;
 
     address public constant OWNER = 0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309; // Mailbox for Base Sepolia (testnet)
@@ -13,12 +13,15 @@ contract WrappedCCOPScript is Script {
         0x6966b0E55883d49BFB24539356a2f8A673E02039; // Mailbox for Base Sepolia (testnet)
     address public constant MAILBOX_BASE_MAINNET =
         0xeA87ae93Fa0019a82A727bfd3eBd1cFCa8f64f1D; // Mailbox for Base Mainnet
+    address public constant MAILBOX_ARB_MAINNET = 0x979Ca5202784112f4738403dBec5D0F3B9daabB9; // Mailbox for Arbitrum Mainnet
+    address public constant MAILBOX_ARB_TESTNET = 0x598facE78a4302f11E3de0bee1894Da0b2Cb71F8; // Mailbox for Arbitrum Testnet
 
-    uint32 public constant DOMAIN_ID_BASE_SEPOLIA = 84532; // Domain ID for Base Sepolia
-    uint32 public constant DOMAIN_ID_BASE_MAINNET = 8453; // Domain ID for Base Mainnet
+
+    uint32 public constant DOMAIN_ID_CELO_SEPOLIA = 44787; // Domain ID for Celo Sepolia
+    uint32 public constant DOMAIN_ID_CELO_MAINNET = 42220; // Domain ID for Celo Mainnet
 
     address public constant TREASURY_ADDRESS =
-        0xAF4387cC9105C9B716B9B84F673996dCa7ac5150; // Example treasury address
+        0xc3Ab4F2019326A4769aEC52DeA9c5AF9457094BD; // Example treasury address
 
     function setUp() public {}
 
@@ -27,12 +30,12 @@ contract WrappedCCOPScript is Script {
 
         wrappedCCOP = new WrappedCCOP(
             OWNER,
-            block.chainid == 84532
-                ? MAILBOX_BASE_SEPOLIA
-                : MAILBOX_BASE_MAINNET,
-            block.chainid == 84532
-                ? DOMAIN_ID_BASE_SEPOLIA
-                : DOMAIN_ID_BASE_MAINNET,
+            block.chainid == 421614
+                ? MAILBOX_ARB_TESTNET
+                : MAILBOX_ARB_MAINNET,
+            block.chainid == 421614
+                ? DOMAIN_ID_CELO_SEPOLIA
+                : DOMAIN_ID_CELO_MAINNET,
             TREASURY_ADDRESS
         );
 
