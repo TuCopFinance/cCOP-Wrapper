@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styles from "./WrapperComponent.module.css";
 import { erc20Abi, formatEther } from "viem";
 import {
@@ -66,37 +66,15 @@ export const WrapperComponent = () => {
   >(null);
   const [quote, setQuote] = useState<bigint | null>(null);
 
-  // --- Auto-update on input change ---
-  useEffect(() => {
-    if (!amount) return;
-    if (timeoutId) clearTimeout(timeoutId);
-    const newTimeoutId = setTimeout(() => {
-      verifyTokenAllowanceAndPriceForSend();
-    }, 500);
-    setTimeoutId(newTimeoutId);
-    return () => clearTimeout(newTimeoutId);
-  },  [amount, domainID, differentAddressFlag, timeoutId, verifyTokenAllowanceAndPriceForSend]);
-
   // --- Handlers ---
-  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setAmount(e.target.value);
-  }
-
-  function checkChainAndChange() {
-    const account = getAccount(config);
-    if (account.chainId !== chainID.mainnet.celo) {
-      switchChain(config, { chainId: chainID.mainnet.celo }).then(
-        notifyChangeChain
-      );
-    }
-  }
-
-  function verifyTokenAllowanceAndPriceForSend() {
+  const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
     const account = getAccount(config);
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
     } catch {
+      setAllowanceIsMoreThanAmount(null);
+      setQuote(null);
       return;
     }
     const differentAddressInput = document.getElementById(
@@ -134,12 +112,43 @@ export const WrapperComponent = () => {
         ) {
           setQuote(data[1].result);
           setAllowanceIsMoreThanAmount(amountFixed <= data[0].result);
+        } else {
+          setQuote(null);
+          setAllowanceIsMoreThanAmount(null);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        setQuote(null);
+        setAllowanceIsMoreThanAmount(null);
+      })
       .finally(() => {
         checkChainAndChange();
       });
+  }, [amount, domainID, differentAddressFlag]);
+
+  useEffect(() => {
+    if (!amount) {
+      setAllowanceIsMoreThanAmount(null);
+      setQuote(null);
+      return;
+    }
+    const timeout = setTimeout(() => {
+      verifyTokenAllowanceAndPriceForSend();
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [amount, domainID, differentAddressFlag, verifyTokenAllowanceAndPriceForSend]);
+
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setAmount(e.target.value);
+  }
+
+  function checkChainAndChange() {
+    const account = getAccount(config);
+    if (account.chainId !== chainID.mainnet.celo) {
+      switchChain(config, { chainId: chainID.mainnet.celo }).then(
+        notifyChangeChain
+      );
+    }
   }
 
   function setAllowance() {

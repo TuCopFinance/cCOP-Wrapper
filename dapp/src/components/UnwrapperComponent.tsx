@@ -61,11 +61,10 @@ export const UnwrapperComponent = () => {
   // State
   const [differentAddressFlag, setDifferentAddressFlag] = useState(false);
   const [amount, setAmount] = useState("");
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const [hasSufficientAmount, setHasSufficientAmount] =
-    useState<boolean>(false);
+  const [hasSufficientAmount, setHasSufficientAmount] = useState<boolean>(false);
   const [quote, setQuote] = useState<bigint | null>(null);
   const [chainToUnwrap, setChainToUnwrap] = useState("base");
+  const [balance, setBalance] = useState<bigint | null>(null);
 
   //Check allowance and get quote
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
@@ -74,6 +73,9 @@ export const UnwrapperComponent = () => {
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
     } catch {
+      setHasSufficientAmount(false);
+      setQuote(null);
+      setBalance(null);
       return;
     }
 
@@ -111,38 +113,38 @@ export const UnwrapperComponent = () => {
           typeof data[0].result === "bigint" &&
           typeof data[1].result === "bigint"
         ) {
+          setBalance(data[0].result);
           setQuote(data[1].result);
           setHasSufficientAmount(data[0].result >= amountFixed);
+        } else {
+          setBalance(null);
+          setQuote(null);
+          setHasSufficientAmount(false);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        setBalance(null);
+        setQuote(null);
+        setHasSufficientAmount(false);
+      })
       .finally(() => {
         checkChainAndChange();
       });
-  }, [
-    amount,
-    differentAddressFlag,
-    chainToUnwrap,
-    config,
-    wrappedCCOPContractBase,
-    wrappedCCOPContractArb,
-  ]);
+  }, [amount, differentAddressFlag, chainToUnwrap]);
 
   // Auto-update on input change
   useEffect(() => {
-    if (!amount) return;
-    if (timeoutId) clearTimeout(timeoutId);
-    const newTimeoutId = setTimeout(() => {
+    if (!amount) {
+      setHasSufficientAmount(false);
+      setQuote(null);
+      setBalance(null);
+      return;
+    }
+    const timeout = setTimeout(() => {
       verifyTokenAllowanceAndPriceForSend();
-    }, 500); // más responsivo
-    setTimeoutId(newTimeoutId);
-    return () => clearTimeout(newTimeoutId);
-  }, [
-    amount,
-    differentAddressFlag,
-    timeoutId,
-    verifyTokenAllowanceAndPriceForSend,
-  ]);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [amount, differentAddressFlag, chainToUnwrap, verifyTokenAllowanceAndPriceForSend]);
 
   // Handler: Amount input change
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
