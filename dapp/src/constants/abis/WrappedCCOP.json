@@ -4,12 +4,50 @@
       "type": "constructor",
       "inputs": [
         {
-          "name": "_initialOwner",
+          "name": "_initialAdmin",
           "type": "address",
           "internalType": "address"
         },
-        { "name": "_mailbox", "type": "address", "internalType": "address" }
+        { "name": "_mailbox", "type": "address", "internalType": "address" },
+        {
+          "name": "_treasuryDomainId",
+          "type": "uint32",
+          "internalType": "uint32"
+        },
+        {
+          "name": "_treasuryAddress",
+          "type": "address",
+          "internalType": "address"
+        }
       ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "acceptNewAdminProposal",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "acceptNewMailboxAddressProposal",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "acceptNewTreasuryAddressProposal",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "acceptNewTreasuryDomainIdProposal",
+      "inputs": [],
+      "outputs": [],
       "stateMutability": "nonpayable"
     },
     {
@@ -43,10 +81,29 @@
     },
     {
       "type": "function",
-      "name": "changeMailbox",
-      "inputs": [
-        { "name": "_mailbox", "type": "address", "internalType": "address" }
-      ],
+      "name": "cancelNewAdminProposal",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "cancelNewMailboxAddressProposal",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "cancelNewTreasuryAddressProposal",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "cancelNewTreasuryDomainIdProposal",
+      "inputs": [],
       "outputs": [],
       "stateMutability": "nonpayable"
     },
@@ -59,9 +116,61 @@
     },
     {
       "type": "function",
-      "name": "getMailbox",
+      "name": "getAdminStructure",
       "inputs": [],
-      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct WrappedCCOP.AddressTypeProposal",
+          "components": [
+            { "name": "current", "type": "address", "internalType": "address" },
+            {
+              "name": "proposal",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "timeToAccept",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getFuse",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getMailboxAddressStructure",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct WrappedCCOP.AddressTypeProposal",
+          "components": [
+            { "name": "current", "type": "address", "internalType": "address" },
+            {
+              "name": "proposal",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "timeToAccept",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
       "stateMutability": "view"
     },
     {
@@ -76,16 +185,32 @@
     },
     {
       "type": "function",
-      "name": "getTreasury",
+      "name": "getTreasuryAddress",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getTreasuryAddressStructure",
       "inputs": [],
       "outputs": [
         {
           "name": "",
           "type": "tuple",
-          "internalType": "struct WrappedCCOP.TreasuryMetadata",
+          "internalType": "struct WrappedCCOP.Bytes32Proposal",
           "components": [
-            { "name": "Address", "type": "bytes32", "internalType": "bytes32" },
-            { "name": "DomainID", "type": "uint32", "internalType": "uint32" }
+            { "name": "current", "type": "bytes32", "internalType": "bytes32" },
+            {
+              "name": "proposal",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "timeToAccept",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
           ]
         }
       ],
@@ -93,9 +218,24 @@
     },
     {
       "type": "function",
-      "name": "getTreasuryAddress",
+      "name": "getTreasuryDomainIdStructure",
       "inputs": [],
-      "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct WrappedCCOP.Uint32Proposal",
+          "components": [
+            { "name": "current", "type": "uint32", "internalType": "uint32" },
+            { "name": "proposal", "type": "uint32", "internalType": "uint32" },
+            {
+              "name": "timeToAccept",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
       "stateMutability": "view"
     },
     {
@@ -118,24 +258,36 @@
     },
     {
       "type": "function",
-      "name": "owner",
-      "inputs": [],
-      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "renounceOwnership",
-      "inputs": [],
+      "name": "proposeNewAdminProposal",
+      "inputs": [
+        { "name": "_newAdmin", "type": "address", "internalType": "address" }
+      ],
       "outputs": [],
       "stateMutability": "nonpayable"
     },
     {
       "type": "function",
-      "name": "setTreasury",
+      "name": "proposeNewMailboxAddressProposal",
       "inputs": [
-        { "name": "_address", "type": "address", "internalType": "address" },
-        { "name": "_domainId", "type": "uint32", "internalType": "uint32" }
+        { "name": "_newMailbox", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "proposeNewTreasuryAddressProposal",
+      "inputs": [
+        { "name": "_newAddress", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "proposeNewTreasuryDomainIdProposal",
+      "inputs": [
+        { "name": "_newDomainId", "type": "uint32", "internalType": "uint32" }
       ],
       "outputs": [],
       "stateMutability": "nonpayable"
@@ -146,6 +298,13 @@
       "inputs": [],
       "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
       "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "toggleFuse",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
     },
     {
       "type": "function",
@@ -177,22 +336,34 @@
     },
     {
       "type": "function",
-      "name": "transferOwnership",
-      "inputs": [
-        { "name": "newOwner", "type": "address", "internalType": "address" }
-      ],
-      "outputs": [],
-      "stateMutability": "nonpayable"
-    },
-    {
-      "type": "function",
       "name": "unwrap",
       "inputs": [
         { "name": "receiver", "type": "address", "internalType": "address" },
         { "name": "amount", "type": "uint256", "internalType": "uint256" }
       ],
-      "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+      "outputs": [
+        { "name": "messageId", "type": "bytes32", "internalType": "bytes32" }
+      ],
       "stateMutability": "payable"
+    },
+    {
+      "type": "event",
+      "name": "AdminChanged",
+      "inputs": [
+        {
+          "name": "previousAdmin",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newAdmin",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
     },
     {
       "type": "event",
@@ -215,25 +386,6 @@
           "type": "uint256",
           "indexed": false,
           "internalType": "uint256"
-        }
-      ],
-      "anonymous": false
-    },
-    {
-      "type": "event",
-      "name": "OwnershipTransferred",
-      "inputs": [
-        {
-          "name": "previousOwner",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "newOwner",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
         }
       ],
       "anonymous": false
@@ -263,6 +415,8 @@
       ],
       "anonymous": false
     },
+    { "type": "error", "name": "AmountMustBeGreaterThanZero", "inputs": [] },
+    { "type": "error", "name": "ChainIdNotAuthorized", "inputs": [] },
     {
       "type": "error",
       "name": "ERC20InsufficientAllowance",
@@ -309,23 +463,11 @@
         { "name": "spender", "type": "address", "internalType": "address" }
       ]
     },
-    {
-      "type": "error",
-      "name": "OwnableInvalidOwner",
-      "inputs": [
-        { "name": "owner", "type": "address", "internalType": "address" }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "OwnableUnauthorizedAccount",
-      "inputs": [
-        { "name": "account", "type": "address", "internalType": "address" }
-      ]
-    },
-    { "type": "error", "name": "amountMustBeGreaterThanZero", "inputs": [] },
-    { "type": "error", "name": "chainIdNotAuthorized", "inputs": [] },
-    { "type": "error", "name": "mailboxNotAuthorized", "inputs": [] },
-    { "type": "error", "name": "senderNotAuthorized", "inputs": [] }
+    { "type": "error", "name": "EmergencyStop", "inputs": [] },
+    { "type": "error", "name": "MailboxNotAuthorized", "inputs": [] },
+    { "type": "error", "name": "SenderNotAuthorized", "inputs": [] },
+    { "type": "error", "name": "UnauthorizedAccount", "inputs": [] },
+    { "type": "error", "name": "UnwrappedTokenNotSet", "inputs": [] },
+    { "type": "error", "name": "WaitingPeriodNotExpired", "inputs": [] }
   ]
 }
