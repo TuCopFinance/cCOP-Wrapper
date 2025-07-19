@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./UnwrapperComponent.module.css";
-import { Spinner } from "react-spinner-toolkit";
 import { formatEther } from "viem";
 import {
   getAccount,
@@ -224,10 +223,10 @@ export const UnwrapperComponent = () => {
   // Render
   return (
     <>
-      <p className={styles.wrapToLabel}>
+      <p className={styles.unwrapToLabel}>
         Chain to unwrap:{" "}
         <select
-          className={styles.wrapToSelector}
+          className={styles.unwrapToSelector}
           value={chainToUnwrap}
           onChange={(e) => setChainToUnwrap(e.target.value)}
         >
@@ -263,7 +262,7 @@ export const UnwrapperComponent = () => {
 
       {quote && (
         <p className={styles.priceLabel}>
-          Price for wrapping: {formatEther(quote)} ETH
+          Price for unwrapping: {formatEther(quote)} ETH
         </p>
       )}
 
