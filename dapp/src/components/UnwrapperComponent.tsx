@@ -62,7 +62,8 @@ export const UnwrapperComponent = () => {
   // State
   const [differentAddressFlag, setDifferentAddressFlag] = useState(false);
   const [amount, setAmount] = useState("");
-  const [hasSufficientAmount, setHasSufficientAmount] = useState<boolean>(false);
+  const [hasSufficientAmount, setHasSufficientAmount] =
+    useState<boolean>(false);
   const [quote, setQuote] = useState<bigint | null>(null);
   const [chainToUnwrap, setChainToUnwrap] = useState("base");
 
@@ -141,7 +142,12 @@ export const UnwrapperComponent = () => {
       verifyTokenAllowanceAndPriceForSend();
     }, 500);
     return () => clearTimeout(timeout);
-  }, [amount, differentAddressFlag, chainToUnwrap, verifyTokenAllowanceAndPriceForSend]);
+  }, [
+    amount,
+    differentAddressFlag,
+    chainToUnwrap,
+    verifyTokenAllowanceAndPriceForSend,
+  ]);
 
   // Handler: Amount input change
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -197,35 +203,47 @@ export const UnwrapperComponent = () => {
         amountFixed,
       ],
       value: quote + BigInt(1),
-    }).then((data) => {
-      const msgIdentifier = data.result;
+    })
+      .then((data) => {
+        const msgIdentifier = data.result;
 
-      writeContract(config, {
-        chainId: targetChainIdContract,
-        abi: WrappedCCOP.abi,
-        address: targetChainContractAddress as `0x${string}`,
-        functionName: "unwrap",
-        args: [
-          differentAddressFlag
-            ? differentAddressInput?.value || account.address || ""
-            : (account.address as `0x${string}`),
-          amountFixed,
-        ],
-        value: quote + BigInt(1), // Ensure value is set to quote if available
-      })
-        .then(() => {
-          notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20));
+        writeContract(config, {
+          chainId: targetChainIdContract,
+          abi: WrappedCCOP.abi,
+          address: targetChainContractAddress as `0x${string}`,
+          functionName: "unwrap",
+          args: [
+            differentAddressFlag
+              ? differentAddressInput?.value || account.address || ""
+              : (account.address as `0x${string}`),
+            amountFixed,
+          ],
+          value: quote + BigInt(1), // Ensure value is set to quote if available
         })
-        .catch((error) => {
-          console.error("Error unwrapping cCOP tokens:", error);
-        });
-    });
+          .then(() => {
+            notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20));
+          })
+          .catch((error) => {
+            console.error("Error unwrapping cCOP tokens:", error);
+          });
+      })
+      .catch(() => {
+        toast.error(
+          "Error during unwrap check your wcCOP balance or ETH balance",
+          {
+            position: "bottom-right",
+            style: {
+              background: "#333",
+              color: "#fff",
+            },
+          }
+        );
+      });
   }
 
   // Render
   return (
     <>
-      {/* Botón para agregar token cCOP a la wallet usando viem/wagmi */}
       <button
         className={styles.actionButtonActive}
         style={{ marginBottom: "1rem" }}
@@ -242,19 +260,43 @@ export const UnwrapperComponent = () => {
                 },
               });
               if (success) {
-                toast.success("Token cCOP agregado a tu wallet");
+                toast.success("Token wcCOP added to your wallet", {
+                  position: "bottom-right",
+                  style: {
+                    background: "#333",
+                    color: "#fff",
+                  },
+                });
               } else {
-                toast.error("El usuario rechazó agregar el token");
+                toast.error("User rejected adding the token", {
+                  position: "bottom-right",
+                  style: {
+                    background: "#333",
+                    color: "#fff",
+                  },
+                });
               }
             } catch (error) {
-              toast.error("No se pudo agregar el token a la wallet");
+              toast.error("Failed to add token to wallet", {
+                position: "bottom-right",
+                style: {
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
             }
           } else {
-            toast.error("No se detectó una wallet compatible");
+            toast.error("No wallet client detected", {
+              position: "bottom-right",
+              style: {
+                background: "#333",
+                color: "#fff",
+              },
+            });
           }
         }}
       >
-        Agregar cCOP a wallet
+        Add wcCOP to wallet
       </button>
       <p className={styles.unwrapToLabel}>
         Chain to unwrap:{" "}
