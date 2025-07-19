@@ -238,44 +238,44 @@ contract WrappedCCOPTest is Test, Constants {
         assertEq(treasuryProposal.timeToAccept, 0);
     }
 
-    function test_correct_wrappedCCOP_NewCCOPDomainIdProposal_propose() public {
+    function test_correct_wrappedCCOP_NewTreasuryDomainIdProposal_propose() public {
         vm.startPrank(ADMIN.Address);
 
-        wrappedCCOP.proposeNewCCOPDomainIdProposal(100);
+        wrappedCCOP.proposeNewTreasuryDomainIdProposal(100);
 
         vm.stopPrank();
 
-        WrappedCCOP.Uint32Proposal memory cCOPDomainIdProposal = wrappedCCOP
-            .getCCOPDomainIdStructure();
+        WrappedCCOP.Uint32Proposal memory treasuryDomainIdProposal = wrappedCCOP
+            .getTreasuryDomainIdStructure();
 
-        assertEq(cCOPDomainIdProposal.current, domainID.celoMainnet);
-        assertEq(cCOPDomainIdProposal.proposal, 100);
-        assertEq(cCOPDomainIdProposal.timeToAccept, block.timestamp + 1 days);
+        assertEq(treasuryDomainIdProposal.current, domainID.celoMainnet);
+        assertEq(treasuryDomainIdProposal.proposal, 100);
+        assertEq(treasuryDomainIdProposal.timeToAccept, block.timestamp + 1 days);
     }
 
-    function test_correct_wrappedCCOP_NewCCOPDomainIdProposal_cancel() public {
+    function test_correct_wrappedCCOP_NewTreasuryDomainIdProposal_cancel() public {
         vm.startPrank(ADMIN.Address);
 
-        wrappedCCOP.proposeNewCCOPDomainIdProposal(100);
+        wrappedCCOP.proposeNewTreasuryDomainIdProposal(100);
 
         skip(20 minutes);
 
-        wrappedCCOP.cancelNewCCOPDomainIdProposal();
+        wrappedCCOP.cancelNewTreasuryDomainIdProposal();
 
         vm.stopPrank();
 
-        WrappedCCOP.Uint32Proposal memory cCOPDomainIdProposal = wrappedCCOP
-            .getCCOPDomainIdStructure();
+        WrappedCCOP.Uint32Proposal memory treasuryDomainIdProposal = wrappedCCOP
+            .getTreasuryDomainIdStructure();
 
-        assertEq(cCOPDomainIdProposal.current, domainID.celoMainnet);
-        assertEq(cCOPDomainIdProposal.proposal, 0);
-        assertEq(cCOPDomainIdProposal.timeToAccept, 0);
+        assertEq(treasuryDomainIdProposal.current, domainID.celoMainnet);
+        assertEq(treasuryDomainIdProposal.proposal, 0);
+        assertEq(treasuryDomainIdProposal.timeToAccept, 0);
     }
 
-    function test_correct_wrappedCCOP_NewCCOPDomainIdProposal_accept() public {
+    function test_correct_wrappedCCOP_NewTreasuryDomainIdProposal_accept() public {
         vm.startPrank(ADMIN.Address);
 
-        wrappedCCOP.proposeNewCCOPDomainIdProposal(100);
+        wrappedCCOP.proposeNewTreasuryDomainIdProposal(100);
 
         vm.stopPrank();
 
@@ -283,16 +283,16 @@ contract WrappedCCOPTest is Test, Constants {
 
         vm.startPrank(ADMIN.Address);
 
-        wrappedCCOP.acceptNewCCOPDomainIdProposal();
+        wrappedCCOP.acceptNewTreasuryDomainIdProposal();
 
         vm.stopPrank();
 
-        WrappedCCOP.Uint32Proposal memory cCOPDomainIdProposal = wrappedCCOP
-            .getCCOPDomainIdStructure();
+        WrappedCCOP.Uint32Proposal memory treasuryDomainIdProposal = wrappedCCOP
+            .getTreasuryDomainIdStructure();
 
-        assertEq(cCOPDomainIdProposal.current, 100);
-        assertEq(cCOPDomainIdProposal.proposal, 0);
-        assertEq(cCOPDomainIdProposal.timeToAccept, 0);
+        assertEq(treasuryDomainIdProposal.current, 100);
+        assertEq(treasuryDomainIdProposal.proposal, 0);
+        assertEq(treasuryDomainIdProposal.timeToAccept, 0);
     }
 
     modifier setNewMailbox() {

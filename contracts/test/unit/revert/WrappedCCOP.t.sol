@@ -394,30 +394,30 @@ contract WrappedCCOPTest is Test, Constants {
         );
     }
 
-    function test_revert_wrappedCCOP_NewCCOPDomainIdProposal_propose_UnauthorizedAccount()
+    function test_revert_wrappedCCOP_NewTreasuryDomainIdProposal_propose_UnauthorizedAccount()
         public
     {
         vm.startPrank(USER1.Address);
 
         vm.expectRevert(WrappedCCOP.UnauthorizedAccount.selector);
-        wrappedCCOP.proposeNewCCOPDomainIdProposal(100);
+        wrappedCCOP.proposeNewTreasuryDomainIdProposal(100);
 
         vm.stopPrank();
 
-        WrappedCCOP.Uint32Proposal memory cCOPDomainIdProposal = wrappedCCOP
-            .getCCOPDomainIdStructure();
+        WrappedCCOP.Uint32Proposal memory treasuryDomainIdProposal = wrappedCCOP
+            .getTreasuryDomainIdStructure();
 
-        assertEq(cCOPDomainIdProposal.current, domainID.celoMainnet);
-        assertEq(cCOPDomainIdProposal.proposal, 0);
-        assertEq(cCOPDomainIdProposal.timeToAccept, 0);
+        assertEq(treasuryDomainIdProposal.current, domainID.celoMainnet);
+        assertEq(treasuryDomainIdProposal.proposal, 0);
+        assertEq(treasuryDomainIdProposal.timeToAccept, 0);
     }
 
-    function test_revert_wrappedCCOP_NewCCOPDomainIdProposal_cancel_UnauthorizedAccount()
+    function test_revert_wrappedCCOP_NewTreasuryDomainIdProposal_cancel_UnauthorizedAccount()
         public
     {
         vm.startPrank(ADMIN.Address);
 
-        wrappedCCOP.proposeNewCCOPDomainIdProposal(100);
+        wrappedCCOP.proposeNewTreasuryDomainIdProposal(100);
 
         skip(20 minutes);
 
@@ -426,27 +426,27 @@ contract WrappedCCOPTest is Test, Constants {
         vm.startPrank(USER1.Address);
 
         vm.expectRevert(WrappedCCOP.UnauthorizedAccount.selector);
-        wrappedCCOP.cancelNewCCOPDomainIdProposal();
+        wrappedCCOP.cancelNewTreasuryDomainIdProposal();
 
         vm.stopPrank();
 
-        WrappedCCOP.Uint32Proposal memory cCOPDomainIdProposal = wrappedCCOP
-            .getCCOPDomainIdStructure();
+        WrappedCCOP.Uint32Proposal memory treasuryDomainIdProposal = wrappedCCOP
+            .getTreasuryDomainIdStructure();
 
-        assertEq(cCOPDomainIdProposal.current, domainID.celoMainnet);
-        assertEq(cCOPDomainIdProposal.proposal, 100);
+        assertEq(treasuryDomainIdProposal.current, domainID.celoMainnet);
+        assertEq(treasuryDomainIdProposal.proposal, 100);
         assertEq(
-            cCOPDomainIdProposal.timeToAccept,
+            treasuryDomainIdProposal.timeToAccept,
             block.timestamp + 1 days - 20 minutes
         );
     }
 
-    function test_revert_wrappedCCOP_NewCCOPDomainIdProposal_accept_UnauthorizedAccount()
+    function test_revert_wrappedCCOP_NewTreasuryDomainIdProposal_accept_UnauthorizedAccount()
         public
     {
         vm.startPrank(ADMIN.Address);
 
-        wrappedCCOP.proposeNewCCOPDomainIdProposal(100);
+        wrappedCCOP.proposeNewTreasuryDomainIdProposal(100);
 
         vm.stopPrank();
 
@@ -455,24 +455,24 @@ contract WrappedCCOPTest is Test, Constants {
         vm.startPrank(USER1.Address);
 
         vm.expectRevert(WrappedCCOP.UnauthorizedAccount.selector);
-        wrappedCCOP.acceptNewCCOPDomainIdProposal();
+        wrappedCCOP.acceptNewTreasuryDomainIdProposal();
 
         vm.stopPrank();
 
-        WrappedCCOP.Uint32Proposal memory cCOPDomainIdProposal = wrappedCCOP
-            .getCCOPDomainIdStructure();
+        WrappedCCOP.Uint32Proposal memory treasuryDomainIdProposal = wrappedCCOP
+            .getTreasuryDomainIdStructure();
 
-        assertEq(cCOPDomainIdProposal.current, domainID.celoMainnet);
-        assertEq(cCOPDomainIdProposal.proposal, 100);
-        assertEq(cCOPDomainIdProposal.timeToAccept, block.timestamp);
+        assertEq(treasuryDomainIdProposal.current, domainID.celoMainnet);
+        assertEq(treasuryDomainIdProposal.proposal, 100);
+        assertEq(treasuryDomainIdProposal.timeToAccept, block.timestamp);
     }
 
-    function test_revert_wrappedCCOP_NewCCOPDomainIdProposal_accept_WaitingPeriodNotExpired()
+    function test_revert_wrappedCCOP_NewTreasuryDomainIdProposal_accept_WaitingPeriodNotExpired()
         public
     {
         vm.startPrank(ADMIN.Address);
 
-        wrappedCCOP.proposeNewCCOPDomainIdProposal(100);
+        wrappedCCOP.proposeNewTreasuryDomainIdProposal(100);
 
         vm.stopPrank();
 
@@ -481,17 +481,17 @@ contract WrappedCCOPTest is Test, Constants {
         vm.startPrank(ADMIN.Address);
 
         vm.expectRevert(WrappedCCOP.WaitingPeriodNotExpired.selector);
-        wrappedCCOP.acceptNewCCOPDomainIdProposal();
+        wrappedCCOP.acceptNewTreasuryDomainIdProposal();
 
         vm.stopPrank();
 
-        WrappedCCOP.Uint32Proposal memory cCOPDomainIdProposal = wrappedCCOP
-            .getCCOPDomainIdStructure();
+        WrappedCCOP.Uint32Proposal memory treasuryDomainIdProposal = wrappedCCOP
+            .getTreasuryDomainIdStructure();
 
-        assertEq(cCOPDomainIdProposal.current, domainID.celoMainnet);
-        assertEq(cCOPDomainIdProposal.proposal, 100);
+        assertEq(treasuryDomainIdProposal.current, domainID.celoMainnet);
+        assertEq(treasuryDomainIdProposal.proposal, 100);
         assertEq(
-            cCOPDomainIdProposal.timeToAccept,
+            treasuryDomainIdProposal.timeToAccept,
             block.timestamp + 1 days - 20 minutes
         );
     }
