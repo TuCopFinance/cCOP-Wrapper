@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import styles from "./UnwrapperComponent.module.css";

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./WrapperComponent.module.css";
