@@ -23,13 +23,21 @@ export const modal = createAppKit({
   projectId,
   networks,
   metadata,
-  themeMode: 'light',
+  themeMode: 'dark',
   features: {
-    analytics: true // Optional - defaults to your Cloud configuration
+    analytics: false, // Optional - defaults to your Cloud configuration
+    connectMethodsOrder: ["wallet"],
   },
+
   themeVariables: {
-    '--w3m-accent': '#000000',
-  }
+    '--w3m-accent': '#0f1225ff',
+    '--w3m-color-mix': '#0f1225ff',
+  },
+  featuredWalletIds: [
+    "12f913ed1cba36d11c175ffaea4157864f3363a690ecf3cc24e9683ef9ce2915"
+  ],
+  
+  
 })
 
 function ContextProvider({ children, cookies }: { children: ReactNode; cookies: string | null }) {
