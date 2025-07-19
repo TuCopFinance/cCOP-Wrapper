@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import styles from "./UnwrapperComponent.module.css";
@@ -64,7 +64,6 @@ export const UnwrapperComponent = () => {
   const [hasSufficientAmount, setHasSufficientAmount] = useState<boolean>(false);
   const [quote, setQuote] = useState<bigint | null>(null);
   const [chainToUnwrap, setChainToUnwrap] = useState("base");
-  const [balance, setBalance] = useState<bigint | null>(null);
 
   //Check allowance and get quote
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
@@ -75,7 +74,6 @@ export const UnwrapperComponent = () => {
     } catch {
       setHasSufficientAmount(false);
       setQuote(null);
-      setBalance(null);
       return;
     }
 
@@ -113,17 +111,14 @@ export const UnwrapperComponent = () => {
           typeof data[0].result === "bigint" &&
           typeof data[1].result === "bigint"
         ) {
-          setBalance(data[0].result);
           setQuote(data[1].result);
           setHasSufficientAmount(data[0].result >= amountFixed);
         } else {
-          setBalance(null);
           setQuote(null);
           setHasSufficientAmount(false);
         }
       })
       .catch(() => {
-        setBalance(null);
         setQuote(null);
         setHasSufficientAmount(false);
       })
@@ -137,7 +132,6 @@ export const UnwrapperComponent = () => {
     if (!amount) {
       setHasSufficientAmount(false);
       setQuote(null);
-      setBalance(null);
       return;
     }
     const timeout = setTimeout(() => {
