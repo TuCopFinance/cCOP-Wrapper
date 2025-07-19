@@ -94,7 +94,6 @@ export const WrapperComponent = () => {
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
-      console.log("Amount fixed:", amountFixed);
     } catch {
       return;
     }

@@ -18,7 +18,6 @@ export const InfoList = () => {
     const walletInfo = useWalletInfo()
     const mounted = useClientMounted();
     useEffect(() => {
-        console.log("Events: ", events);
     }, [events]);
 
   return !mounted ? null : (

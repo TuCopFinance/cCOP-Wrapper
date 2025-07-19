@@ -7,7 +7,7 @@ import ContextProvider from "@/context";
 
 export const metadata: Metadata = {
   title: "cCOP wrapper",
-  description: "DAPP for cCOP wrapper",
+  description: "A simple interface to wrap and unwrap cCOP tokens",
 };
 
 export default async function RootLayout({

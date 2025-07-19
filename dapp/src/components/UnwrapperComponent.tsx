@@ -111,11 +111,6 @@ export const UnwrapperComponent = () => {
       return;
     }
 
-    console.log(
-      "Checking allowance and getting quote for amount:",
-      amountFixed
-    );
-
     const targetChainContract =
       chainToUnwrap === "base"
         ? wrappedCCOPContractBase
@@ -144,7 +139,6 @@ export const UnwrapperComponent = () => {
       ],
     })
       .then((data: any) => {
-        console.log("Allowance and quote data:", data);
         setQuote(data[1].result as bigint);
         setHasSufficientAmount(data[0].result >= amountFixed);
       })
@@ -172,7 +166,6 @@ export const UnwrapperComponent = () => {
     const differentAddressInput = document.getElementById(
       "unwrapperAddressInput"
     ) as HTMLInputElement | null;
-    console.log("Wrapping cCOP tokens for amount:", amountFixed);
 
     const targetChainContractAddress =
       chainToUnwrap === "base"
