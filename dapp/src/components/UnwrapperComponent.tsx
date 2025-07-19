@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styles from "./UnwrapperComponent.module.css";
 import { Abi, formatEther } from "viem";
 import {
@@ -26,7 +26,7 @@ const notifyChangeChain = (chainName: string): string =>
     },
   });
 
-const notifyUnwrapAction = (deliveredPromise: Promise<any>) =>
+const notifyUnwrapAction = (deliveredPromise: Promise<unknown>) =>
   toast.promise(
     deliveredPromise,
     {
@@ -66,44 +66,13 @@ export const UnwrapperComponent = () => {
   const [quote, setQuote] = useState<bigint | null>(null);
   const [chainToUnwrap, setChainToUnwrap] = useState("base");
 
-  // Auto-update on input change
-  useEffect(() => {
-    if (!amount) return;
-    if (timeoutId) clearTimeout(timeoutId);
-    const newTimeoutId = setTimeout(() => {
-      verifyTokenAllowanceAndPriceForSend();
-    }, 500); // más responsivo
-    setTimeoutId(newTimeoutId);
-    return () => clearTimeout(newTimeoutId);
-  }, [amount, differentAddressFlag]);
-
-  // Handler: Amount input change
-  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setAmount(e.target.value);
-  }
-
-  function checkChainAndChange() {
-    const account = getAccount(config);
-    const targetChainId =
-      chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
-
-    if (account.chainId !== targetChainId) {
-      //change to selected chain
-      switchChain(config, {
-        chainId: targetChainId,
-      }).then(() => {
-        notifyChangeChain(chainToUnwrap);
-      });
-    }
-  }
-
   //Check allowance and get quote
-  function verifyTokenAllowanceAndPriceForSend() {
+  const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
     const account = getAccount(config);
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
-    } catch (e) {
+    } catch {
       return;
     }
 
@@ -149,6 +118,49 @@ export const UnwrapperComponent = () => {
       .finally(() => {
         checkChainAndChange();
       });
+  }, [
+    amount,
+    differentAddressFlag,
+    chainToUnwrap,
+    config,
+    wrappedCCOPContractBase,
+    wrappedCCOPContractArb,
+  ]);
+
+  // Auto-update on input change
+  useEffect(() => {
+    if (!amount) return;
+    if (timeoutId) clearTimeout(timeoutId);
+    const newTimeoutId = setTimeout(() => {
+      verifyTokenAllowanceAndPriceForSend();
+    }, 500); // más responsivo
+    setTimeoutId(newTimeoutId);
+    return () => clearTimeout(newTimeoutId);
+  }, [
+    amount,
+    differentAddressFlag,
+    timeoutId,
+    verifyTokenAllowanceAndPriceForSend,
+  ]);
+
+  // Handler: Amount input change
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setAmount(e.target.value);
+  }
+
+  function checkChainAndChange() {
+    const account = getAccount(config);
+    const targetChainId =
+      chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
+
+    if (account.chainId !== targetChainId) {
+      //change to selected chain
+      switchChain(config, {
+        chainId: targetChainId,
+      }).then(() => {
+        notifyChangeChain(chainToUnwrap);
+      });
+    }
   }
 
   function unwrap() {
@@ -158,7 +170,7 @@ export const UnwrapperComponent = () => {
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
-    } catch (e) {
+    } catch {
       return;
     }
     const differentAddressInput = document.getElementById(
