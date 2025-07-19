@@ -19,7 +19,7 @@ contract WrappedCCOP_Base_Script is Script {
     uint32 public constant DOMAIN_ID_CELO_MAINNET = 42220; // Domain ID for Celo Mainnet
 
     address public constant TREASURY_ADDRESS =
-        0xc3Ab4F2019326A4769aEC52DeA9c5AF9457094BD; // Example treasury address
+        0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22; // Example treasury address
 
     function setUp() public {}
 
