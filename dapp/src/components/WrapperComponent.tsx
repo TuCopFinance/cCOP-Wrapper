@@ -74,7 +74,7 @@ export const WrapperComponent = () => {
     }, 500);
     setTimeoutId(newTimeoutId);
     return () => clearTimeout(newTimeoutId);
-  }, [amount, domainID, differentAddressFlag]);
+  },  [amount, domainID, differentAddressFlag, timeoutId, verifyTokenAllowanceAndPriceForSend]);
 
   // --- Handlers ---
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {

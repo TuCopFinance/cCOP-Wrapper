@@ -61,7 +61,6 @@ export const UnwrapperComponent = () => {
   const [differentAddressFlag, setDifferentAddressFlag] = useState(false);
   const [amount, setAmount] = useState("");
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const [tokenAllowanceIsLoading, setTokenAllowanceIsLoading] = useState(false);
   const [hasSufficientAmount, setHasSufficientAmount] =
     useState<boolean>(false);
   const [quote, setQuote] = useState<bigint | null>(null);
@@ -100,14 +99,11 @@ export const UnwrapperComponent = () => {
 
   //Check allowance and get quote
   function verifyTokenAllowanceAndPriceForSend() {
-    if (tokenAllowanceIsLoading) return;
-    setTokenAllowanceIsLoading(true);
     const account = getAccount(config);
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
     } catch (e) {
-      setTokenAllowanceIsLoading(false);
       return;
     }
 
@@ -151,23 +147,18 @@ export const UnwrapperComponent = () => {
       })
       .catch(() => {})
       .finally(() => {
-        setTokenAllowanceIsLoading(false);
-
-        const account = getAccount(config);
         checkChainAndChange();
       });
   }
 
   function unwrap() {
     if (quote === null) return;
-    if (tokenAllowanceIsLoading) return;
-    setTokenAllowanceIsLoading(true);
+
     const account = getAccount(config);
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
     } catch (e) {
-      setTokenAllowanceIsLoading(false);
       return;
     }
     const differentAddressInput = document.getElementById(
@@ -215,8 +206,7 @@ export const UnwrapperComponent = () => {
         })
         .catch((error) => {
           console.error("Error unwrapping cCOP tokens:", error);
-        })
-        .finally(() => setTokenAllowanceIsLoading(false));
+        });
     });
   }
 
