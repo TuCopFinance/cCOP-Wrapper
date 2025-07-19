@@ -3,7 +3,7 @@ export async function getIsDelivered(messageId: string): Promise<boolean | null>
   let formattedMessageId = messageId;
   if (messageId.startsWith("0x")) {
     formattedMessageId = `\\\\x${messageId.substring(2)}`;
-    //console.log("Formatted message ID :", formattedMessageId);
+    console.log("Formatted message ID :", formattedMessageId);
   }
 
   const query = `query MyQuery { message_view(limit: 1, where: {msg_id: {_eq: "${formattedMessageId}"}}) { is_delivered } }`;
@@ -39,13 +39,13 @@ export async function waitForIsDelivered(
   while (attempt < maxAttempts) {
     attempt++;
     const delivered = await getIsDelivered(messageId);
-    //console.debug(`attempt #${attempt}`);
+    console.debug(`attempt #${attempt}`);
     if (delivered === true) {
-      //console.info(`[waitForIsDelivered] message ${messageId} was delivered after ${attempt} attempts.`);
+      console.info(`[waitForIsDelivered] message ${messageId} was delivered after ${attempt} attempts.`);
       return true;
     }
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
-  //console.warn(`[waitForIsDelivered] Message ${messageId} was not delivered after ${maxAttempts} attempts.`);
+  console.warn(`[waitForIsDelivered] Message ${messageId} was not delivered after ${maxAttempts} attempts.`);
   return false;
 }
