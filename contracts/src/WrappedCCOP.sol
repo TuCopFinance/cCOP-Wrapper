@@ -56,7 +56,7 @@ contract WrappedCCOP is ERC20 {
     uint256 private constant WAITING_PERIOD = 1 days;
     AddressTypeProposal private admin;
     Bytes32Proposal private treasuryAddress;
-    Uint32Proposal private cCOPDomainId;
+    Uint32Proposal private treasuryDomainId;
     AddressTypeProposal private mailboxAddress;
     bool private fuse = true;
 
@@ -81,18 +81,18 @@ contract WrappedCCOP is ERC20 {
      *  @dev Sets the initial admin, mailbox address, Celo Colombian Peso domain ID
      *  @param _initialAdmin The address of the initial admin.
      *  @param _mailbox The address of the hyperlane mailbox contract.
-     *  @param _celoDomainId The domain ID of the Celo Colombian Peso.
+     *  @param _treasuryDomainId The domain ID of the Treasury contract on Celo.
      *  @param _treasuryAddress The address of the treasury contract.
      */
     constructor(
         address _initialAdmin,
         address _mailbox,
-        uint32 _celoDomainId,
+        uint32 _treasuryDomainId,
         address _treasuryAddress
     ) ERC20("Wrapped Celo Colombian Peso", "wcCOP") {
         admin.current = _initialAdmin;
         mailboxAddress.current = _mailbox;
-        cCOPDomainId.current = _celoDomainId;
+        treasuryDomainId.current = _treasuryDomainId;
         treasuryAddress.current = bytes32(uint256(uint160(_treasuryAddress)));
     }
 
@@ -112,7 +112,7 @@ contract WrappedCCOP is ERC20 {
 
         if (_sender != treasuryAddress.current) revert SenderNotAuthorized();
 
-        if (_origin != cCOPDomainId.current) revert ChainIdNotAuthorized();
+        if (_origin != treasuryDomainId.current) revert ChainIdNotAuthorized();
 
         (address to, uint256 amount) = abi.decode(_data, (address, uint256));
 
@@ -140,7 +140,7 @@ contract WrappedCCOP is ERC20 {
         _burn(msg.sender, amount);
 
         messageId = IMailbox(mailboxAddress.current).dispatch{value: quote}(
-            cCOPDomainId.current,
+            treasuryDomainId.current,
             treasuryAddress.current,
             payload
         );
@@ -159,7 +159,7 @@ contract WrappedCCOP is ERC20 {
         bytes memory payload = abi.encode(receiver, amount);
         return
             IMailbox(mailboxAddress.current).quoteDispatch(
-                cCOPDomainId.current,
+                treasuryDomainId.current,
                 treasuryAddress.current,
                 payload
             );
@@ -264,33 +264,33 @@ contract WrappedCCOP is ERC20 {
      * @dev Only the current admin can call this. Sets the candidate and the acceptance time.
      * @param _newDomainId The proposed new domain ID.
      */
-    function proposeNewCCOPDomainIdProposal(
+    function proposeNewTreasuryDomainIdProposal(
         uint32 _newDomainId
     ) external onlyAdmin {
-        cCOPDomainId.proposal = _newDomainId;
-        cCOPDomainId.timeToAccept = block.timestamp + WAITING_PERIOD;
+        treasuryDomainId.proposal = _newDomainId;
+        treasuryDomainId.timeToAccept = block.timestamp + WAITING_PERIOD;
     }
 
     /**
-     * @notice Cancels the current cCOP domain ID proposal.
+     * @notice Cancels the current treasury domain ID proposal.
      * @dev Only the current admin can call this. Resets the proposal and acceptance time.
      */
-    function cancelNewCCOPDomainIdProposal() external onlyAdmin {
-        cCOPDomainId.proposal = 0;
-        cCOPDomainId.timeToAccept = 0;
+    function cancelNewTreasuryDomainIdProposal() external onlyAdmin {
+        treasuryDomainId.proposal = 0;
+        treasuryDomainId.timeToAccept = 0;
     }
 
     /**
-     * @notice Accepts the cCOP domain ID proposal after the waiting period has expired.
+     * @notice Accepts the treasury domain ID proposal after the waiting period has expired.
      * @dev Only the admin can call this. Changes the domain ID if the waiting period has passed.
      */
-    function acceptNewCCOPDomainIdProposal() external onlyAdmin {
-        if (block.timestamp < cCOPDomainId.timeToAccept) {
+    function acceptNewTreasuryDomainIdProposal() external onlyAdmin {
+        if (block.timestamp < treasuryDomainId.timeToAccept) {
             revert WaitingPeriodNotExpired();
         }
 
-        cCOPDomainId = Uint32Proposal({
-            current: cCOPDomainId.proposal,
+        treasuryDomainId = Uint32Proposal({
+            current: treasuryDomainId.proposal,
             proposal: 0,
             timeToAccept: 0
         });
@@ -376,25 +376,21 @@ contract WrappedCCOP is ERC20 {
      * @dev Converts the current treasury address from bytes32 to address.
      * @return The current treasury address.
      */
-    function getTreasuryAddress()
-        external
-        view
-        returns (address)
-    {
+    function getTreasuryAddress() external view returns (address) {
         return address(uint160(uint256(treasuryAddress.current)));
     }
 
     /**
-     * @notice Returns the current cCOP domain ID structure.
-     * @dev Provides the current, proposed, and acceptance time for the cCOP domain ID.
-     * @return The Uint32Proposal struct for the cCOP domain ID.
+     * @notice Returns the current treasury domain ID structure.
+     * @dev Provides the current, proposed, and acceptance time for the treasury domain ID.
+     * @return The Uint32Proposal struct for the treasury domain ID.
      */
-    function getCCOPDomainIdStructure()
+    function getTreasuryDomainIdStructure()
         external
         view
         returns (Uint32Proposal memory)
     {
-        return cCOPDomainId;
+        return treasuryDomainId;
     }
 
     /**
