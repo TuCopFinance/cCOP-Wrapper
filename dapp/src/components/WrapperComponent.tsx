@@ -15,6 +15,7 @@ import { chainID } from "@/constants/chainID";
 import treasury from "@/constants/abis/Treasury.json";
 import toast from "react-hot-toast";
 import { waitForIsDelivered } from "../utils/hyperlane";
+import type { Abi } from "viem"; 
 
 // --- Notification helpers ---
 const notifyChangeChain = () =>
@@ -44,12 +45,12 @@ export const WrapperComponent = () => {
   // --- Contract configs ---
   const treasuryContract = {
     address: address.mainnet.treasury as `0x${string}`,
-    abi: treasury.abi as any,
+    abi: treasury.abi as Abi,
     chainId: chainID.mainnet.celo,
   } as const;
   const cCopContract = {
     address: address.mainnet.cCOP as `0x${string}`,
-    abi: erc20Abi,
+    abi: erc20Abi as Abi,
     chainId: chainID.mainnet.celo,
   } as const;
 

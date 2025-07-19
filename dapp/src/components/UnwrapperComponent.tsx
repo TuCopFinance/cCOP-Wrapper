@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./UnwrapperComponent.module.css";
-import { formatEther } from "viem";
+import { Abi, formatEther } from "viem";
 import {
   getAccount,
   readContracts,
@@ -47,13 +47,13 @@ export const UnwrapperComponent = () => {
 
   const wrappedCCOPContractBase = {
     address: address.mainnet.wrapToken.base as `0x${string}`,
-    abi: WrappedCCOP.abi as any,
+    abi: WrappedCCOP.abi as Abi,
     chainId: chainID.mainnet.base,
   } as const;
 
   const wrappedCCOPContractArb = {
     address: address.mainnet.wrapToken.arb as `0x${string}`,
-    abi: WrappedCCOP.abi as any,
+    abi: WrappedCCOP.abi as Abi,
     chainId: chainID.mainnet.arb,
   } as const;
 
