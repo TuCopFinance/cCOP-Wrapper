@@ -267,7 +267,7 @@ export const UnwrapperComponent = () => {
         }
         onClick={hasSufficientAmount ? unwrap : undefined}
       >
-        Wrap
+        Unwrap
       </button>
     </>
   );
