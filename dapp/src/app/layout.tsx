@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 import { headers } from "next/headers"; // added
 import "./globals.css";

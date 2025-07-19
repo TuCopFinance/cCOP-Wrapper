@@ -138,9 +138,16 @@ export const UnwrapperComponent = () => {
         },
       ],
     })
-      .then((data: any) => {
-        setQuote(data[1].result as bigint);
-        setHasSufficientAmount(data[0].result >= amountFixed);
+      .then((data) => {
+        if (
+          data[0].status === "success" &&
+          data[1].status === "success" &&
+          typeof data[0].result === "bigint" &&
+          typeof data[1].result === "bigint"
+        ) {
+          setQuote(data[1].result);
+          setHasSufficientAmount(data[0].result >= amountFixed);
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -187,7 +194,7 @@ export const UnwrapperComponent = () => {
         amountFixed,
       ],
       value: quote + BigInt(1),
-    }).then((data: any) => {
+    }).then((data) => {
       const msgIdentifier = data.result;
 
       writeContract(config, {

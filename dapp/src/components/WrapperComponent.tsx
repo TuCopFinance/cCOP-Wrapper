@@ -123,9 +123,16 @@ export const WrapperComponent = () => {
         },
       ],
     })
-      .then((data: any) => {
-        setQuote(data[1].result as bigint);
-        setAllowanceIsMoreThanAmount(amountFixed <= data[0].result);
+      .then((data) => {
+        if (
+          data[0].status === "success" &&
+          data[1].status === "success" &&
+          typeof data[0].result === "bigint" &&
+          typeof data[1].result === "bigint"
+        ) {
+          setQuote(data[1].result);
+          setAllowanceIsMoreThanAmount(amountFixed <= data[0].result);
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -184,7 +191,7 @@ export const WrapperComponent = () => {
       ],
       value: quote + BigInt(1),
     })
-      .then((data: any) => {
+      .then((data) => {
         const msgIdentifier = data.result;
         writeContract(config, {
           chainId: chainID.mainnet.celo,

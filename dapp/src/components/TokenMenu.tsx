@@ -1,13 +1,13 @@
 "use client";
 import React from "react";
 import styles from "./TokenMenu.module.css";
-import { Spinner } from "react-spinner-toolkit";
+// import { Spinner } from "react-spinner-toolkit";
 import { WrapperComponent } from "./WrapperComponent";
 import { UnwrapperComponent } from "./UnwrapperComponent";
 
 export const TokenMenu = () => {
   const [actionFlag, setActionFlag] = React.useState(true);
-  const [differentAddressFlag, setDifferentAddressFlag] = React.useState(false);
+  // const [differentAddressFlag, setDifferentAddressFlag] = React.useState(false);
   return (
     <div className={styles.menuBox}>
       <div className={styles.tabContainer}>
