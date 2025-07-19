@@ -16,6 +16,7 @@ import { chainID } from "@/constants/chainID";
 import WrappedCCOP from "@/constants/abis/WrappedCCOP.json";
 import toast from "react-hot-toast";
 import { waitForIsDelivered } from "@/utils/hyperlane";
+import { useWalletClient } from "wagmi";
 
 const notifyChangeChain = (chainName: string): string =>
   toast(`Changing to ${chainName} network`, {
@@ -64,6 +65,8 @@ export const UnwrapperComponent = () => {
   const [hasSufficientAmount, setHasSufficientAmount] = useState<boolean>(false);
   const [quote, setQuote] = useState<bigint | null>(null);
   const [chainToUnwrap, setChainToUnwrap] = useState("base");
+
+  const { data: walletClient } = useWalletClient();
 
   //Check allowance and get quote
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
@@ -222,6 +225,37 @@ export const UnwrapperComponent = () => {
   // Render
   return (
     <>
+      {/* Botón para agregar token cCOP a la wallet usando viem/wagmi */}
+      <button
+        className={styles.actionButtonActive}
+        style={{ marginBottom: "1rem" }}
+        onClick={async () => {
+          if (walletClient) {
+            try {
+              const success = await walletClient.watchAsset({
+                type: "ERC20",
+                options: {
+                  address: "0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22",
+                  symbol: "wcCOP",
+                  decimals: 18,
+                  image: "/cCOP_token.png",
+                },
+              });
+              if (success) {
+                toast.success("Token cCOP agregado a tu wallet");
+              } else {
+                toast.error("El usuario rechazó agregar el token");
+              }
+            } catch (error) {
+              toast.error("No se pudo agregar el token a la wallet");
+            }
+          } else {
+            toast.error("No se detectó una wallet compatible");
+          }
+        }}
+      >
+        Agregar cCOP a wallet
+      </button>
       <p className={styles.unwrapToLabel}>
         Chain to unwrap:{" "}
         <select
