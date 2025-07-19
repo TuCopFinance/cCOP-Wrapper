@@ -31,7 +31,6 @@ export const modal = createAppKit({
 
   themeVariables: {
     '--w3m-accent': '#0f1225ff',
-    '--w3m-color-mix': '#0f1225ff',
   },
   featuredWalletIds: [
     "12f913ed1cba36d11c175ffaea4157864f3363a690ecf3cc24e9683ef9ce2915"
