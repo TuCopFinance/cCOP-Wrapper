@@ -417,10 +417,10 @@ contract WrappedCCOP is ERC20 {
 
     /**
      * @notice Returns the number of decimals used by the token.
-     * @dev Overrides the ERC20 decimals function to return 15.
-     * @return The number of decimals (15).
+     * @dev Overrides the ERC20 decimals function to return 18.
+     * @return The number of decimals (18).
      */
     function decimals() public view override returns (uint8) {
-        return 15;
+        return 18;
     }
 }

@@ -16,7 +16,7 @@ contract CCOPMock is ERC20, Ownable {
     }
 
     function decimals() public view override returns (uint8) {
-        return 15;
+        return 18;
     }
 
 }
