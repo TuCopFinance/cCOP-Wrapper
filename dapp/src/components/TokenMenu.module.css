@@ -1,5 +1,3 @@
-
-
 .menuBox {
   display: flex;
   flex-direction: column;
@@ -47,5 +45,22 @@
 
   color: #888888;
   cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .menuBox,
+  .actionBox {
+    padding: 10px;
+    max-width: 100vw;
+  }
+  .tabButtonActive,
+  .tabButtonInactive {
+    font-size: 18px;
+    padding: 10px 0;
+  }
+  .tabContainer {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
 

@@ -83,3 +83,41 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+@media (max-width: 600px) {
+  .amountInput,
+  .addressInput,
+  .wrapToSelector,
+  .actionButtonInactive,
+  .actionButtonActive {
+    width: 100%;
+    font-size: 18px;
+    padding: 14px;
+  }
+
+  .addressInput,
+  .amountInput {
+    width: 92%;
+  }
+  .addressSelector select {
+    width: 100%;
+    font-size: 18px;
+    padding: 14px 0px;
+  }
+  .wrapToLabel,
+  .priceLabel {
+    font-size: 18px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  .amountLabel {
+    font-size: 18px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+  .actionButtonInactive,
+  .actionButtonActive {
+    margin-top: 16px;
+    height: 48px;
+  }
+}
