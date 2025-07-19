@@ -17,8 +17,8 @@ import WrappedCCOP from "@/constants/abis/WrappedCCOP.json";
 import toast from "react-hot-toast";
 import { waitForIsDelivered } from "@/utils/hyperlane";
 
-const notifyChangeChain = () =>
-  toast("Changing to Celo network", {
+const notifyChangeChain = (chainName: string): string =>
+  toast(`Changing to ${chainName} network`, {
     duration: 2000,
     position: "bottom-right",
     style: {
@@ -47,9 +47,15 @@ export const UnwrapperComponent = () => {
   // Contract configs
 
   const wrappedCCOPContractBase = {
-    address: address.testnet.wrapToken.base as `0x${string}`,
+    address: address.mainnet.wrapToken.base as `0x${string}`,
     abi: WrappedCCOP.abi as any,
-    chainId: chainID.testnet.base,
+    chainId: chainID.mainnet.base,
+  } as const;
+
+  const wrappedCCOPContractArb = {
+    address: address.mainnet.wrapToken.arb as `0x${string}`,
+    abi: WrappedCCOP.abi as any,
+    chainId: chainID.mainnet.arb,
   } as const;
 
   // State
@@ -60,6 +66,7 @@ export const UnwrapperComponent = () => {
   const [hasSufficientAmount, setHasSufficientAmount] =
     useState<boolean>(false);
   const [quote, setQuote] = useState<bigint | null>(null);
+  const [chainToUnwrap, setChainToUnwrap] = useState("base");
 
   // Auto-update on input change
   useEffect(() => {
@@ -79,12 +86,15 @@ export const UnwrapperComponent = () => {
 
   function checkChainAndChange() {
     const account = getAccount(config);
-    if (account.chainId !== chainID.testnet.base) {
-      //change to base chain
+    const targetChainId =
+      chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
+
+    if (account.chainId !== targetChainId) {
+      //change to selected chain
       switchChain(config, {
-        chainId: chainID.testnet.base,
+        chainId: targetChainId,
       }).then(() => {
-        notifyChangeChain();
+        notifyChangeChain(chainToUnwrap);
       });
     }
   }
@@ -96,7 +106,7 @@ export const UnwrapperComponent = () => {
     const account = getAccount(config);
     let amountFixed: bigint;
     try {
-      amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
+      amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
     } catch (e) {
       setTokenAllowanceIsLoading(false);
       return;
@@ -106,18 +116,24 @@ export const UnwrapperComponent = () => {
       "Checking allowance and getting quote for amount:",
       amountFixed
     );
+
+    const targetChainContract =
+      chainToUnwrap === "base"
+        ? wrappedCCOPContractBase
+        : wrappedCCOPContractArb;
+
     const differentAddressInput = document.getElementById(
       "unwrapperAddressInput"
     ) as HTMLInputElement | null;
     readContracts(config, {
       contracts: [
         {
-          ...wrappedCCOPContractBase,
+          ...targetChainContract,
           functionName: "balanceOf",
           args: [account.address as `0x${string}`],
         },
         {
-          ...wrappedCCOPContractBase,
+          ...targetChainContract,
           functionName: "getQuote",
           args: [
             differentAddressFlag
@@ -149,7 +165,7 @@ export const UnwrapperComponent = () => {
     const account = getAccount(config);
     let amountFixed: bigint;
     try {
-      amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 15));
+      amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
     } catch (e) {
       setTokenAllowanceIsLoading(false);
       return;
@@ -159,10 +175,18 @@ export const UnwrapperComponent = () => {
     ) as HTMLInputElement | null;
     console.log("Wrapping cCOP tokens for amount:", amountFixed);
 
+    const targetChainContractAddress =
+      chainToUnwrap === "base"
+        ? address.mainnet.wrapToken.base
+        : address.mainnet.wrapToken.arb;
+
+    const targetChainIdContract =
+      chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
+
     simulateContract(config, {
-      chainId: chainID.testnet.base,
+      chainId: targetChainIdContract,
       abi: WrappedCCOP.abi,
-      address: address.testnet.wrapToken.base as `0x${string}`,
+      address: targetChainContractAddress as `0x${string}`,
       functionName: "unwrap",
       args: [
         differentAddressFlag
@@ -175,9 +199,9 @@ export const UnwrapperComponent = () => {
       const msgIdentifier = data.result;
 
       writeContract(config, {
-        chainId: chainID.testnet.base,
+        chainId: targetChainIdContract,
         abi: WrappedCCOP.abi,
-        address: address.testnet.wrapToken.base as `0x${string}`,
+        address: targetChainContractAddress as `0x${string}`,
         functionName: "unwrap",
         args: [
           differentAddressFlag
@@ -200,6 +224,17 @@ export const UnwrapperComponent = () => {
   // Render
   return (
     <>
+      <p className={styles.wrapToLabel}>
+        Chain to unwrap:{" "}
+        <select
+          className={styles.wrapToSelector}
+          value={chainToUnwrap}
+          onChange={(e) => setChainToUnwrap(e.target.value)}
+        >
+          <option value="base">Base</option>
+          <option value="arbitrum">Arbitrum</option>
+        </select>
+      </p>
       <label className={styles.amountLabel}>Amount</label>
       <input
         className={styles.amountInput}
