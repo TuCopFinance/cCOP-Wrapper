@@ -17,6 +17,7 @@ import WrappedCCOP from "@/constants/abis/WrappedCCOP.json";
 import toast from "react-hot-toast";
 import { waitForIsDelivered } from "@/utils/hyperlane";
 import { useWalletClient } from "wagmi";
+import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
 
 const notifyChangeChain = (chainName: string): string =>
   toast(`Changing to ${chainName} network`, {
@@ -173,6 +174,8 @@ export const UnwrapperComponent = () => {
     if (quote === null) return;
 
     const account = getAccount(config);
+    if (!account.address) return;
+    
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
@@ -191,18 +194,24 @@ export const UnwrapperComponent = () => {
     const targetChainIdContract =
       chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
 
+    const targetAddress = differentAddressFlag
+      ? differentAddressInput?.value || account.address || ""
+      : (account.address as `0x${string}`);
+
+    // Generate Divvi referral tag
+    const referralTag = generateReferralTag(account.address);
+
     simulateContract(config, {
       chainId: targetChainIdContract,
       abi: WrappedCCOP.abi,
       address: targetChainContractAddress as `0x${string}`,
       functionName: "unwrap",
       args: [
-        differentAddressFlag
-          ? differentAddressInput?.value || account.address || ""
-          : (account.address as `0x${string}`),
+        targetAddress,
         amountFixed,
       ],
       value: quote + BigInt(1),
+      dataSuffix: `0x${referralTag}` as `0x${string}`,
     })
       .then((data) => {
         const msgIdentifier = data.result;
@@ -213,14 +222,16 @@ export const UnwrapperComponent = () => {
           address: targetChainContractAddress as `0x${string}`,
           functionName: "unwrap",
           args: [
-            differentAddressFlag
-              ? differentAddressInput?.value || account.address || ""
-              : (account.address as `0x${string}`),
+            targetAddress,
             amountFixed,
           ],
           value: quote + BigInt(1), // Ensure value is set to quote if available
+          dataSuffix: `0x${referralTag}` as `0x${string}`,
         })
-          .then(() => {
+          .then((txHash) => {
+            // Submit Divvi referral
+            submitDivviReferral(txHash, targetChainIdContract);
+            
             notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20));
           })
           .catch((error) => {

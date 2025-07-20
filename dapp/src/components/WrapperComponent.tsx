@@ -16,7 +16,9 @@ import { chainID } from "@/constants/chainID";
 import treasury from "@/constants/abis/Treasury.json";
 import toast from "react-hot-toast";
 import { waitForIsDelivered } from "../utils/hyperlane";
-import type { Abi } from "viem"; 
+import type { Abi } from "viem";
+import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
+import { getReferralTag } from "@divvi/referral-sdk";
 
 // --- Notification helpers ---
 const notifyChangeChain = () =>
@@ -159,14 +161,25 @@ export const WrapperComponent = () => {
     } catch {
       return;
     }
+    
+    const account = getAccount(config);
+    if (!account.address) return;
+
+    // Generate Divvi referral tag
+    const referralTag = generateReferralTag(account.address);
+
     writeContract(config, {
       chainId: chainID.mainnet.celo,
       abi: erc20Abi,
       address: address.mainnet.cCOP as `0x${string}`,
       functionName: "approve",
       args: [address.mainnet.treasury as `0x${string}`, amountFixed],
+      dataSuffix: `0x${referralTag}` as `0x${string}`,
     })
-      .then(() => {
+      .then((txHash) => {
+        // Submit Divvi referral
+        submitDivviReferral(txHash, chainID.mainnet.celo);
+        
         setTimeout(() => {
           verifyTokenAllowanceAndPriceForSend();
         }, 2500);
@@ -179,6 +192,8 @@ export const WrapperComponent = () => {
   function wrap() {
     if (quote === null) return;
     const account = getAccount(config);
+    if (!account.address) return;
+    
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
@@ -188,6 +203,14 @@ export const WrapperComponent = () => {
     const differentAddressInput = document.getElementById(
       "wrapperAddressInput"
     ) as HTMLInputElement | null;
+    
+    const targetAddress = differentAddressFlag
+      ? differentAddressInput?.value || account.address || ""
+      : (account.address as `0x${string}`);
+
+    // Generate Divvi referral tag
+    const referralTag = generateReferralTag(account.address);
+
     simulateContract(config, {
       chainId: chainID.mainnet.celo,
       abi: treasury.abi,
@@ -195,12 +218,11 @@ export const WrapperComponent = () => {
       functionName: "wrap",
       args: [
         domainID,
-        differentAddressFlag
-          ? differentAddressInput?.value || account.address || ""
-          : (account.address as `0x${string}`),
+        targetAddress,
         amountFixed,
       ],
       value: quote + BigInt(1),
+      dataSuffix: `0x${referralTag}` as `0x${string}`,
     })
       .then((data) => {
         const msgIdentifier = data.result;
@@ -211,14 +233,16 @@ export const WrapperComponent = () => {
           functionName: "wrap",
           args: [
             domainID,
-            differentAddressFlag
-              ? differentAddressInput?.value || account.address || ""
-              : (account.address as `0x${string}`),
+            targetAddress,
             amountFixed,
           ],
           value: quote + BigInt(1),
+          dataSuffix: `0x${referralTag}` as `0x${string}`,
         })
-          .then(() => {
+          .then((txHash) => {
+            // Submit Divvi referral
+            submitDivviReferral(txHash, chainID.mainnet.celo);
+            
             notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20));
           })
           .catch(() => {})
