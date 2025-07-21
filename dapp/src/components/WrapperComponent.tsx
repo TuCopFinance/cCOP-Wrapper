@@ -19,6 +19,7 @@ import { waitForIsDelivered } from "../utils/hyperlane";
 import type { Abi } from "viem";
 import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
 import { getReferralTag } from "@divvi/referral-sdk";
+import { BalanceIndicators } from "./BalanceIndicators";
 
 // --- Notification helpers ---
 const notifyChangeChain = () =>
@@ -254,6 +255,7 @@ export const WrapperComponent = () => {
   // --- Render ---
   return (
     <>
+      <BalanceIndicators />
       <label className={styles.amountLabel}>Amount</label>
       <input
         className={styles.amountInput}

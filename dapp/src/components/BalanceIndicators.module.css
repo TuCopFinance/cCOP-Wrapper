@@ -1,0 +1,58 @@
+.indicatorRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: nowrap;         /* NO wrap */
+  overflow-x: auto;          /* Scroll horizontal si no cabe */
+  width: 100%;
+}
+
+.indicator {
+  background: #232323;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #fff;
+  min-width: 110px;
+  white-space: nowrap;       /* Todo en una línea */
+}
+
+.label {
+  font-weight: 500;
+  color: #a3a3a3;
+  min-width: 48px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  min-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.refreshBtn {
+  background: none;
+  border: none;
+  color: #a3a3a3;
+  cursor: pointer;
+  font-size: 18px;
+  margin-left: 4px;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.refreshBtn:hover {
+  color: #fff;
+} 

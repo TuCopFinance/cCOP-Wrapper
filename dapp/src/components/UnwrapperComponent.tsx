@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { waitForIsDelivered } from "@/utils/hyperlane";
 import { useWalletClient } from "wagmi";
 import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
+import { BalanceIndicators } from "./BalanceIndicators";
 
 const notifyChangeChain = (chainName: string): string =>
   toast(`Changing to ${chainName} network`, {
@@ -255,6 +256,7 @@ export const UnwrapperComponent = () => {
   // Render
   return (
     <>
+      <BalanceIndicators />
       <button
         className={styles.actionButtonActive}
         style={{ marginBottom: "1rem" }}

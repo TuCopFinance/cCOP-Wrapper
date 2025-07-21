@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 500px;
+  max-width: 700px;
   color: #ffffff;
   background-color: var(--box);
   border: 1px solid #444444;
@@ -50,7 +50,7 @@
 @media (max-width: 600px) {
   .menuBox,
   .actionBox {
-    padding: 10px;
+    padding: 6px;
     max-width: 100vw;
   }
   .tabButtonActive,
@@ -61,6 +61,25 @@
   .tabContainer {
     flex-direction: column;
     gap: 8px;
+  }
+  .menuBox input,
+  .menuBox select,
+  .menuBox button,
+  .actionBox input,
+  .actionBox select,
+  .actionBox button {
+    width: 100% !important;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  .indicatorRow {
+    gap: 6px;
+    font-size: 12px;
+  }
+  .indicator {
+    min-width: 90px;
+    padding: 3px 6px;
+    font-size: 12px;
   }
 }
 
