@@ -23,17 +23,6 @@ export const ViewSelector: React.FC<ViewSelectorProps> = ({
     setIsOpen(false);
   };
 
-  const getDisplayName = (view: string) => {
-    switch (view) {
-      case "tokenmenu":
-        return "Token Menu";
-      case "dashboard":
-        return "Dashboard";
-      default:
-        return "Select View";
-    }
-  };
-
   return (
     <div className={styles.dropdown}>
       <button className={styles.dropdownButton} onClick={toggleDropdown}>
