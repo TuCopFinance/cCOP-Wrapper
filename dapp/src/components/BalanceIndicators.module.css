@@ -55,4 +55,50 @@
 }
 .refreshBtn:hover {
   color: #fff;
+}
+
+.consolidated {
+  background: #232323;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-weight: 600;
+  min-width: 120px;
+  margin-bottom: 0;
+  transition: background 0.2s;
+}
+.consolidated:hover {
+  background: #333;
+}
+
+@media (max-width: 600px) {
+  .indicatorRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: visible;
+  }
+  .indicator {
+    min-width: unset;
+    width: 100%;
+    justify-content: space-between;
+    font-size: 15px;
+    padding: 6px 10px;
+  }
+  .refreshBtn {
+    align-self: flex-end;
+    margin-top: 4px;
+    margin-left: 0;
+  }
+  .consolidated {
+    width: 100%;
+    font-size: 17px;
+    padding: 10px 12px;
+    min-width: unset;
+  }
 } 
