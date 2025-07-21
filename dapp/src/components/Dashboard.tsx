@@ -42,7 +42,7 @@ export const Dashboard = () => {
     celo: "0",
   });
 
-  const readAmount = () => {
+  const readAmount = React.useCallback(() => {
     const account = getAccount(config);
     readContracts(config, {
       contracts: [
@@ -78,7 +78,7 @@ export const Dashboard = () => {
         });
       }
     });
-  };
+  }, []);
 
   const addTokenToWallet = async (network: "base" | "arb") => {
     if (walletClient) {
@@ -126,7 +126,7 @@ export const Dashboard = () => {
                 },
               });
             }
-          } catch (error) {
+          } catch {
             toast.error("Failed to add token to wallet", {
               position: "bottom-right",
               style: {
@@ -150,7 +150,7 @@ export const Dashboard = () => {
 
   React.useEffect(() => {
     readAmount();
-  }, []);
+  }, [readAmount]);
 
   return (
     <>
