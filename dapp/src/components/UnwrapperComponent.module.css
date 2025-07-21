@@ -78,7 +78,7 @@
 
 .actionButtonActive {
   color: #ffffff;
-  background-color: #a3a3a3;
+  background-color: var(--primary);
   border: none;
   border-radius: 4px;
   cursor: pointer;
