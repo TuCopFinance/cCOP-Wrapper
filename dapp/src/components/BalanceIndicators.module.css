@@ -11,24 +11,35 @@
 .indicator {
   background: #232323;
   border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 13px;
+  padding: 4px 14px;
+  font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   color: #fff;
-  min-width: 110px;
-  white-space: nowrap;       /* Todo en una línea */
+  min-width: 120px;
+  max-width: 320px;
+  width: fit-content;
+  white-space: nowrap;
 }
 
-.label {
-  font-weight: 500;
-  color: #a3a3a3;
-  min-width: 48px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: inline-block;
+.indicator.celo {
+  background: linear-gradient(90deg, rgba(249,217,35,0.55) 60%, #232323 100%);
+}
+.indicator.base {
+  background: linear-gradient(90deg, rgba(58,141,222,0.65) 60%, #232323 100%);
+}
+.indicator.arb {
+  background: linear-gradient(90deg, rgba(191,196,202,0.55) 60%, #232323 100%);
+}
+
+.indicator .label, .indicator .value {
+  font-family: inherit;
+  font-size: 1.08em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  color: #fff;
 }
 
 .value {
@@ -84,11 +95,12 @@
     overflow-x: visible;
   }
   .indicator {
-    min-width: unset;
+    min-width: 90px;
+    max-width: 98vw;
     width: 100%;
-    justify-content: space-between;
     font-size: 15px;
     padding: 6px 10px;
+    gap: 4px;
   }
   .refreshBtn {
     align-self: flex-end;
