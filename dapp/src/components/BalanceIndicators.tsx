@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { FiRefreshCcw, FiChevronDown, FiChevronUp } from "react-icons/fi";
-import styles from "./BalanceIndicators.module.css";
+import styles from "./BalanceIndicatorsStyles.module.css";
 
 export const BalanceIndicators = () => {
   const { celo, base, arb, refresh } = useTokenBalances();
@@ -24,15 +24,15 @@ export const BalanceIndicators = () => {
       </div>
       {showDetails && (
         <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%" }}>
-          <div className={styles.indicator}>
+          <div className={`${styles.indicator} ${styles.celo}`}>
             <span className={styles.label}>Celo:</span>
             <span className={styles.value}>{parseFloat(celo).toFixed(2)} cCOP</span>
           </div>
-          <div className={styles.indicator}>
+          <div className={`${styles.indicator} ${styles.base}`}>
             <span className={styles.label}>Base:</span>
             <span className={styles.value}>{parseFloat(base).toFixed(2)} wcCOP</span>
           </div>
-          <div className={styles.indicator}>
+          <div className={`${styles.indicator} ${styles.arb}`}>
             <span className={styles.label}>Arbitrum:</span>
             <span className={styles.value}>{parseFloat(arb).toFixed(2)} wcCOP</span>
           </div>

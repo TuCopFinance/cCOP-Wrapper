@@ -1,0 +1,116 @@
+.indicatorRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: nowrap;         /* NO wrap */
+  overflow-x: auto;          /* Scroll horizontal si no cabe */
+  width: 100%;
+}
+
+.indicator {
+  background: #232323;
+  border-radius: 6px;
+  padding: 4px 14px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  min-width: 120px;
+  max-width: 320px;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.indicator.celo {
+  background: linear-gradient(90deg, rgba(249,217,35,0.55) 60%, #232323 100%);
+}
+.indicator.base {
+  background: linear-gradient(90deg, rgba(58,141,222,0.65) 60%, #232323 100%);
+}
+.indicator.arb {
+  background: linear-gradient(90deg, rgba(191,196,202,0.55) 60%, #232323 100%);
+}
+
+.indicator .label, .indicator .value {
+  font-family: inherit;
+  font-size: 1.08em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  min-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.refreshBtn {
+  background: none;
+  border: none;
+  color: #a3a3a3;
+  cursor: pointer;
+  font-size: 18px;
+  margin-left: 4px;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.refreshBtn:hover {
+  color: #fff;
+}
+
+.consolidated {
+  background: #232323;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-weight: 600;
+  min-width: 120px;
+  margin-bottom: 0;
+  transition: background 0.2s;
+}
+.consolidated:hover {
+  background: #333;
+}
+
+@media (max-width: 600px) {
+  .indicatorRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: visible;
+  }
+  .indicator {
+    min-width: 90px;
+    max-width: 98vw;
+    width: 100%;
+    font-size: 15px;
+    padding: 6px 10px;
+    gap: 4px;
+  }
+  .refreshBtn {
+    align-self: flex-end;
+    margin-top: 4px;
+    margin-left: 0;
+  }
+  .consolidated {
+    width: 100%;
+    font-size: 17px;
+    padding: 10px 12px;
+    min-width: unset;
+  }
+} 
