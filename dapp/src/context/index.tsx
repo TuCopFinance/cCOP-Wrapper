@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import { wagmiAdapter, projectId, networks } from '@/config'
