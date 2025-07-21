@@ -1,28 +1,11 @@
-"use client";
+
 import React from "react";
 import { ConnectButton } from "@/components/ConnectButton";
 import Image from "next/image";
 import { TokenMenu } from "@/components/TokenMenu";
-import { Dashboard } from "@/components/Dashboard";
-import { ViewSelector } from "@/components/ViewSelector";
 
 
 export default function Home() {
-  const [currentView, setCurrentView] = React.useState<"tokenmenu" | "dashboard">("tokenmenu");
-
-  const handleViewChange = (view: "tokenmenu" | "dashboard") => {
-    setCurrentView(view);
-  };
-
-  const renderCurrentView = () => {
-    switch (currentView) {
-      case "dashboard":
-        return <Dashboard />;
-      case "tokenmenu":
-      default:
-        return <TokenMenu />;
-    }
-  };
 
   return (
     <div className={"pages"}>
@@ -39,17 +22,12 @@ export default function Home() {
         </div>
 
         <div className="headerContainerRight">
-            <ConnectButton />
-            <ViewSelector 
-              currentView={currentView} 
-              onViewChange={handleViewChange}
-            />
+          <ConnectButton />
         </div>
       </header>
       <div className="content">
-        <div className="menuBox">
-          {renderCurrentView()}
-        </div>
+          <TokenMenu />
+        
       </div>
     </div>
   );

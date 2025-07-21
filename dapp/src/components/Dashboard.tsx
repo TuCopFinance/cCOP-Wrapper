@@ -163,7 +163,6 @@ export const Dashboard = () => {
       </div>
       
       <div className={styles.dashboardContainer}>
-        <h1 className={styles.title}>cCOP Dashboard</h1>
         <div className={styles.tokenBalancesContainer}>
           <div className={styles.tokenBalanceCard}>
             <h2>Celo cCOP Balance</h2>
