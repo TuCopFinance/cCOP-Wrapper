@@ -35,7 +35,7 @@ export const modal = createAppKit({
     '--w3m-color-fg-1': '#fff',
     '--w3m-color-fg-2': '#b0b0b0',
     '--w3m-border-radius': '8px',
-  },
+  } as any,
   featuredWalletIds: [
     "12f913ed1cba36d11c175ffaea4157864f3363a690ecf3cc24e9683ef9ce2915"
   ],
