@@ -7,9 +7,8 @@ import { UnwrapperComponent } from "./UnwrapperComponent";
 
 export const TokenMenu = () => {
   const [actionFlag, setActionFlag] = React.useState(true);
-  // const [differentAddressFlag, setDifferentAddressFlag] = React.useState(false);
   return (
-    <div className={styles.menuBox}>
+    <>
       <div className={styles.tabContainer}>
         <button
           className={
@@ -31,6 +30,6 @@ export const TokenMenu = () => {
       <div className={styles.actionBox}>
         {actionFlag ? <WrapperComponent /> : <UnwrapperComponent />}
       </div>
-    </div>
+    </>
   );
 };

@@ -21,6 +21,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
+        
         <ContextProvider cookies={cookies}>{children}<Toaster/></ContextProvider>
       </body>
     </html>
