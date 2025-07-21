@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import styles from "./Dashboard.module.css";
-// import { Spinner } from "react-spinner-toolkit";
 import { useWalletClient } from "wagmi";
 import toast from "react-hot-toast";
 import { address } from "@/constants/address";
@@ -9,13 +8,10 @@ import WrappedCCOP from "@/constants/abis/WrappedCCOP.json";
 import { chainID } from "@/constants/chainID";
 import { Abi, erc20Abi } from "viem";
 import { FiRefreshCcw } from "react-icons/fi";
-
 import {
   getAccount,
   readContracts,
-  simulateContract,
   switchChain,
-  writeContract,
 } from "@wagmi/core";
 import { config } from "@/config";
 
