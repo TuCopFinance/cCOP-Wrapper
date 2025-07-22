@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 import styles from "./BalanceIndicators.module.css";
 
 export const BalanceIndicators = () => {
-  const { celo, base, arb, refresh } = useTokenBalances();
+  const { celo, base, arb, refresh, isLoading, error } = useTokenBalances();
   const [showDetails, setShowDetails] = useState(false);
   const { data: walletClient } = useWalletClient();
 
@@ -90,16 +90,10 @@ export const BalanceIndicators = () => {
         <div
           className={showDetails ? styles.totalDataBoxOpen : styles.totalDataBoxClose}
           onClick={() => setShowDetails((v) => !v)}
-          style={{
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
         >
           <div className={styles.textTotalBox}>
             <p className={styles.defaultLabel}>
-              Total: {total.toFixed(2)} cCOP
+              {isLoading ? "Loading..." : error ? "Error loading balances" : `Total: ${total.toFixed(2)} cCOP`}
             </p>{" "}
           </div>
 
@@ -113,7 +107,7 @@ export const BalanceIndicators = () => {
             <img src="assets/Celo.png" alt="cCOP Token" />
             <p>
               Celo:{" "}
-              {parseFloat(celo).toFixed(2)} cCOP
+              {isLoading ? "Loading..." : parseFloat(celo) > 0 ? parseFloat(celo).toFixed(2) : "0.00"} cCOP
             </p>
             <button
               className={styles.addTokenBtn}
@@ -127,7 +121,7 @@ export const BalanceIndicators = () => {
             <img src="assets/Base.png" alt="wcCOP Token" />
             <p>
               Base:{" "}
-              {parseFloat(base).toFixed(2)} wcCOP
+              {isLoading ? "Loading..." : parseFloat(base) > 0 ? parseFloat(base).toFixed(2) : "0.00"} wcCOP
             </p>
             <button
               className={styles.addTokenBtn}
@@ -141,7 +135,7 @@ export const BalanceIndicators = () => {
             <img src="assets/Arbitrum.png" alt="wcCOP Token"  />
             <p>
               Arbitrum:{" "}
-              {parseFloat(arb).toFixed(2)} wcCOP
+              {isLoading ? "Loading..." : parseFloat(arb) > 0 ? parseFloat(arb).toFixed(2) : "0.00"} wcCOP
             </p>
             <button
               className={styles.addTokenBtn}
