@@ -1,19 +1,239 @@
+/* Unified Label System */
 .amountLabel {
-  font-weight: bold;
-  margin-top: 8px;
-  margin-bottom: 4px;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  color: #fff !important;
+  margin-bottom: 12px !important;
+  margin-top: 8px !important;
+  display: block !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  opacity: 0.9 !important;
+  position: relative !important;
+  padding-left: 4px !important;
+  line-height: 1.2 !important;
+}
+
+.amountLabel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 16px;
+  background: linear-gradient(135deg, var(--primary), rgba(0, 123, 255, 0.6));
+  border-radius: 2px;
+}
+
+.chainSelectorLabel {
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  color: #fff !important;
+  display: block !important;
+  margin-bottom: 12px !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  opacity: 0.9 !important;
+  position: relative !important;
+  padding-left: 4px !important;
+}
+
+.chainSelectorLabel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 16px;
+  background: linear-gradient(135deg, var(--primary), rgba(0, 123, 255, 0.6));
+  border-radius: 2px;
+}
+
+.priceLabel {
+  font-weight: 600;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 16px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+  display: inline-block;
+}
+
+.predictionLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+/* Section Labels */
+.sectionLabel {
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  color: #fff !important;
+  margin-top: 24px !important;
+  margin-bottom: 12px !important;
+  display: block !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  opacity: 0.9 !important;
+  position: relative !important;
+  padding-left: 4px !important;
+}
+
+.sectionLabel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 16px;
+  background: linear-gradient(135deg, var(--primary), rgba(0, 123, 255, 0.6));
+  border-radius: 2px;
+}
+
+/* Checkbox Label */
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.checkboxLabel:hover {
+  opacity: 0.8;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+  accent-color: var(--primary);
+}
+
+/* Component Styles */
+.chainSelectorContainer {
+  margin-bottom: var(--spacing-xl);
+  width: 100%;
+}
+
+.chainSelectorHeader {
+  margin-bottom: var(--spacing-md);
+}
+
+.chainSelector {
+  display: flex;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.chainOption {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  font-weight: 600;
+  font-size: 14px;
+  min-height: 50px;
+}
+
+.chainOption:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.chainOptionActive {
+  background: linear-gradient(135deg, rgba(90,169,255,0.2) 0%, rgba(30,144,255,0.2) 100%);
+  border-color: rgba(90, 169, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(90, 169, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.chainOption img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chainOption span {
+  white-space: nowrap;
+  font-size: 15px;
+}
+
+.unwrapToSelector {
+  width: 30%;
+  padding: var(--spacing-xs) var(--spacing-xs);
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #444444;
+  border: none;
+  border-radius: 4px;
+  margin-bottom: var(--spacing-xl);
+}
+
+.actionButtonInactive,
+.actionButtonActive {
+  width: 100%;
+  height: 40px;
+  padding: var(--spacing-sm);
+  font-size: 16px;
+  margin-top: var(--spacing-xl);
+}
+
+.actionButtonInactive {
+  color: #888888;
+  background-color: #444444;
+  border: none;
+  border-radius: 4px;
+  cursor: not-allowed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.actionButtonActive {
+  color: #ffffff;
+  background-color: var(--primary);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 /* Amount Container Styles */
 .amountContainer {
-  margin-bottom: 20px;
+  margin-bottom: 20px !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .amountInputContainer {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-sm);
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
 }
 
 .amountInput {
@@ -21,7 +241,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   color: #fff;
   font-size: 14px;
   backdrop-filter: blur(4px);
@@ -44,7 +264,7 @@
   background: linear-gradient(135deg, rgba(0, 123, 255, 0.8), rgba(0, 123, 255, 0.6));
   border: 1px solid rgba(0, 123, 255, 0.3);
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   color: #fff;
   font-weight: 600;
   font-size: 12px;
@@ -66,11 +286,11 @@
 
 /* Validation Messages */
 .validationMessage {
-  padding: 8px 12px;
+  padding: var(--spacing-sm) var(--spacing-md);
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
   backdrop-filter: blur(4px);
 }
 
@@ -103,8 +323,8 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
   backdrop-filter: blur(4px);
 }
 
@@ -120,141 +340,16 @@
   margin-bottom: 0;
 }
 
-.predictionLabel {
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
-}
-
 .predictionValue {
   color: #fff;
   font-weight: 600;
 }
 
-.addressSelector select {
-  padding: 10px 0px;
-  font-size: 16px;
-  color: #ffffff;
-  background-color: #444444;
-  border: none;
-  border-radius: 4px;
-  margin-bottom: 2px;
-}
-
-.addressInput {
-  padding: 10px;
-  font-size: 16px;
-  color: #ffffff;
-  background-color: #444444;
-  border: none;
-  border-radius: 4px;
-  margin-top: 10px;
-}
-
-.unwrapToLabel {
-  font-weight: bold;
-  margin-top: 20px;
-  margin-bottom: 8px;
-}
-
-.chainSelectorContainer {
-  margin-bottom: 20px;
-}
-
-.chainSelector {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.chainOption {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(8px);
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.chainOption:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.chainOptionActive {
-  background: linear-gradient(135deg, rgba(90,169,255,0.2) 0%, rgba(30,144,255,0.2) 100%);
-  border-color: rgba(90, 169, 255, 0.4);
-  box-shadow: 0 2px 8px rgba(90, 169, 255, 0.2);
-}
-
-.chainOption img {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-}
-
-.chainOption span {
-  white-space: nowrap;
-}
-
-.unwrapToSelector {
-  width: 30%;
-  padding: 5px 1px;
-  font-size: 16px;
-  color: #ffffff;
-  background-color: #444444;
-  border: none;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.priceLabel {
-  font-weight: bold;
-  margin-top: 20px;
-  margin-bottom: 4px;
-}
-
-.actionButtonInactive,
-.actionButtonActive {
-  width: 100%;
-  height: 40px;
-  padding: 10px;
-  font-size: 16px;
-  margin-top: 20px;
-}
-
-.actionButtonInactive {
-  color: #888888;
-  background-color: #444444;
-  border: none;
-  border-radius: 4px;
-  cursor: not-allowed;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.actionButtonActive {
-  color: #ffffff;
-  background-color: var(--primary);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
 /* Percentage Buttons */
 .percentageButtons {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
 }
 
 .percentageButton {
@@ -262,7 +357,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
-  padding: 8px 12px;
+  padding: var(--spacing-sm) var(--spacing-md);
   color: rgba(255, 255, 255, 0.8);
   font-weight: 600;
   font-size: 12px;
@@ -283,17 +378,27 @@
   transform: translateY(0);
 }
 
-/* Remove number input arrows */
-.amountInput::-webkit-outer-spin-button,
-.amountInput::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+/* Address Input Styles */
+.addressInput {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  color: #fff;
+  font-size: 14px;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+  width: 100%;
 }
 
-.amountInput[type=number] {
-  -moz-appearance: textfield;
+.addressInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
 }
 
+/* Media Queries */
 @media (max-width: 600px) {
   .amountInput,
   .addressInput,
@@ -302,7 +407,7 @@
   .actionButtonActive {
     width: 100%;
     font-size: 18px;
-    padding: 14px;
+    padding: var(--spacing-md);
   }
 
   .addressInput,
@@ -313,22 +418,36 @@
   .addressSelector select {
     width: 100%;
     font-size: 18px;
-    padding: 14px 0px;
+    padding: var(--spacing-md) 0px;
   }
-  .unwrapToLabel,
+  
+  .chainSelectorLabel,
   .priceLabel {
     font-size: 18px;
-    margin-top: 16px;
-    margin-bottom: 8px;
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
   }
+  
   .amountLabel {
     font-size: 18px;
-    margin-top: 12px;
-    margin-bottom: 8px;
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
   }
+  
+  .sectionLabel {
+    font-size: 16px;
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .checkboxLabel {
+    font-size: 16px;
+    margin-top: var(--spacing-lg);
+  }
+  
   .actionButtonInactive,
   .actionButtonActive {
-    margin-top: 16px;
+    margin-top: var(--spacing-lg);
     height: 48px;
   }
-}
+} 

@@ -369,25 +369,6 @@ export const UnwrapperComponent = () => {
   return (
     <>
       <BalanceIndicators />
-      <div className={styles.chainSelectorContainer}>
-        <p className={styles.unwrapToLabel}>Chain to unwrap:</p>
-        <div className={styles.chainSelector}>
-          <button
-            className={`${styles.chainOption} ${chainToUnwrap === 'base' ? styles.chainOptionActive : ''}`}
-            onClick={() => setChainToUnwrap('base')}
-          >
-            <img src="assets/Base.png" alt="Base" />
-            <span>Base</span>
-          </button>
-          <button
-            className={`${styles.chainOption} ${chainToUnwrap === 'arbitrum' ? styles.chainOptionActive : ''}`}
-            onClick={() => setChainToUnwrap('arbitrum')}
-          >
-            <img src="assets/Arbitrum.png" alt="Arbitrum" />
-            <span>Arbitrum</span>
-          </button>
-        </div>
-      </div>
       
       <div className={styles.amountContainer}>
         <label className={styles.amountLabel}>Amount</label>
@@ -488,6 +469,28 @@ export const UnwrapperComponent = () => {
         </div>
       </div>
 
+      <div className={styles.chainSelectorContainer}>
+        <div className={styles.chainSelectorHeader}>
+          <label className={styles.chainSelectorLabel}>Chain to unwrap:</label>
+        </div>
+        <div className={styles.chainSelector}>
+          <button
+            className={`${styles.chainOption} ${chainToUnwrap === 'base' ? styles.chainOptionActive : ''}`}
+            onClick={() => setChainToUnwrap('base')}
+          >
+            <img src="assets/Base.png" alt="Base" />
+            <span>Base</span>
+          </button>
+          <button
+            className={`${styles.chainOption} ${chainToUnwrap === 'arbitrum' ? styles.chainOptionActive : ''}`}
+            onClick={() => setChainToUnwrap('arbitrum')}
+          >
+            <img src="assets/Arbitrum.png" alt="Arbitrum" />
+            <span>Arbitrum</span>
+          </button>
+        </div>
+      </div>
+
       {quote && (
         <p className={styles.priceLabel}>
           Price for unwrapping: {formatEther(quote)} ETH
@@ -506,7 +509,7 @@ export const UnwrapperComponent = () => {
       </button>
 
       <div className={styles.addressSelector} style={{ marginTop: 20 }}>
-        <label style={{ fontWeight: 600, marginBottom: 8, display: 'block', color: '#fff' }}>Dirección de destino</label>
+        <label className={styles.sectionLabel}>Dirección de destino</label>
         <input
           className={styles.addressInput}
           value={differentAddressFlag ? customAddress : connectedAddress}
@@ -528,7 +531,7 @@ export const UnwrapperComponent = () => {
             Los tokens se enviarán a la misma dirección que actualmente está conectada
           </span>
         )}
-        <label style={{ display: 'flex', alignItems: 'center', marginTop: 12, fontSize: 14, color: '#fff' }}>
+        <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
             checked={differentAddressFlag}

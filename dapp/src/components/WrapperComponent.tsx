@@ -468,7 +468,9 @@ export const WrapperComponent = () => {
         </div>
       </div>
       <div className={styles.chainSelectorContainer}>
-        <p className={styles.wrapToLabel}>Wrap on:</p>
+        <div className={styles.chainSelectorHeader}>
+          <label className={styles.chainSelectorLabel}>Wrap on:</label>
+        </div>
         <div className={styles.chainSelector}>
           <button
             className={`${styles.chainOption} ${domainID === '8453' ? styles.chainOptionActive : ''}`}
@@ -514,7 +516,7 @@ export const WrapperComponent = () => {
       </button>
 
       <div className={styles.addressSelector} style={{ marginTop: 20 }}>
-        <label style={{ fontWeight: 600, marginBottom: 8, display: 'block', color: '#fff' }}>Dirección de destino</label>
+        <label className={styles.sectionLabel}>Dirección de destino</label>
         <input
           className={styles.addressInput}
           value={differentAddressFlag ? customAddress : connectedAddress}
@@ -536,7 +538,7 @@ export const WrapperComponent = () => {
             Los tokens se enviarán a la misma dirección que actualmente está conectada
           </span>
         )}
-        <label style={{ display: 'flex', alignItems: 'center', marginTop: 12, fontSize: 14, color: '#fff' }}>
+        <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
             checked={differentAddressFlag}
