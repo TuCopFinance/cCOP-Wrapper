@@ -127,7 +127,7 @@ const notifyChangeChain = (chainName: string): string =>
     style: { background: "#333", color: "#fff" },
   });
 
-const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string, chainId?: number) => {
+const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string, chainId?: number, onRefresh?: () => void) => {
   const targetChainId = chainId || 8453; // Default to Base
   
   // Show loading toast
@@ -140,6 +140,19 @@ const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string,
     .then(() => {
       // Dismiss loading toast
       toast.dismiss(loadingToast);
+      
+      // Refresh balances after successful delivery
+      console.log("=== TRANSACTION DELIVERED - REFRESHING BALANCES ===");
+      setTimeout(() => {
+        console.log("=== EXECUTING BALANCE REFRESH AFTER DELIVERY ===");
+        console.log("Executing refresh after transaction delivery...");
+        if (onRefresh) {
+          onRefresh();
+          console.log("=== BALANCE REFRESH EXECUTED AFTER DELIVERY ===");
+        } else {
+          console.log("=== NO REFRESH FUNCTION PROVIDED ===");
+        }
+      }, 2000); // Wait 2 seconds for delivery to be processed
       
       // Show success toast
       if (txHash) {
@@ -574,21 +587,7 @@ export const UnwrapperComponent = () => {
             // Submit Divvi referral
             submitDivviReferral(txHash, targetChainIdContract);
             
-            // Refresh balances after successful transaction
-            console.log("=== SCHEDULING BALANCE REFRESH ===");
-            console.log("Transaction hash:", txHash);
-            console.log("Scheduling refresh in 3 seconds...");
-            
-            setTimeout(() => {
-              console.log("=== EXECUTING BALANCE REFRESH ===");
-              console.log("Executing refresh after transaction...");
-              refreshBalances();
-              console.log("Executing verifyTokenAllowanceAndPriceForSend...");
-              verifyTokenAllowanceAndPriceForSend();
-              console.log("=== BALANCE REFRESH COMPLETED ===");
-            }, 3000); // Wait 3 seconds for transaction to be processed
-            
-            notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash, targetChainIdContract);
+            notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash, targetChainIdContract, refreshBalances);
           })
           .catch((error) => {
             console.error("=== WRITE ERROR ===");

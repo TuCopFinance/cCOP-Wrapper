@@ -127,7 +127,7 @@ const notifyChangeChain = () =>
     style: { background: "#333", color: "#fff" },
   });
 
-const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string) => {
+const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string, onRefresh?: () => void) => {
   // Show loading toast
   const loadingToast = toast.loading("Wrapping cCOP tokens...", {
     position: "bottom-right",
@@ -138,6 +138,19 @@ const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string) => {
     .then(() => {
       // Dismiss loading toast
       toast.dismiss(loadingToast);
+      
+      // Refresh balances after successful delivery
+      console.log("=== TRANSACTION DELIVERED - REFRESHING BALANCES ===");
+      setTimeout(() => {
+        console.log("=== EXECUTING BALANCE REFRESH AFTER DELIVERY ===");
+        console.log("Executing refresh after transaction delivery...");
+        if (onRefresh) {
+          onRefresh();
+          console.log("=== BALANCE REFRESH EXECUTED AFTER DELIVERY ===");
+        } else {
+          console.log("=== NO REFRESH FUNCTION PROVIDED ===");
+        }
+      }, 2000); // Wait 2 seconds for delivery to be processed
       
       // Show success toast
       if (txHash) {
@@ -528,21 +541,7 @@ export const WrapperComponent = () => {
             // Submit Divvi referral
             submitDivviReferral(txHash, chainID.mainnet.celo);
             
-            // Refresh balances after successful transaction
-            console.log("=== SCHEDULING BALANCE REFRESH ===");
-            console.log("Transaction hash:", txHash);
-            console.log("Scheduling refresh in 3 seconds...");
-            
-            setTimeout(() => {
-              console.log("=== EXECUTING BALANCE REFRESH ===");
-              console.log("Executing refresh after transaction...");
-              refreshBalances();
-              console.log("Executing verifyTokenAllowanceAndPriceForSend...");
-              verifyTokenAllowanceAndPriceForSend();
-              console.log("=== BALANCE REFRESH COMPLETED ===");
-            }, 3000); // Wait 3 seconds for transaction to be processed
-            
-            notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash);
+            notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash, refreshBalances);
           })
           .catch((error) => {
             console.error("Error in wrap transaction:", error);
