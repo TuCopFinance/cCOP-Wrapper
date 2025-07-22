@@ -136,6 +136,38 @@
   background: #333;
 }
 
+<<<<<<< HEAD
+=======
+.logoCircle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ff0 !important; /* Color temporal para depuración */
+  margin-right: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1.5px #e0e0e0;
+}
+.logoCircle :global(img), .logoCircle img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50%;
+  display: block;
+  transform: scale(2.2);
+}
+.listOfAssets {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  overflow-x: auto;
+}
+
+>>>>>>> 4032115dfa722fbbb19011d0eb9054548f09cf68
 @media (max-width: 600px) {
   .indicator {
     font-size: 14px;
