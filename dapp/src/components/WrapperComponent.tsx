@@ -21,6 +21,7 @@ import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
 import { getReferralTag } from "@divvi/referral-sdk";
 import { BalanceIndicators } from "./BalanceIndicators";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
+import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -302,6 +303,10 @@ export const WrapperComponent = () => {
 
   function setAllowance() {
     checkChainAndChange();
+    
+    // Check if we're on mobile
+    const mobileDevice = isMobile();
+    
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
@@ -315,6 +320,14 @@ export const WrapperComponent = () => {
     // Generate Divvi referral tag
     const referralTag = generateReferralTag(account.address);
 
+    // Show loading toast for mobile
+    if (mobileDevice) {
+      toast.loading(getMobileLoadingMessage("allowance"), {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+    }
+
     writeContract(config, {
       chainId: chainID.mainnet.celo,
       abi: erc20Abi,
@@ -327,12 +340,27 @@ export const WrapperComponent = () => {
         // Submit Divvi referral
         submitDivviReferral(txHash, chainID.mainnet.celo);
         
+        // Dismiss loading toast if mobile
+        if (mobileDevice) {
+          toast.dismiss();
+        }
+        
         setTimeout(() => {
           verifyTokenAllowanceAndPriceForSend();
         }, 2500);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Error setting allowance:", error);
         setAllowanceIsMoreThanAmount(false);
+        toast.error(
+          mobileDevice 
+            ? getMobileErrorMessage("Allowance") 
+            : "Error setting allowance",
+          {
+            position: "bottom-right",
+            style: { background: "#333", color: "#fff" },
+          }
+        );
       });
   }
 
@@ -340,6 +368,9 @@ export const WrapperComponent = () => {
     if (quote === null) return;
     const account = getAccount(config);
     if (!account.address) return;
+    
+    // Check if we're on mobile
+    const mobileDevice = isMobile();
     
     let amountFixed: bigint;
     try {
@@ -358,6 +389,14 @@ export const WrapperComponent = () => {
     // Generate Divvi referral tag
     const referralTag = generateReferralTag(account.address);
 
+    // Show loading toast for mobile
+    if (mobileDevice) {
+      toast.loading(getMobileLoadingMessage("wrap"), {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+    }
+
     simulateContract(config, {
       chainId: chainID.mainnet.celo,
       abi: treasury.abi,
@@ -373,6 +412,12 @@ export const WrapperComponent = () => {
     })
       .then((data) => {
         const msgIdentifier = data.result;
+        
+        // Dismiss loading toast if mobile
+        if (mobileDevice) {
+          toast.dismiss();
+        }
+        
         writeContract(config, {
           chainId: chainID.mainnet.celo,
           abi: treasury.abi,
@@ -392,10 +437,32 @@ export const WrapperComponent = () => {
             
             notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash);
           })
-          .catch(() => {})
+          .catch((error) => {
+            console.error("Error in wrap transaction:", error);
+            toast.error(
+              mobileDevice 
+                ? getMobileErrorMessage("Wrap") 
+                : "Error wrapping cCOP tokens",
+              {
+                position: "bottom-right",
+                style: { background: "#333", color: "#fff" },
+              }
+            );
+          })
           .finally(() => {});
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("Error simulating wrap transaction:", error);
+        toast.error(
+          mobileDevice 
+            ? getMobileErrorMessage("Transaction preparation") 
+            : "Error preparing wrap transaction",
+          {
+            position: "bottom-right",
+            style: { background: "#333", color: "#fff" },
+          }
+        );
+      });
   }
 
   // --- Render ---

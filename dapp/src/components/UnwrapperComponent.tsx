@@ -22,6 +22,7 @@ import { getReferralTag } from "@divvi/referral-sdk";
 import { BalanceIndicators } from "./BalanceIndicators";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useWalletClient } from "wagmi";
+import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -329,6 +330,9 @@ export const UnwrapperComponent = () => {
     const account = getAccount(config);
     if (!account.address) return;
     
+    // Check if we're on mobile
+    const mobileDevice = isMobile();
+    
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
@@ -354,6 +358,14 @@ export const UnwrapperComponent = () => {
     // Generate Divvi referral tag
     const referralTag = generateReferralTag(account.address);
 
+    // Show loading toast for mobile
+    if (mobileDevice) {
+      toast.loading(getMobileLoadingMessage("unwrap"), {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+    }
+
     simulateContract(config, {
       chainId: targetChainIdContract,
       abi: WrappedCCOP.abi,
@@ -368,6 +380,11 @@ export const UnwrapperComponent = () => {
     })
       .then((data) => {
         const msgIdentifier = data.result;
+        
+        // Dismiss loading toast if mobile
+        if (mobileDevice) {
+          toast.dismiss();
+        }
 
         writeContract(config, {
           chainId: targetChainIdContract,
@@ -389,11 +406,23 @@ export const UnwrapperComponent = () => {
           })
           .catch((error) => {
             console.error("Error unwrapping cCOP tokens:", error);
+            toast.error(
+              mobileDevice 
+                ? getMobileErrorMessage("Unwrap") 
+                : "Error unwrapping cCOP tokens",
+              {
+                position: "bottom-right",
+                style: { background: "#333", color: "#fff" },
+              }
+            );
           });
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Error simulating unwrap transaction:", error);
         toast.error(
-          "Error during unwrap check your wcCOP balance or ETH balance",
+          mobileDevice 
+            ? getMobileErrorMessage("Transaction preparation") 
+            : "Error during unwrap check your wcCOP balance or ETH balance",
           {
             position: "bottom-right",
             style: {
