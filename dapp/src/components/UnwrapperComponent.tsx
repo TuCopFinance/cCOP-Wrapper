@@ -71,6 +71,10 @@ export const UnwrapperComponent = () => {
 
   const { data: walletClient } = useWalletClient();
 
+  const account = getAccount(config);
+  const connectedAddress = account.address || "";
+  const [customAddress, setCustomAddress] = useState("");
+
   //Check allowance and get quote
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
     const account = getAccount(config);
@@ -257,71 +261,25 @@ export const UnwrapperComponent = () => {
   return (
     <>
       <BalanceIndicators />
-      <button
-        className={styles.actionButtonActive}
-        style={{ marginBottom: "1rem" }}
-        onClick={async () => {
-          if (walletClient) {
-            try {
-              const success = await walletClient.watchAsset({
-                type: "ERC20",
-                options: {
-                  address: "0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22",
-                  symbol: "wcCOP",
-                  decimals: 18,
-                  image: "/cCOP_token.png",
-                },
-              });
-              if (success) {
-                toast.success("Token wcCOP added to your wallet", {
-                  position: "bottom-right",
-                  style: {
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
-              } else {
-                toast.error("User rejected adding the token", {
-                  position: "bottom-right",
-                  style: {
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
-              }
-            } catch (error) {
-              toast.error("Failed to add token to wallet", {
-                position: "bottom-right",
-                style: {
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
-            }
-          } else {
-            toast.error("No wallet client detected", {
-              position: "bottom-right",
-              style: {
-                background: "#333",
-                color: "#fff",
-              },
-            });
-          }
-        }}
-      >
-        Add wcCOP to wallet
-      </button>
-      <p className={styles.unwrapToLabel}>
-        Chain to unwrap:{" "}
-        <select
-          className={styles.unwrapToSelector}
-          value={chainToUnwrap}
-          onChange={(e) => setChainToUnwrap(e.target.value)}
-        >
-          <option value="base">Base</option>
-          <option value="arbitrum">Arbitrum</option>
-        </select>
-      </p>
+      <div className={styles.chainSelectorContainer}>
+        <p className={styles.unwrapToLabel}>Chain to unwrap:</p>
+        <div className={styles.chainSelector}>
+          <button
+            className={`${styles.chainOption} ${chainToUnwrap === 'base' ? styles.chainOptionActive : ''}`}
+            onClick={() => setChainToUnwrap('base')}
+          >
+            <img src="assets/Base.png" alt="Base" />
+            <span>Base</span>
+          </button>
+          <button
+            className={`${styles.chainOption} ${chainToUnwrap === 'arbitrum' ? styles.chainOptionActive : ''}`}
+            onClick={() => setChainToUnwrap('arbitrum')}
+          >
+            <img src="assets/Arbitrum.png" alt="Arbitrum" />
+            <span>Arbitrum</span>
+          </button>
+        </div>
+      </div>
       <label className={styles.amountLabel}>Amount</label>
       <input
         className={styles.amountInput}
@@ -329,24 +287,6 @@ export const UnwrapperComponent = () => {
         value={amount}
         onChange={handleAmountChange}
       />
-      <div className={styles.addressSelector}>
-        Sent the cCOP tokens to{" "}
-        <select
-          onChange={(e) =>
-            setDifferentAddressFlag(e.target.value === "differentAddress")
-          }
-        >
-          <option value="sameAddress">same address</option>
-          <option value="differentAddress">a different address</option>
-        </select>
-      </div>
-      {differentAddressFlag && (
-        <input
-          className={styles.addressInput}
-          placeholder="Enter address"
-          id="unwrapperAddressInput"
-        />
-      )}
 
       {quote && (
         <p className={styles.priceLabel}>
@@ -364,6 +304,101 @@ export const UnwrapperComponent = () => {
       >
         Unwrap
       </button>
+
+      <div className={styles.addressSelector} style={{ marginTop: 20 }}>
+        <label style={{ fontWeight: 600, marginBottom: 8, display: 'block', color: '#fff' }}>Dirección de destino</label>
+        <input
+          className={styles.addressInput}
+          value={differentAddressFlag ? customAddress : connectedAddress}
+          onChange={e => setCustomAddress(e.target.value)}
+          readOnly={!differentAddressFlag}
+          style={{ 
+            background: differentAddressFlag ? '#444444' : '#333', 
+            color: '#fff', 
+            width: '100%',
+            border: '1px solid #555',
+            borderRadius: '8px',
+            padding: '12px',
+            fontSize: '14px'
+          }}
+          placeholder={differentAddressFlag ? "Ingresa la dirección de destino" : ""}
+        />
+        {!differentAddressFlag && (
+          <span style={{ fontSize: 13, color: '#aaa', marginTop: 4, display: 'block', fontStyle: 'italic' }}>
+            Los tokens se enviarán a la misma dirección que actualmente está conectada
+          </span>
+        )}
+        <label style={{ display: 'flex', alignItems: 'center', marginTop: 12, fontSize: 14, color: '#fff' }}>
+          <input
+            type="checkbox"
+            checked={differentAddressFlag}
+            onChange={e => {
+              if (e.target.checked) {
+                toast((t) => (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '300px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '16px' }}>Confirmar dirección diferente</div>
+                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                      ¿Estás seguro de que quieres enviar los tokens a una dirección diferente? Verifica cuidadosamente la dirección de destino.
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => {
+                          toast.dismiss(t.id);
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          background: '#555',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDifferentAddressFlag(true);
+                          toast.dismiss(t.id);
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          background: 'var(--primary)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Confirmar
+                      </button>
+                    </div>
+                  </div>
+                ), {
+                  duration: 0,
+                  position: "bottom-center",
+                  style: { 
+                    background: "#232323", 
+                    color: "#fff",
+                    border: "1px solid #444",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    bottom: "50%",
+                    transform: "translateY(50%)",
+                    marginBottom: "0"
+                  },
+                });
+                return;
+              }
+              setDifferentAddressFlag(e.target.checked);
+            }}
+            style={{ marginRight: 10, transform: 'scale(1.2)' }}
+          />
+          Enviar a otra dirección
+        </label>
+      </div>
     </>
   );
 };

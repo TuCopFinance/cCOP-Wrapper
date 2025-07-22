@@ -1,13 +1,81 @@
 import React, { useState } from "react";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
-import { FiRefreshCcw, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { FiRefreshCcw, FiChevronDown, FiChevronUp, FiPlus } from "react-icons/fi";
+import { useWalletClient } from "wagmi";
+import { switchChain } from "@wagmi/core";
+import { config } from "@/config";
+import { chainID } from "@/constants/chainID";
+import { address } from "@/constants/address";
+import toast from "react-hot-toast";
 import styles from "./BalanceIndicators.module.css";
 
 export const BalanceIndicators = () => {
   const { celo, base, arb, refresh } = useTokenBalances();
   const [showDetails, setShowDetails] = useState(false);
+  const { data: walletClient } = useWalletClient();
 
   const total = [celo, base, arb].reduce((acc, v) => acc + parseFloat(v), 0);
+
+  const addTokenToWallet = async (network: 'celo' | 'base' | 'arb') => {
+    if (!walletClient) {
+      toast.error("No wallet client detected", {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+      return;
+    }
+
+    try {
+      // Switch to the appropriate network first
+      const targetChainId = chainID.mainnet[network];
+      await switchChain(config, { chainId: targetChainId });
+
+      // Token configuration based on network
+      const tokenConfig = {
+        celo: {
+          address: address.mainnet.cCOP as `0x${string}`,
+          symbol: "cCOP",
+          decimals: 18,
+          image: "/cCOP_token.png",
+        },
+        base: {
+          address: address.mainnet.wrapToken.base as `0x${string}`,
+          symbol: "wcCOP",
+          decimals: 18,
+          image: "/cCOP_token.png",
+        },
+        arb: {
+          address: address.mainnet.wrapToken.arb as `0x${string}`,
+          symbol: "wcCOP",
+          decimals: 18,
+          image: "/cCOP_token.png",
+        },
+      };
+
+      const success = await walletClient.watchAsset({
+        type: "ERC20",
+        options: tokenConfig[network],
+      });
+
+      if (success) {
+        toast.success(`${tokenConfig[network].symbol} added to your wallet`, {
+          position: "bottom-right",
+          style: { background: "#333", color: "#fff" },
+        });
+      } else {
+        toast.error("User rejected adding the token", {
+          position: "bottom-right",
+          style: { background: "#333", color: "#fff" },
+        });
+      }
+    } catch (error) {
+      console.error("Error adding token to wallet:", error);
+      toast.error("Failed to add token to wallet", {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+    }
+  };
 
   return (
     <div className={styles.balanceIndicators}>
@@ -47,6 +115,13 @@ export const BalanceIndicators = () => {
               Celo:{" "}
               {parseFloat(celo).toFixed(2)} cCOP
             </p>
+            <button
+              className={styles.addTokenBtn}
+              onClick={() => addTokenToWallet('celo')}
+              title="Add cCOP to wallet"
+            >
+              <FiPlus />
+            </button>
           </div>
           <div className={`${styles.indicator} ${styles.base}`}>
             <img src="assets/Base.png" alt="wcCOP Token" />
@@ -54,6 +129,13 @@ export const BalanceIndicators = () => {
               Base:{" "}
               {parseFloat(base).toFixed(2)} wcCOP
             </p>
+            <button
+              className={styles.addTokenBtn}
+              onClick={() => addTokenToWallet('base')}
+              title="Add wcCOP to wallet"
+            >
+              <FiPlus />
+            </button>
           </div>
           <div className={`${styles.indicator} ${styles.arb}`}>
             <img src="assets/Arbitrum.png" alt="wcCOP Token"  />
@@ -61,6 +143,13 @@ export const BalanceIndicators = () => {
               Arbitrum:{" "}
               {parseFloat(arb).toFixed(2)} wcCOP
             </p>
+            <button
+              className={styles.addTokenBtn}
+              onClick={() => addTokenToWallet('arb')}
+              title="Add wcCOP to wallet"
+            >
+              <FiPlus />
+            </button>
           </div>
         </div>
       )}

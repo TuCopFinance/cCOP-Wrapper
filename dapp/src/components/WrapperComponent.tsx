@@ -69,6 +69,10 @@ export const WrapperComponent = () => {
   >(null);
   const [quote, setQuote] = useState<bigint | null>(null);
 
+  const account = getAccount(config);
+  const connectedAddress = account.address || "";
+  const [customAddress, setCustomAddress] = useState("");
+
   // --- Handlers ---
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
     const account = getAccount(config);
@@ -263,36 +267,24 @@ export const WrapperComponent = () => {
         value={amount}
         onChange={handleAmountChange}
       />
-      <div className={styles.addressSelector}>
-        Sent the cCOP tokens to{" "}
-        <select
-          onChange={(e) =>
-            setDifferentAddressFlag(e.target.value === "differentAddress")
-          }
-        >
-          <option value="sameAddress">same address</option>
-          <option value="differentAddress">a different address</option>
-        </select>
-      </div>
-      {differentAddressFlag && (
-        <input
-          className={styles.addressInput}
-          placeholder="Enter address"
-          id="wrapperAddressInput"
-        />
-      )}
-      <div>
-        <p className={styles.wrapToLabel}>
-          Wrap on:{" "}
-          <select
-            className={styles.wrapToSelector}
-            value={domainID}
-            onChange={(e) => setDomainID(e.target.value)}
+      <div className={styles.chainSelectorContainer}>
+        <p className={styles.wrapToLabel}>Wrap on:</p>
+        <div className={styles.chainSelector}>
+          <button
+            className={`${styles.chainOption} ${domainID === '8453' ? styles.chainOptionActive : ''}`}
+            onClick={() => setDomainID('8453')}
           >
-            <option value="8453">Base</option>
-            <option value="42161">Arbitrum</option>
-          </select>
-        </p>
+            <img src="assets/Base.png" alt="Base" />
+            <span>Base</span>
+          </button>
+          <button
+            className={`${styles.chainOption} ${domainID === '42161' ? styles.chainOptionActive : ''}`}
+            onClick={() => setDomainID('42161')}
+          >
+            <img src="assets/Arbitrum.png" alt="Arbitrum" />
+            <span>Arbitrum</span>
+          </button>
+        </div>
       </div>
       {quote && (
         <p className={styles.priceLabel}>
@@ -320,6 +312,101 @@ export const WrapperComponent = () => {
       >
         Wrap
       </button>
+
+      <div className={styles.addressSelector} style={{ marginTop: 20 }}>
+        <label style={{ fontWeight: 600, marginBottom: 8, display: 'block', color: '#fff' }}>Dirección de destino</label>
+        <input
+          className={styles.addressInput}
+          value={differentAddressFlag ? customAddress : connectedAddress}
+          onChange={e => setCustomAddress(e.target.value)}
+          readOnly={!differentAddressFlag}
+          style={{ 
+            background: differentAddressFlag ? '#444444' : '#333', 
+            color: '#fff', 
+            width: '100%',
+            border: '1px solid #555',
+            borderRadius: '8px',
+            padding: '12px',
+            fontSize: '14px'
+          }}
+          placeholder={differentAddressFlag ? "Ingresa la dirección de destino" : ""}
+        />
+        {!differentAddressFlag && (
+          <span style={{ fontSize: 13, color: '#aaa', marginTop: 4, display: 'block', fontStyle: 'italic' }}>
+            Los tokens se enviarán a la misma dirección que actualmente está conectada
+          </span>
+        )}
+        <label style={{ display: 'flex', alignItems: 'center', marginTop: 12, fontSize: 14, color: '#fff' }}>
+          <input
+            type="checkbox"
+            checked={differentAddressFlag}
+            onChange={e => {
+              if (e.target.checked) {
+                toast((t) => (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '300px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '16px' }}>Confirmar dirección diferente</div>
+                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                      ¿Estás seguro de que quieres enviar los tokens a una dirección diferente? Verifica cuidadosamente la dirección de destino.
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => {
+                          toast.dismiss(t.id);
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          background: '#555',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDifferentAddressFlag(true);
+                          toast.dismiss(t.id);
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          background: 'var(--primary)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Confirmar
+                      </button>
+                    </div>
+                  </div>
+                ), {
+                  duration: 0,
+                  position: "bottom-center",
+                  style: { 
+                    background: "#232323", 
+                    color: "#fff",
+                    border: "1px solid #444",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    bottom: "50%",
+                    transform: "translateY(50%)",
+                    marginBottom: "0"
+                  },
+                });
+                return;
+              }
+              setDifferentAddressFlag(e.target.checked);
+            }}
+            style={{ marginRight: 10, transform: 'scale(1.2)' }}
+          />
+          Enviar a otra dirección
+        </label>
+      </div>
     </>
   );
 };

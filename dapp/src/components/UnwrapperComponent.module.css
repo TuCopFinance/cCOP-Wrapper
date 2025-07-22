@@ -36,7 +36,56 @@
 .unwrapToLabel {
   font-weight: bold;
   margin-top: 20px;
-  margin-bottom: 0px;
+  margin-bottom: 8px;
+}
+
+.chainSelectorContainer {
+  margin-bottom: 20px;
+}
+
+.chainSelector {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chainOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.chainOption:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chainOptionActive {
+  background: linear-gradient(135deg, rgba(90,169,255,0.2) 0%, rgba(30,144,255,0.2) 100%);
+  border-color: rgba(90, 169, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(90, 169, 255, 0.2);
+}
+
+.chainOption img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.chainOption span {
+  white-space: nowrap;
 }
 
 .unwrapToSelector {
