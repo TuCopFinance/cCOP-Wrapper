@@ -79,18 +79,18 @@ export function useTokenBalances() {
         console.log("=== CONTRACTS READ SUCCESS ===");
         console.log("Contract data:", data);
         
-        if (
-          data[0].status === "success" &&
-          data[1].status === "success" &&
-          data[2].status === "success" &&
-          typeof data[0].result === "bigint" &&
-          typeof data[1].result === "bigint" &&
-          typeof data[2].result === "bigint"
-        ) {
+      if (
+        data[0].status === "success" &&
+        data[1].status === "success" &&
+        data[2].status === "success" &&
+        typeof data[0].result === "bigint" &&
+        typeof data[1].result === "bigint" &&
+        typeof data[2].result === "bigint"
+      ) {
           const newBalances = {
-            base: (data[0].result / BigInt(10 ** 18)).toString(),
-            arb: (data[1].result / BigInt(10 ** 18)).toString(),
-            celo: (data[2].result / BigInt(10 ** 18)).toString(),
+          base: (data[0].result / BigInt(10 ** 18)).toString(),
+          arb: (data[1].result / BigInt(10 ** 18)).toString(),
+          celo: (data[2].result / BigInt(10 ** 18)).toString(),
           };
           console.log("Setting new balances:", newBalances);
           console.log("🎉 BALANCES UPDATED SUCCESSFULLY! 🎉");
@@ -108,7 +108,7 @@ export function useTokenBalances() {
       .finally(() => {
         console.log("=== REFRESH COMPLETED ===");
         setIsLoading(false);
-      });
+    });
   }, []);
 
   // Force refresh function that bypasses account change check

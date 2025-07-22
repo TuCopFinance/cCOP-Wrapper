@@ -3,20 +3,33 @@
 'use client'
 
 import { wagmiAdapter, projectId, networks } from '@/config'
+import { WALLET_CONFIG, WALLET_THEME } from '@/config/wallet-config'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createAppKit } from '@reown/appkit/react'
 import React, { type ReactNode } from 'react'
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
 
-// Set up queryClient
-const queryClient = new QueryClient()
+// Set up queryClient with default options
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+})
 
 // Set up metadata
 const metadata = {
   name: 'cCOP Wrapper',
-  description: 'Cross-chain bridge for cCOP tokens',
-  url: 'https://copwrapper.xyz', // Updated to production domain
-  icons: ['https://avatars.githubusercontent.com/u/179229932']
+  description: 'Cross-chain bridge for cCOP tokens - Wrap and unwrap cCOP tokens across Celo, Base, and Arbitrum networks',
+  url: 'https://copwrapper.xyz',
+  icons: [
+    'https://avatars.githubusercontent.com/u/179229932',
+    '/cCOP_token.png'
+  ],
+  verifyUrl: 'https://github.com/TuCopFinance/cCOP-Wrapper'
 }
 
 // Create the modal
@@ -27,20 +40,11 @@ export const modal = createAppKit({
   metadata,
   themeMode: 'dark',
   features: {
-    analytics: false, // Optional - defaults to your Cloud configuration
+    analytics: false,
     connectMethodsOrder: ["wallet"],
   },
-
-  themeVariables: {
-    '--w3m-accent': '#0f1225ff',
-    '--w3m-color-bg-1': '#232323',
-    '--w3m-color-fg-1': '#fff',
-    '--w3m-color-fg-2': '#b0b0b0',
-    '--w3m-border-radius': '8px',
-  } as any,
-  featuredWalletIds: [
-    "dcc6ce1fc698ea19c114e7afe1bc469f" // TuCop wallet
-  ],
+  featuredWalletIds: WALLET_CONFIG.FEATURED_WALLETS,
+  themeVariables: WALLET_THEME as any,
 });
 
 function ContextProvider({ children, cookies }: { children: ReactNode; cookies: string | null }) {
@@ -48,7 +52,9 @@ function ContextProvider({ children, cookies }: { children: ReactNode; cookies: 
 
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
     </WagmiProvider>
   )
 }

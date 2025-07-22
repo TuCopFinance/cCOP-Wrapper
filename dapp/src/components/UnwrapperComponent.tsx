@@ -200,8 +200,8 @@ const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string,
   
   // Show loading toast
   const loadingToast = toast.loading("Unwrapping cCOP tokens...", {
-    position: "bottom-right",
-    style: { background: "#707070", color: "#fff" },
+      position: "bottom-right",
+      style: { background: "#707070", color: "#fff" },
   });
   
   deliveredPromise
@@ -699,13 +699,13 @@ export const UnwrapperComponent = () => {
       <BalanceIndicators />
       
       <div className={styles.amountContainer}>
-        <label className={styles.amountLabel}>Amount</label>
+      <label className={styles.amountLabel}>Amount</label>
         <div className={styles.amountInputContainer}>
-          <input
+      <input
             className={`${styles.amountInput} ${amountValidation?.type === 'error' ? styles.amountInputError : ''}`}
             placeholder="Enter amount of wcCOP tokens to unwrap"
-            value={amount}
-            onChange={handleAmountChange}
+        value={amount}
+        onChange={handleAmountChange}
             type="number"
             step="0.01"
             min="0"
@@ -742,7 +742,7 @@ export const UnwrapperComponent = () => {
               <span className={styles.predictionLabel}>Gas estimado:</span>
               <span className={styles.predictionValue}>{amountPrediction.gasEstimate}</span>
             </div>
-          </div>
+      </div>
         )}
         
         {/* Percentage Buttons */}

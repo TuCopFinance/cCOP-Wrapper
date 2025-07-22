@@ -198,8 +198,8 @@ const notifyChangeChain = () =>
 const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string, onRefresh?: () => void) => {
   // Show loading toast
   const loadingToast = toast.loading("Wrapping cCOP tokens...", {
-    position: "bottom-right",
-    style: { background: "#707070", color: "#fff" },
+      position: "bottom-right",
+      style: { background: "#707070", color: "#fff" },
   });
   
   deliveredPromise
@@ -636,13 +636,13 @@ export const WrapperComponent = () => {
       <BalanceIndicators />
       
       <div className={styles.amountContainer}>
-        <label className={styles.amountLabel}>Amount</label>
+      <label className={styles.amountLabel}>Amount</label>
         <div className={styles.amountInputContainer}>
-          <input
+      <input
             className={`${styles.amountInput} ${amountValidation?.type === 'error' ? styles.amountInputError : ''}`}
-            placeholder="Enter amount of cCOP tokens to wrap"
-            value={amount}
-            onChange={handleAmountChange}
+        placeholder="Enter amount of cCOP tokens to wrap"
+        value={amount}
+        onChange={handleAmountChange}
             type="number"
             step="0.01"
             min="0"
