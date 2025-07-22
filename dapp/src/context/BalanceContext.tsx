@@ -1,5 +1,6 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from "react";
+import { formatTokenAmount } from "@/utils/price-feeds";
 import { getAccount, readContracts, watchAccount } from "@wagmi/core";
 import { address } from "@/constants/address";
 import WrappedCCOP from "@/constants/abis/WrappedCCOP.json";
@@ -34,23 +35,23 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [error, setError] = useState<string | null>(null);
   const [currentAccount, setCurrentAccount] = useState<string | null>(null);
 
-  const wrappedCCOPContractBase = {
+  const wrappedCCOPContractBase = useMemo(() => ({
     address: address.mainnet.wrapToken.base as `0x${string}`,
     abi: WrappedCCOP.abi as Abi,
     chainId: chainID.mainnet.base,
-  } as const;
+  } as const), []);
 
-  const wrappedCCOPContractArb = {
+  const wrappedCCOPContractArb = useMemo(() => ({
     address: address.mainnet.wrapToken.arb as `0x${string}`,
     abi: WrappedCCOP.abi as Abi,
     chainId: chainID.mainnet.arb,
-  } as const;
+  } as const), []);
 
-  const cCOPContractCelo = {
+  const cCOPContractCelo = useMemo(() => ({
     address: address.mainnet.cCOP as `0x${string}`,
     abi: erc20Abi as Abi,
     chainId: chainID.mainnet.celo,
-  } as const;
+  } as const), []);
 
   const refresh = useCallback(() => {
     console.log("=== GLOBAL REFRESH FUNCTION CALLED ===");
@@ -109,7 +110,7 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           };
           console.log("Setting new global balances:", newBalances);
           console.log("🎉 GLOBAL BALANCES UPDATED SUCCESSFULLY! 🎉");
-          console.log("📊 New Global Total:", (parseFloat(newBalances.base) + parseFloat(newBalances.arb) + parseFloat(newBalances.celo)).toFixed(2), "cCOP");
+          console.log("📊 New Global Total:", formatTokenAmount(parseFloat(newBalances.base) + parseFloat(newBalances.arb) + parseFloat(newBalances.celo), "cCOP"));
           setBalances(newBalances);
         } else {
           console.error("Failed to fetch balances:", data);
@@ -124,7 +125,7 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.log("=== GLOBAL REFRESH COMPLETED ===");
         setIsLoading(false);
       });
-  }, []);
+  }, [wrappedCCOPContractBase, wrappedCCOPContractArb, cCOPContractCelo]);
 
   const forceRefresh = useCallback(() => {
     refresh();
@@ -164,4 +165,5 @@ export const useGlobalBalances = () => {
 };
 
 // Export default for better compatibility
-export default { BalanceProvider, useGlobalBalances }; 
+const BalanceContextExports = { BalanceProvider, useGlobalBalances };
+export default BalanceContextExports; 

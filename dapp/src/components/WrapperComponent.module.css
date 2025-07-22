@@ -65,6 +65,44 @@
   display: inline-block;
 }
 
+/* Transaction Costs Section */
+.transactionCostsContainer {
+  margin-top: 20px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.costItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.costItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.costLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+.costValue {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  font-size: 14px;
+  text-align: right;
+}
+
 .predictionLabel {
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;

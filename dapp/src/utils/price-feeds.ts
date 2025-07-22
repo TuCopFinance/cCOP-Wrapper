@@ -81,6 +81,41 @@ export const getCOPUSDPrice = async (chainId: number): Promise<number> => {
 };
 
 /**
+ * Format token amount consistently across the application
+ * @param amount - The numeric amount
+ * @param tokenSymbol - The token symbol (e.g., 'cCOP', 'wcCOP')
+ * @param decimals - Number of decimal places (default: 2)
+ * @returns Formatted token string
+ */
+export const formatTokenAmount = (amount: number, tokenSymbol: string, decimals: number = 2): string => {
+  return `${amount.toFixed(decimals)} ${tokenSymbol}`;
+};
+
+/**
+ * Format gas and token prices with 4 decimal places for precision
+ * @param amount - The numeric amount
+ * @param tokenSymbol - The token symbol (e.g., 'CELO', 'ETH')
+ * @returns Formatted token string with 4 decimals
+ */
+export const formatGasAndTokenPrice = (amount: number, tokenSymbol: string): string => {
+  console.log(`formatGasAndTokenPrice - Input amount: ${amount}, tokenSymbol: ${tokenSymbol}`);
+  const result = formatTokenAmount(amount, tokenSymbol, 4);
+  console.log(`formatGasAndTokenPrice - Output result: ${result}`);
+  return result;
+};
+
+/**
+ * Format USD value consistently across the application
+ * @param value - The numeric USD value
+ * @param includeApproximate - Whether to include the ~ symbol (default: true)
+ * @returns Formatted USD string
+ */
+export const formatUSDValue = (value: number, includeApproximate: boolean = true): string => {
+  const prefix = includeApproximate ? '~' : '';
+  return `${prefix}$${value.toFixed(2)} USD`;
+};
+
+/**
  * Calculate USD value for a given amount of cCOP tokens
  * @param amount - The amount of cCOP tokens
  * @param chainId - The chain ID to get the price for
@@ -92,13 +127,13 @@ export const calculateUSDValue = async (amount: string, chainId: number): Promis
     const copUsdPrice = await getCOPUSDPrice(chainId);
     const usdValue = numAmount * copUsdPrice;
     
-    return `~$${usdValue.toFixed(2)}`;
+    return formatUSDValue(usdValue, true);
   } catch (error) {
     console.error('Error calculating USD value:', error);
     // Fallback calculation
     const numAmount = parseFloat(amount) || 0;
     const fallbackValue = numAmount * FALLBACK_PRICES.COP_USD;
-    return `~$${fallbackValue.toFixed(2)}`;
+    return formatUSDValue(fallbackValue, true);
   }
 };
 
@@ -214,7 +249,7 @@ export const formatHyperlanePrice = async (quote: bigint, isWrapping: boolean): 
     
     const usdValue = quoteInEther * usdPrice;
     
-    return `$${usdValue.toFixed(2)} USD (${quoteInEther.toFixed(4)} ${tokenName})`;
+    return `${formatUSDValue(usdValue, false)} (${quoteInEther.toFixed(4)} ${tokenName})`;
   } catch (error) {
     console.error('Error formatting Hyperlane price:', error);
     // Fallback to original format

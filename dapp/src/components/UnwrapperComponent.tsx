@@ -25,7 +25,8 @@ import { useWalletClient } from "wagmi";
 import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
 import { useGlobalBalances } from "../context/BalanceContext";
 import { estimateUnwrapGas, calculateApproximateGas } from "@/utils/gas-estimation";
-import { calculateUSDValue, debugPriceFeed, formatHyperlanePrice } from "@/utils/price-feeds";
+import { calculateUSDValue, debugPriceFeed, formatHyperlanePrice, formatUSDValue, formatTokenAmount } from "@/utils/price-feeds";
+import Image from "next/image";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -473,7 +474,7 @@ export const UnwrapperComponent = () => {
     if (numValue > currentBalance) {
       setAmountValidation({
         isValid: false,
-        message: `Saldo insuficiente. Disponible: ${currentBalance.toFixed(2)} wcCOP`,
+        message: `Saldo insuficiente. Disponible: ${formatTokenAmount(currentBalance, 'wcCOP')}`,
         type: 'error'
       });
     } else if (numValue === currentBalance) {
@@ -541,7 +542,7 @@ export const UnwrapperComponent = () => {
     if (currentBalance > 0) {
       setAmount(currentBalance.toString());
       validateAndPredictAmount(currentBalance.toString()).catch(console.error);
-      toast.success(`Monto establecido al máximo: ${currentBalance.toFixed(2)} wcCOP`, {
+      toast.success(`Monto establecido al máximo: ${formatTokenAmount(currentBalance, 'wcCOP')}`, {
         position: "bottom-right",
         style: { background: "#333", color: "#fff" },
       });
@@ -783,11 +784,7 @@ export const UnwrapperComponent = () => {
               <span className={styles.predictionLabel}>Valor aproximado:</span>
               <span className={styles.predictionValue}>{amountPrediction.usdValue}</span>
             </div>
-            <div className={styles.predictionItem}>
-              <span className={styles.predictionLabel}>Gas estimado:</span>
-              <span className={styles.predictionValue}>{amountPrediction.gasEstimate}</span>
-            </div>
-      </div>
+          </div>
         )}
         
         {/* Percentage Buttons */}
@@ -855,23 +852,38 @@ export const UnwrapperComponent = () => {
             className={`${styles.chainOption} ${chainToUnwrap === 'base' ? styles.chainOptionActive : ''}`}
             onClick={() => setChainToUnwrap('base')}
           >
-            <img src="assets/Base.png" alt="Base" />
+            <Image src="/assets/Base.png" alt="Base" width={24} height={24} />
             <span>Base</span>
           </button>
           <button
             className={`${styles.chainOption} ${chainToUnwrap === 'arbitrum' ? styles.chainOptionActive : ''}`}
             onClick={() => setChainToUnwrap('arbitrum')}
           >
-            <img src="assets/Arbitrum.png" alt="Arbitrum" />
+            <Image src="/assets/Arbitrum.png" alt="Arbitrum" width={24} height={24} />
             <span>Arbitrum</span>
           </button>
         </div>
       </div>
 
-      {formattedPrice && (
-        <p className={styles.priceLabel}>
-          Price for unwrapping: {formattedPrice}
-        </p>
+      {/* Transaction Costs Section */}
+      {(formattedPrice || (amountPrediction && amountValidation?.isValid)) && (
+        <div className={styles.transactionCostsContainer}>
+          <label className={styles.sectionLabel}>Costos de Transacción</label>
+          
+          {formattedPrice && (
+            <div className={styles.costItem}>
+              <span className={styles.costLabel}>Precio de unwrapping:</span>
+              <span className={styles.costValue}>{formattedPrice}</span>
+            </div>
+          )}
+          
+          {amountPrediction && amountValidation?.isValid && amountPrediction.gasEstimate && (
+            <div className={styles.costItem}>
+              <span className={styles.costLabel}>Gas estimado:</span>
+              <span className={styles.costValue}>{amountPrediction.gasEstimate}</span>
+            </div>
+          )}
+        </div>
       )}
 
       <button

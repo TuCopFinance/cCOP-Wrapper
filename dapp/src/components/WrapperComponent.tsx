@@ -24,7 +24,8 @@ import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
 import { useGlobalBalances } from "../context/BalanceContext";
 import { estimateWrapGas, calculateApproximateGas } from "@/utils/gas-estimation";
-import { calculateUSDValue, debugPriceFeed, formatHyperlanePrice } from "@/utils/price-feeds";
+import { calculateUSDValue, debugPriceFeed, formatHyperlanePrice, formatUSDValue, formatTokenAmount } from "@/utils/price-feeds";
+import Image from "next/image";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -418,7 +419,7 @@ export const WrapperComponent = () => {
     if (numValue > balance) {
       setAmountValidation({
         isValid: false,
-        message: `Saldo insuficiente. Disponible: ${balance.toFixed(2)} cCOP`,
+        message: `Saldo insuficiente. Disponible: ${formatTokenAmount(balance, 'cCOP')}`,
         type: 'error'
       });
     } else if (numValue === balance) {
@@ -484,7 +485,7 @@ export const WrapperComponent = () => {
     if (balance > 0) {
       setAmount(balance.toString());
       validateAndPredictAmount(balance.toString()).catch(console.error);
-      toast.success(`Monto establecido al máximo: ${balance.toFixed(2)} cCOP`, {
+      toast.success(`Monto establecido al máximo: ${formatTokenAmount(balance, 'cCOP')}`, {
         position: "bottom-right",
         style: { background: "#333", color: "#fff" },
       });
@@ -718,10 +719,6 @@ export const WrapperComponent = () => {
               <span className={styles.predictionLabel}>Valor aproximado:</span>
               <span className={styles.predictionValue}>{amountPrediction.usdValue}</span>
             </div>
-            <div className={styles.predictionItem}>
-              <span className={styles.predictionLabel}>Gas estimado:</span>
-              <span className={styles.predictionValue}>{amountPrediction.gasEstimate}</span>
-            </div>
           </div>
         )}
         
@@ -785,22 +782,37 @@ export const WrapperComponent = () => {
             className={`${styles.chainOption} ${domainID === '8453' ? styles.chainOptionActive : ''}`}
             onClick={() => setDomainID('8453')}
           >
-            <img src="assets/Base.png" alt="Base" />
+            <Image src="/assets/Base.png" alt="Base" width={24} height={24} />
             <span>Base</span>
           </button>
           <button
             className={`${styles.chainOption} ${domainID === '42161' ? styles.chainOptionActive : ''}`}
             onClick={() => setDomainID('42161')}
           >
-            <img src="assets/Arbitrum.png" alt="Arbitrum" />
+            <Image src="/assets/Arbitrum.png" alt="Arbitrum" width={24} height={24} />
             <span>Arbitrum</span>
           </button>
         </div>
       </div>
-      {formattedPrice && (
-        <p className={styles.priceLabel}>
-          Price for wrapping: {formattedPrice}
-        </p>
+      {/* Transaction Costs Section */}
+      {(formattedPrice || (amountPrediction && amountValidation?.isValid)) && (
+        <div className={styles.transactionCostsContainer}>
+          <label className={styles.sectionLabel}>Costos de Transacción</label>
+          
+          {formattedPrice && (
+            <div className={styles.costItem}>
+              <span className={styles.costLabel}>Precio de wrapping:</span>
+              <span className={styles.costValue}>{formattedPrice}</span>
+            </div>
+          )}
+          
+          {amountPrediction && amountValidation?.isValid && amountPrediction.gasEstimate && (
+            <div className={styles.costItem}>
+              <span className={styles.costLabel}>Gas estimado:</span>
+              <span className={styles.costValue}>{amountPrediction.gasEstimate}</span>
+            </div>
+          )}
+        </div>
       )}
 
       <button
