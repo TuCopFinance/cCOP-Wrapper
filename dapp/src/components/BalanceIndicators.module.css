@@ -1,11 +1,60 @@
-.indicatorRow {
+.balanceMenuBox {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
-  flex-wrap: nowrap;         /* NO wrap */
-  overflow-x: auto;          /* Scroll horizontal si no cabe */
+  color: #fff;
+  transition: background 0.2s;
+}
+
+.refreshBtn {
+  background: none;
+  border: none;
+  color: #2d2d2d;
+  background-color: rgb(132, 179, 39);
+  /*aplicar solo border radius izquierdo arriba y abajo*/
+  border-radius: 6px 0 0 6px;
+  height: 40px;
+  width: 40px;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  font-size: 18px;
+  margin-left: 4px;
+  padding: 2px 4px;
+  display: flex;
+  
+  transition: color 0.2s;
+  
+}
+.refreshBtn:hover {
+  color: #fff;
+}
+
+.totalDataBox {
+  background: #232323;
+  border-radius: 0 6px 6px 0;
+  padding: 0px 12px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  transition: background 0.2s;
+  justify-content: space-between;
   width: 100%;
+  height: 40px;
+  
+}
+
+.indicatorRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  margin-bottom: 10px;
+
+  width: 100%;
+
+
 }
 
 .indicator {
@@ -21,6 +70,7 @@
   max-width: 320px;
   width: fit-content;
   white-space: nowrap;
+    
 }
 
 .indicator.celo {
@@ -33,14 +83,17 @@
   background: linear-gradient(90deg, rgba(191,196,202,0.55) 60%, #232323 100%);
 }
 
-.indicator .label, .indicator .value {
+.indicator .label, .indicator .value, .defaultLabel {
   font-family: inherit;
   font-size: 1.08em;
   font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 1.2;
   color: #fff;
+  
+  
 }
+
 
 .value {
   font-variant-numeric: tabular-nums;
@@ -50,40 +103,29 @@
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
+  
 }
 
-.refreshBtn {
-  background: none;
-  border: none;
-  color: #a3a3a3;
-  cursor: pointer;
-  font-size: 18px;
-  margin-left: 4px;
-  padding: 2px 4px;
+
+
+
+
+.textTotalBox {
   display: flex;
-  align-items: center;
-  transition: color 0.2s;
-}
-.refreshBtn:hover {
-  color: #fff;
+  align-items: flex-start;
 }
 
-.consolidated {
-  background: #232323;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #fff;
-  font-weight: 600;
-  min-width: 120px;
-  margin-bottom: 0;
-  transition: background 0.2s;
-}
-.consolidated:hover {
+.totalDataBox:hover {
   background: #333;
+}
+
+.listOfAssets {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  overflow-x: auto;
 }
 
 @media (max-width: 600px) {
@@ -107,7 +149,7 @@
     margin-top: 4px;
     margin-left: 0;
   }
-  .consolidated {
+  .totalDataBox {
     width: 100%;
     font-size: 17px;
     padding: 10px 12px;
