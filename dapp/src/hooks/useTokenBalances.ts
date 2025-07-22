@@ -46,11 +46,7 @@ export function useTokenBalances() {
       return;
     }
 
-    // Only refresh if the account has changed
-    if (currentAccount === account.address) {
-      return;
-    }
-
+    // Update current account and refresh balances
     setCurrentAccount(account.address);
     setIsLoading(true);
     setError(null);
@@ -100,66 +96,12 @@ export function useTokenBalances() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [currentAccount]);
+  }, []);
 
   // Force refresh function that bypasses account change check
   const forceRefresh = useCallback(() => {
-    const account = getAccount(config);
-    
-    if (!account.address) {
-      setTokenBalances({ base: "0", arb: "0", celo: "0" });
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    readContracts(config, {
-      contracts: [
-        {
-          ...wrappedCCOPContractBase,
-          functionName: "balanceOf",
-          args: [account.address],
-        },
-        {
-          ...wrappedCCOPContractArb,
-          functionName: "balanceOf",
-          args: [account.address],
-        },
-        {
-          ...cCOPContractCelo,
-          functionName: "balanceOf",
-          args: [account.address],
-        },
-      ],
-    })
-      .then((data) => {
-        if (
-          data[0].status === "success" &&
-          data[1].status === "success" &&
-          data[2].status === "success" &&
-          typeof data[0].result === "bigint" &&
-          typeof data[1].result === "bigint" &&
-          typeof data[2].result === "bigint"
-        ) {
-          setTokenBalances({
-            base: (data[0].result / BigInt(10 ** 18)).toString(),
-            arb: (data[1].result / BigInt(10 ** 18)).toString(),
-            celo: (data[2].result / BigInt(10 ** 18)).toString(),
-          });
-        } else {
-          console.error("Failed to fetch balances:", data);
-          setError("Failed to fetch balances");
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching balances:", err);
-        setError("Error fetching balances");
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+    refresh();
+  }, [refresh]);
 
   // Watch for account changes
   useEffect(() => {

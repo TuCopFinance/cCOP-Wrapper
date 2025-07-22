@@ -16,6 +16,11 @@ export const BalanceIndicators = () => {
 
   const total = [celo, base, arb].reduce((acc, v) => acc + parseFloat(v), 0);
 
+  const handleRefresh = () => {
+    console.log("Manual refresh triggered");
+    refresh();
+  };
+
   const addTokenToWallet = async (network: 'celo' | 'base' | 'arb') => {
     if (!walletClient) {
       toast.error("No wallet client detected", {
@@ -82,7 +87,7 @@ export const BalanceIndicators = () => {
       <div className={styles.balanceMenuBox}>
         <button
           className={showDetails ? styles.refreshBtnOpen : styles.refreshBtnClose}
-          onClick={refresh}
+          onClick={handleRefresh}
           title="Refresh balances"
         >
           <FiRefreshCcw />

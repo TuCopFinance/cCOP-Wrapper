@@ -530,7 +530,7 @@ export const WrapperComponent = () => {
             
             // Refresh balances after successful transaction
             setTimeout(() => {
-              forceRefreshBalances();
+              refreshBalances();
               verifyTokenAllowanceAndPriceForSend();
             }, 3000); // Wait 3 seconds for transaction to be processed
             
