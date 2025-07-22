@@ -211,7 +211,7 @@ export const UnwrapperComponent = () => {
   const [customAddress, setCustomAddress] = useState("");
   
   // Get token balances
-  const { base: baseBalance, arb: arbBalance, refresh: refreshBalances } = useTokenBalances();
+  const { base: baseBalance, arb: arbBalance, refresh: refreshBalances, forceRefresh: forceRefreshBalances } = useTokenBalances();
 
   // Refresh balances when chain changes
   useEffect(() => {
@@ -573,6 +573,12 @@ export const UnwrapperComponent = () => {
             
             // Submit Divvi referral
             submitDivviReferral(txHash, targetChainIdContract);
+            
+            // Refresh balances after successful transaction
+            setTimeout(() => {
+              forceRefreshBalances();
+              verifyTokenAllowanceAndPriceForSend();
+            }, 3000); // Wait 3 seconds for transaction to be processed
             
             notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash, targetChainIdContract);
           })

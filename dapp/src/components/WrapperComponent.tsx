@@ -208,7 +208,7 @@ export const WrapperComponent = () => {
   const [customAddress, setCustomAddress] = useState("");
   
   // Get token balances
-  const { celo: celoBalance, refresh: refreshBalances } = useTokenBalances();
+  const { celo: celoBalance, refresh: refreshBalances, forceRefresh: forceRefreshBalances } = useTokenBalances();
 
   // Refresh balances when component mounts and when domainID changes
   useEffect(() => {
@@ -527,6 +527,12 @@ export const WrapperComponent = () => {
           .then((txHash) => {
             // Submit Divvi referral
             submitDivviReferral(txHash, chainID.mainnet.celo);
+            
+            // Refresh balances after successful transaction
+            setTimeout(() => {
+              forceRefreshBalances();
+              verifyTokenAllowanceAndPriceForSend();
+            }, 3000); // Wait 3 seconds for transaction to be processed
             
             notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash);
           })
