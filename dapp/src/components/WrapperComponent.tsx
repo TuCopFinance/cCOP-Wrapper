@@ -27,9 +27,9 @@ import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/util
 const getExplorerLink = (chainId: number, txHash: string): string => {
   switch (chainId) {
     case 42220: // Celo Mainnet
-      return `https://explorer.celo.org/tx/${txHash}`;
+      return `https://celoscan.io/tx/${txHash}`;
     case 44787: // Celo Alfajores Testnet
-      return `https://alfajores-blockscout.celo-testnet.org/tx/${txHash}`;
+      return `https://alfajores.celoscan.io/tx/${txHash}`;
     case 8453: // Base Mainnet
       return `https://basescan.org/tx/${txHash}`;
     case 84532: // Base Sepolia Testnet
@@ -39,7 +39,7 @@ const getExplorerLink = (chainId: number, txHash: string): string => {
     case 421614: // Arbitrum Sepolia Testnet
       return `https://sepolia.arbiscan.io/tx/${txHash}`;
     default:
-      return `https://explorer.celo.org/tx/${txHash}`;
+      return `https://celoscan.io/tx/${txHash}`;
   }
 };
 
