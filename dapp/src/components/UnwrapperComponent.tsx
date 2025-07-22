@@ -24,6 +24,7 @@ import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useWalletClient } from "wagmi";
 import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
 import { useGlobalBalances } from "../context/BalanceContext";
+import { estimateUnwrapGas, calculateApproximateGas } from "@/utils/gas-estimation";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -88,21 +89,22 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
         onClick={() => toast.dismiss(toastId)}
         style={{
           position: 'absolute',
-          top: '-8px',
-          right: '-8px',
+          top: '-6px',
+          right: '-6px',
           background: '#ff4444',
           color: 'white',
           border: 'none',
           borderRadius: '50%',
-          width: '16px',
-          height: '16px',
-          fontSize: '11px',
+          width: '12px',
+          height: '12px',
+          fontSize: '8px',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontWeight: 'bold',
-          zIndex: 1000
+          zIndex: 1000,
+          lineHeight: '1'
         }}
         title="Close message"
       >
@@ -160,15 +162,16 @@ const createToastWithClose = (message: string, type: 'success' | 'error' | 'info
           color: 'white',
           border: 'none',
           borderRadius: '50%',
-          width: '14px',
-          height: '14px',
-          fontSize: '10px',
+          width: '12px',
+          height: '12px',
+          fontSize: '8px',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontWeight: 'bold',
-          flexShrink: 0
+          flexShrink: 0,
+          lineHeight: '1'
         }}
         title="Close message"
       >
@@ -487,11 +490,35 @@ export const UnwrapperComponent = () => {
 
     // Calculate predictions
     const percentageOfBalance = (numValue / currentBalance) * 100;
+    
+    // Get target chain ID for gas estimation
+    const targetChainId = chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
+    
+    // Estimate gas using improved calculation
+    const gasEstimate = calculateApproximateGas(value, targetChainId);
+    
     setAmountPrediction({
       percentageOfBalance: percentageOfBalance,
       usdValue: `~$${(numValue * 0.1).toFixed(2)}`, // Approximate USD value
-      gasEstimate: `${(numValue * 0.001).toFixed(4)} ${chainToUnwrap === "base" ? "ETH" : "ETH"}` // Approximate gas estimate
+      gasEstimate: gasEstimate
     });
+
+    // Update gas estimate with real simulation if user has been idle for 2 seconds
+    setTimeout(async () => {
+      if (value === amount) {
+        try {
+          const account = getAccount(config);
+          const targetAddress = account.address || "";
+          const realGasEstimate = await estimateUnwrapGas(value, targetAddress, chainToUnwrap);
+          setAmountPrediction(prev => prev ? {
+            ...prev,
+            gasEstimate: realGasEstimate
+          } : null);
+        } catch (error) {
+          console.log('Could not get real gas estimate, using approximation');
+        }
+      }
+    }, 2000);
   }
 
   function setMaxAmount() {
