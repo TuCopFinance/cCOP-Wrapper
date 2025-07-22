@@ -134,7 +134,8 @@ export const estimateUnwrapGas = async (
 };
 
 // Get real-time gas price for a chain (placeholder for future implementation)
-export const getRealTimeGasPrice = async (chainId: number): Promise<bigint> => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getRealTimeGasPrice = async (_chainId: number): Promise<bigint> => {
   // This would integrate with a gas price API like Etherscan, Gas Station, etc.
   // For now, return a default value
   return BigInt(1000000000); // 1 gwei

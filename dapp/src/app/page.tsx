@@ -4,7 +4,6 @@ import { ConnectButton } from "@/components/ConnectButton";
 import Image from "next/image";
 import { TokenMenu } from "@/components/TokenMenu";
 import { Footer } from "@/components/Footer";
-import { TestButtons } from "@/components/TestButtons";
 
 
 export default function Home() {
@@ -31,7 +30,6 @@ export default function Home() {
           <TokenMenu />
       </div>
       <Footer />
-      <TestButtons />
     </div>
   );
 }
