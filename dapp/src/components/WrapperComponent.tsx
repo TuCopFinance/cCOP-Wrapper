@@ -20,6 +20,7 @@ import type { Abi } from "viem";
 import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
 import { getReferralTag } from "@divvi/referral-sdk";
 import { BalanceIndicators } from "./BalanceIndicators";
+import { useTokenBalances } from "@/hooks/useTokenBalances";
 
 // --- Notification helpers ---
 const notifyChangeChain = () =>
@@ -63,6 +64,16 @@ export const WrapperComponent = () => {
   const [differentAddressFlag, setDifferentAddressFlag] = useState(false);
   const [amount, setAmount] = useState("");
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [amountValidation, setAmountValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+  } | null>(null);
+  const [amountPrediction, setAmountPrediction] = useState<{
+    usdValue?: string;
+    percentageOfBalance?: number;
+    gasEstimate?: string;
+  } | null>(null);
 
   const [allowanceIsMoreThanAmount, setAllowanceIsMoreThanAmount] = useState<
     boolean | null
@@ -72,6 +83,9 @@ export const WrapperComponent = () => {
   const account = getAccount(config);
   const connectedAddress = account.address || "";
   const [customAddress, setCustomAddress] = useState("");
+  
+  // Get token balances
+  const { celo: celoBalance, refresh: refreshBalances } = useTokenBalances();
 
   // --- Handlers ---
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
@@ -145,8 +159,102 @@ export const WrapperComponent = () => {
     return () => clearTimeout(timeout);
   }, [amount, domainID, differentAddressFlag, verifyTokenAllowanceAndPriceForSend]);
 
+  // Revalidate amount when balance changes
+  useEffect(() => {
+    if (amount) {
+      validateAndPredictAmount(amount);
+    }
+  }, [celoBalance]);
+
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setAmount(e.target.value);
+    const value = e.target.value;
+    setAmount(value);
+    
+    // Validate and predict amount
+    validateAndPredictAmount(value);
+  }
+
+  function validateAndPredictAmount(value: string) {
+    if (!value || value === "") {
+      setAmountValidation(null);
+      setAmountPrediction(null);
+      return;
+    }
+
+    const numValue = parseFloat(value);
+    const balance = parseFloat(celoBalance);
+
+    // Basic validation
+    if (isNaN(numValue)) {
+      setAmountValidation({
+        isValid: false,
+        message: "Por favor ingresa un número válido",
+        type: 'error'
+      });
+      setAmountPrediction(null);
+      return;
+    }
+
+    if (numValue <= 0) {
+      setAmountValidation({
+        isValid: false,
+        message: "El monto debe ser mayor a 0",
+        type: 'error'
+      });
+      setAmountPrediction(null);
+      return;
+    }
+
+    if (numValue > balance) {
+      setAmountValidation({
+        isValid: false,
+        message: `Saldo insuficiente. Disponible: ${balance.toFixed(2)} cCOP`,
+        type: 'error'
+      });
+    } else if (numValue === balance) {
+      setAmountValidation({
+        isValid: true,
+        message: "Usando todo el saldo disponible",
+        type: 'success'
+      });
+    } else if (numValue > balance * 0.9) {
+      setAmountValidation({
+        isValid: true,
+        message: "Usando más del 90% del saldo",
+        type: 'warning'
+      });
+    } else {
+      setAmountValidation({
+        isValid: true,
+        message: "Monto válido",
+        type: 'success'
+      });
+    }
+
+    // Calculate predictions
+    const percentageOfBalance = (numValue / balance) * 100;
+    setAmountPrediction({
+      percentageOfBalance: percentageOfBalance,
+      usdValue: `~$${(numValue * 0.1).toFixed(2)}`, // Approximate USD value (you can integrate real price API)
+      gasEstimate: `${(numValue * 0.001).toFixed(4)} CELO` // Approximate gas estimate
+    });
+  }
+
+  function setMaxAmount() {
+    const balance = parseFloat(celoBalance);
+    if (balance > 0) {
+      setAmount(balance.toString());
+      validateAndPredictAmount(balance.toString());
+      toast.success(`Monto establecido al máximo: ${balance.toFixed(2)} cCOP`, {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+    } else {
+      toast.error("No hay saldo disponible", {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+    }
   }
 
   function checkChainAndChange() {
@@ -260,13 +368,105 @@ export const WrapperComponent = () => {
   return (
     <>
       <BalanceIndicators />
-      <label className={styles.amountLabel}>Amount</label>
-      <input
-        className={styles.amountInput}
-        placeholder="Enter amount of cCOP tokens to wrap"
-        value={amount}
-        onChange={handleAmountChange}
-      />
+      
+      <div className={styles.amountContainer}>
+        <label className={styles.amountLabel}>Amount</label>
+        <div className={styles.amountInputContainer}>
+          <input
+            className={`${styles.amountInput} ${amountValidation?.type === 'error' ? styles.amountInputError : ''}`}
+            placeholder="Enter amount of cCOP tokens to wrap"
+            value={amount}
+            onChange={handleAmountChange}
+            type="number"
+            step="0.01"
+            min="0"
+          />
+          <button
+            className={styles.maxButton}
+            onClick={setMaxAmount}
+            type="button"
+            title="Set maximum amount"
+          >
+            MAX
+          </button>
+        </div>
+        
+        {/* Validation Message */}
+        {amountValidation && (
+          <div className={`${styles.validationMessage} ${styles[`validation${amountValidation.type.charAt(0).toUpperCase() + amountValidation.type.slice(1)}`]}`}>
+            {amountValidation.message}
+          </div>
+        )}
+        
+        {/* Predictions */}
+        {amountPrediction && amountValidation?.isValid && (
+          <div className={styles.predictionContainer}>
+            <div className={styles.predictionItem}>
+              <span className={styles.predictionLabel}>Porcentaje del saldo:</span>
+              <span className={styles.predictionValue}>{amountPrediction.percentageOfBalance?.toFixed(1)}%</span>
+            </div>
+            <div className={styles.predictionItem}>
+              <span className={styles.predictionLabel}>Valor aproximado:</span>
+              <span className={styles.predictionValue}>{amountPrediction.usdValue}</span>
+            </div>
+            <div className={styles.predictionItem}>
+              <span className={styles.predictionLabel}>Gas estimado:</span>
+              <span className={styles.predictionValue}>{amountPrediction.gasEstimate}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Percentage Buttons */}
+        <div className={styles.percentageButtons}>
+          <button
+            className={styles.percentageButton}
+            onClick={() => {
+              const balance = parseFloat(celoBalance);
+              const amount25 = (balance * 0.25).toFixed(2);
+              setAmount(amount25);
+              validateAndPredictAmount(amount25);
+            }}
+            type="button"
+          >
+            25%
+          </button>
+          <button
+            className={styles.percentageButton}
+            onClick={() => {
+              const balance = parseFloat(celoBalance);
+              const amount50 = (balance * 0.5).toFixed(2);
+              setAmount(amount50);
+              validateAndPredictAmount(amount50);
+            }}
+            type="button"
+          >
+            50%
+          </button>
+          <button
+            className={styles.percentageButton}
+            onClick={() => {
+              const balance = parseFloat(celoBalance);
+              const amount75 = (balance * 0.75).toFixed(2);
+              setAmount(amount75);
+              validateAndPredictAmount(amount75);
+            }}
+            type="button"
+          >
+            75%
+          </button>
+          <button
+            className={styles.percentageButton}
+            onClick={() => {
+              const balance = parseFloat(celoBalance);
+              setAmount(balance.toString());
+              validateAndPredictAmount(balance.toString());
+            }}
+            type="button"
+          >
+            100%
+          </button>
+        </div>
+      </div>
       <div className={styles.chainSelectorContainer}>
         <p className={styles.wrapToLabel}>Wrap on:</p>
         <div className={styles.chainSelector}>

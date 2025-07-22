@@ -19,6 +19,7 @@ import { waitForIsDelivered } from "@/utils/hyperlane";
 import { useWalletClient } from "wagmi";
 import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
 import { BalanceIndicators } from "./BalanceIndicators";
+import { useTokenBalances } from "@/hooks/useTokenBalances";
 
 const notifyChangeChain = (chainName: string): string =>
   toast(`Changing to ${chainName} network`, {
@@ -64,6 +65,16 @@ export const UnwrapperComponent = () => {
   // State
   const [differentAddressFlag, setDifferentAddressFlag] = useState(false);
   const [amount, setAmount] = useState("");
+  const [amountValidation, setAmountValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+  } | null>(null);
+  const [amountPrediction, setAmountPrediction] = useState<{
+    usdValue?: string;
+    percentageOfBalance?: number;
+    gasEstimate?: string;
+  } | null>(null);
   const [hasSufficientAmount, setHasSufficientAmount] =
     useState<boolean>(false);
   const [quote, setQuote] = useState<bigint | null>(null);
@@ -74,6 +85,9 @@ export const UnwrapperComponent = () => {
   const account = getAccount(config);
   const connectedAddress = account.address || "";
   const [customAddress, setCustomAddress] = useState("");
+  
+  // Get token balances
+  const { base: baseBalance, arb: arbBalance, refresh: refreshBalances } = useTokenBalances();
 
   //Check allowance and get quote
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
@@ -155,9 +169,103 @@ export const UnwrapperComponent = () => {
     verifyTokenAllowanceAndPriceForSend,
   ]);
 
+  // Revalidate amount when chain changes
+  useEffect(() => {
+    if (amount) {
+      validateAndPredictAmount(amount);
+    }
+  }, [chainToUnwrap, baseBalance, arbBalance]);
+
   // Handler: Amount input change
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setAmount(e.target.value);
+    const value = e.target.value;
+    setAmount(value);
+    
+    // Validate and predict amount
+    validateAndPredictAmount(value);
+  }
+
+  function validateAndPredictAmount(value: string) {
+    if (!value || value === "") {
+      setAmountValidation(null);
+      setAmountPrediction(null);
+      return;
+    }
+
+    const numValue = parseFloat(value);
+    const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+
+    // Basic validation
+    if (isNaN(numValue)) {
+      setAmountValidation({
+        isValid: false,
+        message: "Por favor ingresa un número válido",
+        type: 'error'
+      });
+      setAmountPrediction(null);
+      return;
+    }
+
+    if (numValue <= 0) {
+      setAmountValidation({
+        isValid: false,
+        message: "El monto debe ser mayor a 0",
+        type: 'error'
+      });
+      setAmountPrediction(null);
+      return;
+    }
+
+    if (numValue > currentBalance) {
+      setAmountValidation({
+        isValid: false,
+        message: `Saldo insuficiente. Disponible: ${currentBalance.toFixed(2)} wcCOP`,
+        type: 'error'
+      });
+    } else if (numValue === currentBalance) {
+      setAmountValidation({
+        isValid: true,
+        message: "Usando todo el saldo disponible",
+        type: 'success'
+      });
+    } else if (numValue > currentBalance * 0.9) {
+      setAmountValidation({
+        isValid: true,
+        message: "Usando más del 90% del saldo",
+        type: 'warning'
+      });
+    } else {
+      setAmountValidation({
+        isValid: true,
+        message: "Monto válido",
+        type: 'success'
+      });
+    }
+
+    // Calculate predictions
+    const percentageOfBalance = (numValue / currentBalance) * 100;
+    setAmountPrediction({
+      percentageOfBalance: percentageOfBalance,
+      usdValue: `~$${(numValue * 0.1).toFixed(2)}`, // Approximate USD value
+      gasEstimate: `${(numValue * 0.001).toFixed(4)} ${chainToUnwrap === "base" ? "ETH" : "ETH"}` // Approximate gas estimate
+    });
+  }
+
+  function setMaxAmount() {
+    const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+    if (currentBalance > 0) {
+      setAmount(currentBalance.toString());
+      validateAndPredictAmount(currentBalance.toString());
+      toast.success(`Monto establecido al máximo: ${currentBalance.toFixed(2)} wcCOP`, {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+    } else {
+      toast.error("No hay saldo disponible", {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+    }
   }
 
   function checkChainAndChange() {
@@ -280,13 +388,105 @@ export const UnwrapperComponent = () => {
           </button>
         </div>
       </div>
-      <label className={styles.amountLabel}>Amount</label>
-      <input
-        className={styles.amountInput}
-        placeholder="Enter amount of cCOP tokens to wrap"
-        value={amount}
-        onChange={handleAmountChange}
-      />
+      
+      <div className={styles.amountContainer}>
+        <label className={styles.amountLabel}>Amount</label>
+        <div className={styles.amountInputContainer}>
+          <input
+            className={`${styles.amountInput} ${amountValidation?.type === 'error' ? styles.amountInputError : ''}`}
+            placeholder="Enter amount of wcCOP tokens to unwrap"
+            value={amount}
+            onChange={handleAmountChange}
+            type="number"
+            step="0.01"
+            min="0"
+          />
+          <button
+            className={styles.maxButton}
+            onClick={setMaxAmount}
+            type="button"
+            title="Set maximum amount"
+          >
+            MAX
+          </button>
+        </div>
+        
+        {/* Validation Message */}
+        {amountValidation && (
+          <div className={`${styles.validationMessage} ${styles[`validation${amountValidation.type.charAt(0).toUpperCase() + amountValidation.type.slice(1)}`]}`}>
+            {amountValidation.message}
+          </div>
+        )}
+        
+        {/* Predictions */}
+        {amountPrediction && amountValidation?.isValid && (
+          <div className={styles.predictionContainer}>
+            <div className={styles.predictionItem}>
+              <span className={styles.predictionLabel}>Porcentaje del saldo:</span>
+              <span className={styles.predictionValue}>{amountPrediction.percentageOfBalance?.toFixed(1)}%</span>
+            </div>
+            <div className={styles.predictionItem}>
+              <span className={styles.predictionLabel}>Valor aproximado:</span>
+              <span className={styles.predictionValue}>{amountPrediction.usdValue}</span>
+            </div>
+            <div className={styles.predictionItem}>
+              <span className={styles.predictionLabel}>Gas estimado:</span>
+              <span className={styles.predictionValue}>{amountPrediction.gasEstimate}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Percentage Buttons */}
+        <div className={styles.percentageButtons}>
+          <button
+            className={styles.percentageButton}
+            onClick={() => {
+              const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+              const amount25 = (currentBalance * 0.25).toFixed(2);
+              setAmount(amount25);
+              validateAndPredictAmount(amount25);
+            }}
+            type="button"
+          >
+            25%
+          </button>
+          <button
+            className={styles.percentageButton}
+            onClick={() => {
+              const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+              const amount50 = (currentBalance * 0.5).toFixed(2);
+              setAmount(amount50);
+              validateAndPredictAmount(amount50);
+            }}
+            type="button"
+          >
+            50%
+          </button>
+          <button
+            className={styles.percentageButton}
+            onClick={() => {
+              const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+              const amount75 = (currentBalance * 0.75).toFixed(2);
+              setAmount(amount75);
+              validateAndPredictAmount(amount75);
+            }}
+            type="button"
+          >
+            75%
+          </button>
+          <button
+            className={styles.percentageButton}
+            onClick={() => {
+              const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+              setAmount(currentBalance.toString());
+              validateAndPredictAmount(currentBalance.toString());
+            }}
+            type="button"
+          >
+            100%
+          </button>
+        </div>
+      </div>
 
       {quote && (
         <p className={styles.priceLabel}>
