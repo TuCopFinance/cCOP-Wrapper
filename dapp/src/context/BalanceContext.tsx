@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useEffect, useState } from "react";
+"use client";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { getAccount, readContracts, watchAccount } from "@wagmi/core";
 import { address } from "@/constants/address";
 import WrappedCCOP from "@/constants/abis/WrappedCCOP.json";
@@ -8,7 +7,33 @@ import { chainID } from "@/constants/chainID";
 import { Abi, erc20Abi } from "viem";
 import { config } from "@/config";
 
-export function useTokenBalances() {
+interface TokenBalances {
+  base: string;
+  arb: string;
+  celo: string;
+}
+
+interface BalanceContextType {
+  balances: TokenBalances;
+  isLoading: boolean;
+  error: string | null;
+  refresh: () => void;
+  forceRefresh: () => void;
+}
+
+const BalanceContext = createContext<BalanceContextType | undefined>(undefined);
+
+export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [balances, setBalances] = useState<TokenBalances>({
+    base: "0",
+    arb: "0",
+    celo: "0",
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentAccount, setCurrentAccount] = useState<string | null>(null);
+
   const wrappedCCOPContractBase = {
     address: address.mainnet.wrapToken.base as `0x${string}`,
     abi: WrappedCCOP.abi as Abi,
@@ -27,24 +52,14 @@ export function useTokenBalances() {
     chainId: chainID.mainnet.celo,
   } as const;
 
-  const [tokenbalances, setTokenBalances] = useState({
-    base: "0",
-    arb: "0",
-    celo: "0",
-  });
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentAccount, setCurrentAccount] = useState<string | null>(null);
-
   const refresh = useCallback(() => {
-    console.log("=== REFRESH FUNCTION CALLED ===");
+    console.log("=== GLOBAL REFRESH FUNCTION CALLED ===");
     const account = getAccount(config);
     console.log("Account:", account);
     
     if (!account.address) {
       console.log("No account address, setting balances to 0");
-      setTokenBalances({ base: "0", arb: "0", celo: "0" });
+      setBalances({ base: "0", arb: "0", celo: "0" });
       setCurrentAccount(null);
       return;
     }
@@ -76,7 +91,7 @@ export function useTokenBalances() {
       ],
     })
       .then((data) => {
-        console.log("=== CONTRACTS READ SUCCESS ===");
+        console.log("=== GLOBAL CONTRACTS READ SUCCESS ===");
         console.log("Contract data:", data);
         
         if (
@@ -92,10 +107,10 @@ export function useTokenBalances() {
             arb: (data[1].result / BigInt(10 ** 18)).toString(),
             celo: (data[2].result / BigInt(10 ** 18)).toString(),
           };
-          console.log("Setting new balances:", newBalances);
-          console.log("🎉 BALANCES UPDATED SUCCESSFULLY! 🎉");
-          console.log("📊 New Total:", (parseFloat(newBalances.base) + parseFloat(newBalances.arb) + parseFloat(newBalances.celo)).toFixed(2), "cCOP");
-          setTokenBalances(newBalances);
+          console.log("Setting new global balances:", newBalances);
+          console.log("🎉 GLOBAL BALANCES UPDATED SUCCESSFULLY! 🎉");
+          console.log("📊 New Global Total:", (parseFloat(newBalances.base) + parseFloat(newBalances.arb) + parseFloat(newBalances.celo)).toFixed(2), "cCOP");
+          setBalances(newBalances);
         } else {
           console.error("Failed to fetch balances:", data);
           setError("Failed to fetch balances");
@@ -106,12 +121,11 @@ export function useTokenBalances() {
         setError("Error fetching balances");
       })
       .finally(() => {
-        console.log("=== REFRESH COMPLETED ===");
+        console.log("=== GLOBAL REFRESH COMPLETED ===");
         setIsLoading(false);
       });
   }, []);
 
-  // Force refresh function that bypasses account change check
   const forceRefresh = useCallback(() => {
     refresh();
   }, [refresh]);
@@ -134,5 +148,17 @@ export function useTokenBalances() {
     refresh();
   }, [refresh]);
 
-  return { ...tokenbalances, refresh, forceRefresh, isLoading, error };
-}
+  return (
+    <BalanceContext.Provider value={{ balances, isLoading, error, refresh, forceRefresh }}>
+      {children}
+    </BalanceContext.Provider>
+  );
+};
+
+export const useGlobalBalances = () => {
+  const context = useContext(BalanceContext);
+  if (context === undefined) {
+    throw new Error("useGlobalBalances must be used within a BalanceProvider");
+  }
+  return context;
+}; 

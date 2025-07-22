@@ -22,6 +22,7 @@ import { getReferralTag } from "@divvi/referral-sdk";
 import { BalanceIndicators } from "./BalanceIndicators";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
+import { useGlobalBalances } from "@/context/BalanceContext";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -147,6 +148,16 @@ const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string, onRef
         if (onRefresh) {
           onRefresh();
           console.log("=== BALANCE REFRESH EXECUTED AFTER DELIVERY ===");
+          
+          // Show confirmation toast for balance update
+          setTimeout(() => {
+            toast.success("Balances updated automatically!", {
+              position: "bottom-right",
+              style: { background: "#28a745", color: "#fff" },
+              duration: 3000,
+              icon: "🔄"
+            });
+          }, 1000);
         } else {
           console.log("=== NO REFRESH FUNCTION PROVIDED ===");
         }
@@ -221,7 +232,8 @@ export const WrapperComponent = () => {
   const [customAddress, setCustomAddress] = useState("");
   
   // Get token balances
-  const { celo: celoBalance, refresh: refreshBalances, forceRefresh: forceRefreshBalances } = useTokenBalances();
+  const { balances, refresh: refreshBalances } = useGlobalBalances();
+  const celoBalance = balances.celo;
 
   // Refresh balances when component mounts and when domainID changes
   useEffect(() => {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTokenBalances } from "@/hooks/useTokenBalances";
+import { useGlobalBalances } from "@/context/BalanceContext";
 import { FiRefreshCcw, FiChevronDown, FiChevronUp, FiPlus } from "react-icons/fi";
 import { useWalletClient } from "wagmi";
 import { switchChain } from "@wagmi/core";
@@ -10,11 +10,18 @@ import toast from "react-hot-toast";
 import styles from "./BalanceIndicators.module.css";
 
 export const BalanceIndicators = () => {
-  const { celo, base, arb, refresh, isLoading, error } = useTokenBalances();
+  const { balances, isLoading, error, refresh } = useGlobalBalances();
   const [showDetails, setShowDetails] = useState(false);
   const { data: walletClient } = useWalletClient();
 
-  const total = [celo, base, arb].reduce((acc, v) => acc + parseFloat(v), 0);
+  const total = [balances.celo, balances.base, balances.arb].reduce((acc, v) => acc + parseFloat(v), 0);
+
+  // Log balance changes
+  console.log("=== BALANCE INDICATORS RENDER ===");
+  console.log("Current balances:", balances);
+  console.log("Total:", total.toFixed(2));
+  console.log("Is loading:", isLoading);
+  console.log("Error:", error);
 
   const handleRefresh = () => {
     console.log("Manual refresh triggered");
@@ -112,7 +119,7 @@ export const BalanceIndicators = () => {
             <img src="assets/Celo.png" alt="cCOP Token" />
             <p>
               Celo:{" "}
-              {isLoading ? "Loading..." : parseFloat(celo) > 0 ? parseFloat(celo).toFixed(2) : "0.00"} cCOP
+              {isLoading ? "Loading..." : parseFloat(balances.celo) > 0 ? parseFloat(balances.celo).toFixed(2) : "0.00"} cCOP
             </p>
             <button
               className={styles.addTokenBtn}
@@ -126,7 +133,7 @@ export const BalanceIndicators = () => {
             <img src="assets/Base.png" alt="wcCOP Token" />
             <p>
               Base:{" "}
-              {isLoading ? "Loading..." : parseFloat(base) > 0 ? parseFloat(base).toFixed(2) : "0.00"} wcCOP
+              {isLoading ? "Loading..." : parseFloat(balances.base) > 0 ? parseFloat(balances.base).toFixed(2) : "0.00"} wcCOP
             </p>
             <button
               className={styles.addTokenBtn}
@@ -140,7 +147,7 @@ export const BalanceIndicators = () => {
             <img src="assets/Arbitrum.png" alt="wcCOP Token"  />
             <p>
               Arbitrum:{" "}
-              {isLoading ? "Loading..." : parseFloat(arb) > 0 ? parseFloat(arb).toFixed(2) : "0.00"} wcCOP
+              {isLoading ? "Loading..." : parseFloat(balances.arb) > 0 ? parseFloat(balances.arb).toFixed(2) : "0.00"} wcCOP
             </p>
             <button
               className={styles.addTokenBtn}

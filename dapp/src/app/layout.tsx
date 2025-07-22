@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { headers } from "next/headers"; // added
 import "./globals.css";
 import ContextProvider from "@/context";
+import { BalanceProvider } from "@/context/BalanceContext";
 
 export const metadata: Metadata = {
   title: "cCOP wrapper",
@@ -21,8 +22,12 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        
-        <ContextProvider cookies={cookies}>{children}<Toaster/></ContextProvider>
+        <ContextProvider cookies={cookies}>
+          <BalanceProvider>
+            {children}
+            <Toaster/>
+          </BalanceProvider>
+        </ContextProvider>
       </body>
     </html>
   );

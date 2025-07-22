@@ -23,6 +23,7 @@ import { BalanceIndicators } from "./BalanceIndicators";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useWalletClient } from "wagmi";
 import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
+import { useGlobalBalances } from "@/context/BalanceContext";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -149,6 +150,16 @@ const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string,
         if (onRefresh) {
           onRefresh();
           console.log("=== BALANCE REFRESH EXECUTED AFTER DELIVERY ===");
+          
+          // Show confirmation toast for balance update
+          setTimeout(() => {
+            toast.success("Balances updated automatically!", {
+              position: "bottom-right",
+              style: { background: "#28a745", color: "#fff" },
+              duration: 3000,
+              icon: "🔄"
+            });
+          }, 1000);
         } else {
           console.log("=== NO REFRESH FUNCTION PROVIDED ===");
         }
@@ -224,7 +235,9 @@ export const UnwrapperComponent = () => {
   const [customAddress, setCustomAddress] = useState("");
   
   // Get token balances
-  const { base: baseBalance, arb: arbBalance, refresh: refreshBalances, forceRefresh: forceRefreshBalances } = useTokenBalances();
+  const { balances, refresh: refreshBalances } = useGlobalBalances();
+  const baseBalance = balances.base;
+  const arbBalance = balances.arb;
 
   // Refresh balances when chain changes
   useEffect(() => {
