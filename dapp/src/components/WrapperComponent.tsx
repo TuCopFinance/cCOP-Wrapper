@@ -60,9 +60,63 @@ const getChainName = (chainId: number): string => {
 const formatTransactionLink = (chainId: number, txHash: string): string => {
   const chainName = getChainName(chainId);
   const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
+  
+  return `${chainName} (${shortTxHash})`;
+};
+
+// --- Helper function to get explorer URL ---
+const getExplorerUrl = (chainId: number, txHash: string): string => {
+  return getExplorerLink(chainId, txHash);
+};
+
+// --- Helper function to show transaction toast with clickable link ---
+const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: string, action: string) => {
+  const chainName = getChainName(chainId);
+  const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
   const explorerUrl = getExplorerLink(chainId, txHash);
   
-  return `<a href="${explorerUrl}" target="_blank" style="color: #007bff; text-decoration: underline; font-weight: bold;">${chainName} (${shortTxHash})</a>`;
+  const message = isSuccess 
+    ? `cCOP tokens ${action} successfully!`
+    : `Error ${action} cCOP tokens.`;
+  
+  const toastId = toast(
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div>{message}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '12px', opacity: 0.8 }}>
+          Transaction: {chainName} ({shortTxHash})
+        </span>
+        <button
+          onClick={() => {
+            window.open(explorerUrl, '_blank');
+            toast.dismiss(toastId);
+          }}
+          style={{
+            background: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '4px 8px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            fontWeight: 'bold'
+          }}
+        >
+          View
+        </button>
+      </div>
+    </div>,
+    {
+      position: "bottom-right",
+      style: { 
+        background: "#707070", 
+        color: "#fff",
+        minWidth: '300px'
+      },
+      duration: Infinity,
+      icon: isSuccess ? "✅" : "❌"
+    }
+  );
 };
 
 // --- Notification helpers ---
@@ -74,34 +128,45 @@ const notifyChangeChain = () =>
   });
 
 const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string) => {
-  const successMessage = txHash 
-    ? `cCOP tokens wrapped successfully! View transaction: ${formatTransactionLink(42220, txHash)}`
-    : `cCOP tokens wrapped successfully!`;
-    
-  const errorMessage = txHash
-    ? `Error wrapping cCOP tokens. View transaction: ${formatTransactionLink(42220, txHash)}`
-    : `Error wrapping cCOP tokens, please check hyperlane explorer using your transaction hash`;
-
-  return toast.promise(
-    deliveredPromise,
-    {
-      loading: "Wrapping cCOP tokens...",
-      success: successMessage,
-      error: errorMessage,
-    },
-    {
-      position: "bottom-right",
-      style: { background: "#707070", color: "#fff" },
-      success: { 
-        duration: Infinity, // Keep until user closes
-        icon: "✅" 
-      },
-      error: { 
-        duration: Infinity, // Keep until user closes
-        icon: "❌" 
-      },
-    }
-  );
+  // Show loading toast
+  const loadingToast = toast.loading("Wrapping cCOP tokens...", {
+    position: "bottom-right",
+    style: { background: "#707070", color: "#fff" },
+  });
+  
+  deliveredPromise
+    .then(() => {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      if (txHash) {
+        showTransactionToast(true, 42220, txHash, "wrapped");
+      } else {
+        toast.success("cCOP tokens wrapped successfully!", {
+          position: "bottom-right",
+          style: { background: "#707070", color: "#fff" },
+          duration: Infinity,
+          icon: "✅"
+        });
+      }
+    })
+    .catch((error) => {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      if (txHash) {
+        showTransactionToast(false, 42220, txHash, "wrapping");
+      } else {
+        toast.error("Error wrapping cCOP tokens, please check hyperlane explorer using your transaction hash", {
+          position: "bottom-right",
+          style: { background: "#707070", color: "#fff" },
+          duration: Infinity,
+          icon: "❌"
+        });
+      }
+    });
 };
 
 export const WrapperComponent = () => {

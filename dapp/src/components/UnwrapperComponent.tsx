@@ -61,12 +61,65 @@ const getChainName = (chainId: number): string => {
 const formatTransactionLink = (chainId: number, txHash: string): string => {
   const chainName = getChainName(chainId);
   const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
-  const explorerUrl = getExplorerLink(chainId, txHash);
   
-  return `<a href="${explorerUrl}" target="_blank" style="color: #007bff; text-decoration: underline; font-weight: bold;">${chainName} (${shortTxHash})</a>`;
+  return `${chainName} (${shortTxHash})`;
 };
 
-// --- Notification helpers ---
+// --- Helper function to get explorer URL ---
+const getExplorerUrl = (chainId: number, txHash: string): string => {
+  return getExplorerLink(chainId, txHash);
+};
+
+// --- Helper function to show transaction toast with clickable link ---
+const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: string, action: string) => {
+  const chainName = getChainName(chainId);
+  const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
+  const explorerUrl = getExplorerLink(chainId, txHash);
+  
+  const message = isSuccess 
+    ? `cCOP tokens ${action} successfully!`
+    : `Error ${action} cCOP tokens.`;
+  
+  const toastId = toast(
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div>{message}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '12px', opacity: 0.8 }}>
+          Transaction: {chainName} ({shortTxHash})
+        </span>
+        <button
+          onClick={() => {
+            window.open(explorerUrl, '_blank');
+            toast.dismiss(toastId);
+          }}
+          style={{
+            background: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '4px 8px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            fontWeight: 'bold'
+          }}
+        >
+          View
+        </button>
+      </div>
+    </div>,
+    {
+      position: "bottom-right",
+      style: { 
+        background: "#707070", 
+        color: "#fff",
+        minWidth: '300px'
+      },
+      duration: Infinity,
+      icon: isSuccess ? "✅" : "❌"
+    }
+  );
+};
+
 const notifyChangeChain = (chainName: string): string =>
   toast(`Changing to ${chainName} network`, {
     duration: 2000,
@@ -76,34 +129,46 @@ const notifyChangeChain = (chainName: string): string =>
 
 const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string, chainId?: number) => {
   const targetChainId = chainId || 8453; // Default to Base
-  const successMessage = txHash 
-    ? `cCOP tokens unwrapped successfully! View transaction: ${formatTransactionLink(targetChainId, txHash)}`
-    : `cCOP tokens unwrapped successfully!`;
-    
-  const errorMessage = txHash
-    ? `Error unwrapping cCOP tokens. View transaction: ${formatTransactionLink(targetChainId, txHash)}`
-    : `Error unwrapping cCOP tokens, please check hyperlane explorer using your transaction hash`;
-
-  return toast.promise(
-    deliveredPromise,
-    {
-      loading: "Unwrapping cCOP tokens...",
-      success: successMessage,
-      error: errorMessage,
-    },
-    {
-      position: "bottom-right",
-      style: { background: "#707070", color: "#fff" },
-      success: { 
-        duration: Infinity, // Keep until user closes
-        icon: "✅" 
-      },
-      error: { 
-        duration: Infinity, // Keep until user closes
-        icon: "❌" 
-      },
-    }
-  );
+  
+  // Show loading toast
+  const loadingToast = toast.loading("Unwrapping cCOP tokens...", {
+    position: "bottom-right",
+    style: { background: "#707070", color: "#fff" },
+  });
+  
+  deliveredPromise
+    .then(() => {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      if (txHash) {
+        showTransactionToast(true, targetChainId, txHash, "unwrapped");
+      } else {
+        toast.success("cCOP tokens unwrapped successfully!", {
+          position: "bottom-right",
+          style: { background: "#707070", color: "#fff" },
+          duration: Infinity,
+          icon: "✅"
+        });
+      }
+    })
+    .catch((error) => {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      if (txHash) {
+        showTransactionToast(false, targetChainId, txHash, "unwrapping");
+      } else {
+        toast.error("Error unwrapping cCOP tokens, please check hyperlane explorer using your transaction hash", {
+          position: "bottom-right",
+          style: { background: "#707070", color: "#fff" },
+          duration: Infinity,
+          icon: "❌"
+        });
+      }
+    });
 };
 
 export const UnwrapperComponent = () => {
