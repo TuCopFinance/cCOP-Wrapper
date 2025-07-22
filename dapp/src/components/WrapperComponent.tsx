@@ -529,9 +529,17 @@ export const WrapperComponent = () => {
             submitDivviReferral(txHash, chainID.mainnet.celo);
             
             // Refresh balances after successful transaction
+            console.log("=== SCHEDULING BALANCE REFRESH ===");
+            console.log("Transaction hash:", txHash);
+            console.log("Scheduling refresh in 3 seconds...");
+            
             setTimeout(() => {
+              console.log("=== EXECUTING BALANCE REFRESH ===");
+              console.log("Executing refresh after transaction...");
               refreshBalances();
+              console.log("Executing verifyTokenAllowanceAndPriceForSend...");
               verifyTokenAllowanceAndPriceForSend();
+              console.log("=== BALANCE REFRESH COMPLETED ===");
             }, 3000); // Wait 3 seconds for transaction to be processed
             
             notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash);

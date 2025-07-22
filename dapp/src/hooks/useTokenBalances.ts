@@ -38,19 +38,24 @@ export function useTokenBalances() {
   const [currentAccount, setCurrentAccount] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
+    console.log("=== REFRESH FUNCTION CALLED ===");
     const account = getAccount(config);
+    console.log("Account:", account);
     
     if (!account.address) {
+      console.log("No account address, setting balances to 0");
       setTokenBalances({ base: "0", arb: "0", celo: "0" });
       setCurrentAccount(null);
       return;
     }
 
     // Update current account and refresh balances
+    console.log("Setting current account and starting refresh...");
     setCurrentAccount(account.address);
     setIsLoading(true);
     setError(null);
 
+    console.log("Reading contracts for balances...");
     readContracts(config, {
       contracts: [
         {
@@ -71,6 +76,9 @@ export function useTokenBalances() {
       ],
     })
       .then((data) => {
+        console.log("=== CONTRACTS READ SUCCESS ===");
+        console.log("Contract data:", data);
+        
         if (
           data[0].status === "success" &&
           data[1].status === "success" &&
@@ -79,11 +87,13 @@ export function useTokenBalances() {
           typeof data[1].result === "bigint" &&
           typeof data[2].result === "bigint"
         ) {
-          setTokenBalances({
+          const newBalances = {
             base: (data[0].result / BigInt(10 ** 18)).toString(),
             arb: (data[1].result / BigInt(10 ** 18)).toString(),
             celo: (data[2].result / BigInt(10 ** 18)).toString(),
-          });
+          };
+          console.log("Setting new balances:", newBalances);
+          setTokenBalances(newBalances);
         } else {
           console.error("Failed to fetch balances:", data);
           setError("Failed to fetch balances");
@@ -94,6 +104,7 @@ export function useTokenBalances() {
         setError("Error fetching balances");
       })
       .finally(() => {
+        console.log("=== REFRESH COMPLETED ===");
         setIsLoading(false);
       });
   }, []);

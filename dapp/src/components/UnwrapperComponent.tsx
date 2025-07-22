@@ -575,9 +575,17 @@ export const UnwrapperComponent = () => {
             submitDivviReferral(txHash, targetChainIdContract);
             
             // Refresh balances after successful transaction
+            console.log("=== SCHEDULING BALANCE REFRESH ===");
+            console.log("Transaction hash:", txHash);
+            console.log("Scheduling refresh in 3 seconds...");
+            
             setTimeout(() => {
+              console.log("=== EXECUTING BALANCE REFRESH ===");
+              console.log("Executing refresh after transaction...");
               refreshBalances();
+              console.log("Executing verifyTokenAllowanceAndPriceForSend...");
               verifyTokenAllowanceAndPriceForSend();
+              console.log("=== BALANCE REFRESH COMPLETED ===");
             }, 3000); // Wait 3 seconds for transaction to be processed
             
             notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash, targetChainIdContract);
