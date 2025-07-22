@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .balanceIndicators {
   display: flex;
   flex-direction: column;
@@ -5,6 +6,9 @@
   width: 100%;
 }
 
+=======
+/* Trigger redeploy: minor change - 2024-06-11 */
+>>>>>>> 5d23a4c2e9704bf709c5a84e04acabfe9e07c2fc
 .balanceMenuBox {
   display: flex;
   align-items: center;
