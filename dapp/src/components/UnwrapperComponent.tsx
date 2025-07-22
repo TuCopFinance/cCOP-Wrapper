@@ -130,11 +130,16 @@ export const UnwrapperComponent = () => {
 
   //Check allowance and get quote
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
+    console.log("=== VERIFY TOKEN ALLOWANCE AND PRICE DEBUG ===");
     const account = getAccount(config);
+    console.log("Account in verify:", account);
+    
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
-    } catch {
+      console.log("Amount fixed in verify:", amountFixed.toString());
+    } catch (error) {
+      console.error("Error converting amount in verify:", error);
       setHasSufficientAmount(false);
       setQuote(null);
       return;
@@ -145,9 +150,34 @@ export const UnwrapperComponent = () => {
         ? wrappedCCOPContractBase
         : wrappedCCOPContractArb;
 
+    console.log("Target chain contract:", targetChainContract);
+    console.log("Chain to unwrap:", chainToUnwrap);
+
     const differentAddressInput = document.getElementById(
       "unwrapperAddressInput"
     ) as HTMLInputElement | null;
+    
+    const targetAddress = differentAddressFlag
+      ? differentAddressInput?.value || account.address || ""
+      : (account.address as `0x${string}`);
+      
+    console.log("Target address in verify:", targetAddress);
+    console.log("Different address flag:", differentAddressFlag);
+
+    console.log("=== READING CONTRACTS ===");
+    console.log("Contracts to read:", [
+      {
+        ...targetChainContract,
+        functionName: "balanceOf",
+        args: [account.address as `0x${string}`],
+      },
+      {
+        ...targetChainContract,
+        functionName: "getQuote",
+        args: [targetAddress, amountFixed],
+      },
+    ]);
+
     readContracts(config, {
       contracts: [
         {
@@ -158,34 +188,44 @@ export const UnwrapperComponent = () => {
         {
           ...targetChainContract,
           functionName: "getQuote",
-          args: [
-            differentAddressFlag
-              ? differentAddressInput?.value || account.address || ""
-              : (account.address as `0x${string}`),
-            amountFixed,
-          ],
+          args: [targetAddress, amountFixed],
         },
       ],
     })
       .then((data) => {
+        console.log("=== READ CONTRACTS SUCCESS ===");
+        console.log("Read contracts data:", data);
+        console.log("Data[0] status:", data[0].status);
+        console.log("Data[1] status:", data[1].status);
+        console.log("Data[0] result:", data[0].result);
+        console.log("Data[1] result:", data[1].result);
+        
         if (
           data[0].status === "success" &&
           data[1].status === "success" &&
           typeof data[0].result === "bigint" &&
           typeof data[1].result === "bigint"
         ) {
+          console.log("Setting quote to:", data[1].result.toString());
+          console.log("Setting has sufficient amount to:", data[0].result >= amountFixed);
           setQuote(data[1].result);
           setHasSufficientAmount(data[0].result >= amountFixed);
         } else {
+          console.error("Failed to get valid data from contracts");
+          console.error("Data[0] type:", typeof data[0].result);
+          console.error("Data[1] type:", typeof data[1].result);
           setQuote(null);
           setHasSufficientAmount(false);
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("=== READ CONTRACTS ERROR ===");
+        console.error("Error reading contracts:", error);
         setQuote(null);
         setHasSufficientAmount(false);
       })
       .finally(() => {
+        console.log("=== CHECKING CHAIN AND CHANGE ===");
         checkChainAndChange();
       });
   }, [amount, differentAddressFlag, chainToUnwrap]);
@@ -325,20 +365,38 @@ export const UnwrapperComponent = () => {
   }
 
   function unwrap() {
-    if (quote === null) return;
+    console.log("=== UNWRAP DEBUG START ===");
+    console.log("Quote:", quote);
+    console.log("Amount:", amount);
+    console.log("Chain to unwrap:", chainToUnwrap);
+    console.log("Has sufficient amount:", hasSufficientAmount);
+    
+    if (quote === null) {
+      console.error("Quote is null, cannot proceed with unwrap");
+      return;
+    }
 
     const account = getAccount(config);
-    if (!account.address) return;
+    console.log("Account:", account);
+    
+    if (!account.address) {
+      console.error("No account address found");
+      return;
+    }
     
     // Check if we're on mobile
     const mobileDevice = isMobile();
+    console.log("Mobile device:", mobileDevice);
     
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
-    } catch {
+      console.log("Amount fixed:", amountFixed.toString());
+    } catch (error) {
+      console.error("Error converting amount to BigInt:", error);
       return;
     }
+    
     const differentAddressInput = document.getElementById(
       "unwrapperAddressInput"
     ) as HTMLInputElement | null;
@@ -351,12 +409,19 @@ export const UnwrapperComponent = () => {
     const targetChainIdContract =
       chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
 
+    console.log("Target chain contract address:", targetChainContractAddress);
+    console.log("Target chain ID:", targetChainIdContract);
+
     const targetAddress = differentAddressFlag
       ? differentAddressInput?.value || account.address || ""
       : (account.address as `0x${string}`);
 
+    console.log("Target address:", targetAddress);
+    console.log("Different address flag:", differentAddressFlag);
+
     // Generate Divvi referral tag
     const referralTag = generateReferralTag(account.address);
+    console.log("Referral tag:", referralTag);
 
     // Show loading toast for mobile
     if (mobileDevice) {
@@ -365,6 +430,16 @@ export const UnwrapperComponent = () => {
         style: { background: "#333", color: "#fff" },
       });
     }
+
+    console.log("=== SIMULATING CONTRACT ===");
+    console.log("Contract config:", {
+      chainId: targetChainIdContract,
+      address: targetChainContractAddress,
+      functionName: "unwrap",
+      args: [targetAddress, amountFixed],
+      value: quote + BigInt(1),
+      dataSuffix: `0x${referralTag}`
+    });
 
     simulateContract(config, {
       chainId: targetChainIdContract,
@@ -379,13 +454,17 @@ export const UnwrapperComponent = () => {
       dataSuffix: `0x${referralTag}` as `0x${string}`,
     })
       .then((data) => {
+        console.log("=== SIMULATION SUCCESS ===");
+        console.log("Simulation result:", data);
         const msgIdentifier = data.result;
+        console.log("Message identifier:", msgIdentifier);
         
         // Dismiss loading toast if mobile
         if (mobileDevice) {
           toast.dismiss();
         }
 
+        console.log("=== WRITING CONTRACT ===");
         writeContract(config, {
           chainId: targetChainIdContract,
           abi: WrappedCCOP.abi,
@@ -399,13 +478,23 @@ export const UnwrapperComponent = () => {
           dataSuffix: `0x${referralTag}` as `0x${string}`,
         })
           .then((txHash) => {
+            console.log("=== WRITE SUCCESS ===");
+            console.log("Transaction hash:", txHash);
+            
             // Submit Divvi referral
             submitDivviReferral(txHash, targetChainIdContract);
             
             notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash, targetChainIdContract);
           })
           .catch((error) => {
+            console.error("=== WRITE ERROR ===");
             console.error("Error unwrapping cCOP tokens:", error);
+            console.error("Error details:", {
+              message: error.message,
+              code: error.code,
+              data: error.data,
+              stack: error.stack
+            });
             toast.error(
               mobileDevice 
                 ? getMobileErrorMessage("Unwrap") 
@@ -418,7 +507,14 @@ export const UnwrapperComponent = () => {
           });
       })
       .catch((error) => {
+        console.error("=== SIMULATION ERROR ===");
         console.error("Error simulating unwrap transaction:", error);
+        console.error("Error details:", {
+          message: error.message,
+          code: error.code,
+          data: error.data,
+          stack: error.stack
+        });
         toast.error(
           mobileDevice 
             ? getMobileErrorMessage("Transaction preparation") 
