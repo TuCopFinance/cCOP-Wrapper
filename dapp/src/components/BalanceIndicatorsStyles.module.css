@@ -86,6 +86,27 @@
   background: #333;
 }
 
+.logoCircle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ff0 !important; /* Color temporal para depuración */
+  margin-right: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1.5px #e0e0e0;
+}
+.logoCircle :global(img), .logoCircle img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50%;
+  display: block;
+  transform: scale(2.2);
+}
+
 @media (max-width: 600px) {
   .indicatorRow {
     flex-direction: column;
