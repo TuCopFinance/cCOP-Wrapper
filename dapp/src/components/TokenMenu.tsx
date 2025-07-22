@@ -9,23 +9,32 @@ export const TokenMenu = () => {
   const [actionFlag, setActionFlag] = React.useState(1);
   return (
     <div className={styles.menuBox}>
-      <div className={styles.tabContainer}>
-        <button
-          className={
-            actionFlag === 1 ? styles.tabButtonActive : styles.tabButtonInactive
-          }
-          onClick={() => setActionFlag(1)}
-        >
-          Wrap
-        </button>
-        <button
-          className={
-            actionFlag === 2 ? styles.tabButtonActive : styles.tabButtonInactive
-          }
-          onClick={() => setActionFlag(2)}
-        >
-          Unwrap
-        </button>
+      <div className={styles.toggleContainer}>
+        <div className={styles.toggleSwitch}>
+          <span className={styles.slider}>
+            <span
+              className={styles.sliderBg}
+              style={{
+                transform: actionFlag === 1 ? 'translateX(0%)' : 'translateX(100%)',
+                background: actionFlag === 1 ? 'var(--primary)' : 'var(--secondary)'
+              }}
+            />
+            <span
+              className={actionFlag === 1 ? styles.toggleLabelLeft : styles.toggleLabelLeft + ' ' + styles.toggleLabelInactive}
+              onClick={() => setActionFlag(1)}
+              style={{ zIndex: 2 }}
+            >
+              Wrap
+            </span>
+            <span
+              className={actionFlag === 2 ? styles.toggleLabelRight : styles.toggleLabelRight + ' ' + styles.toggleLabelInactive}
+              onClick={() => setActionFlag(2)}
+              style={{ zIndex: 2 }}
+            >
+              Unwrap
+            </span>
+          </span>
+        </div>
       </div>
       <div className={styles.actionBox}>
         {actionFlag === 1 ? <WrapperComponent /> : <UnwrapperComponent />}
