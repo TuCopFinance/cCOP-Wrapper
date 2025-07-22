@@ -43,6 +43,28 @@ const getExplorerLink = (chainId: number, txHash: string): string => {
   }
 };
 
+// --- Helper function to get chain name ---
+const getChainName = (chainId: number): string => {
+  switch (chainId) {
+    case 42220: return "Celo";
+    case 44787: return "Celo Testnet";
+    case 8453: return "Base";
+    case 84532: return "Base Testnet";
+    case 42161: return "Arbitrum";
+    case 421614: return "Arbitrum Testnet";
+    default: return "Unknown";
+  }
+};
+
+// --- Helper function to format transaction link ---
+const formatTransactionLink = (chainId: number, txHash: string): string => {
+  const chainName = getChainName(chainId);
+  const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
+  const explorerUrl = getExplorerLink(chainId, txHash);
+  
+  return `<a href="${explorerUrl}" target="_blank" style="color: #007bff; text-decoration: underline; font-weight: bold;">${chainName} (${shortTxHash})</a>`;
+};
+
 // --- Notification helpers ---
 const notifyChangeChain = () =>
   toast("Changing to Celo network", {
@@ -53,11 +75,11 @@ const notifyChangeChain = () =>
 
 const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string) => {
   const successMessage = txHash 
-    ? `cCOP tokens wrapped successfully! <a href="${getExplorerLink(42220, txHash)}" target="_blank" style="color: #007bff; text-decoration: underline;">View Transaction</a>`
+    ? `cCOP tokens wrapped successfully! View transaction: ${formatTransactionLink(42220, txHash)}`
     : `cCOP tokens wrapped successfully!`;
     
   const errorMessage = txHash
-    ? `Error wrapping cCOP tokens. <a href="${getExplorerLink(42220, txHash)}" target="_blank" style="color: #ff4444; text-decoration: underline;">View Transaction</a>`
+    ? `Error wrapping cCOP tokens. View transaction: ${formatTransactionLink(42220, txHash)}`
     : `Error wrapping cCOP tokens, please check hyperlane explorer using your transaction hash`;
 
   return toast.promise(
@@ -70,8 +92,14 @@ const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string) => {
     {
       position: "bottom-right",
       style: { background: "#707070", color: "#fff" },
-      success: { duration: 8000, icon: "✅" },
-      error: { duration: 12000, icon: "❌" },
+      success: { 
+        duration: Infinity, // Keep until user closes
+        icon: "✅" 
+      },
+      error: { 
+        duration: Infinity, // Keep until user closes
+        icon: "❌" 
+      },
     }
   );
 };
