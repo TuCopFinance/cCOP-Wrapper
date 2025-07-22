@@ -13,9 +13,9 @@ const queryClient = new QueryClient()
 
 // Set up metadata
 const metadata = {
-  name: 'next-reown-appkit',
-  description: 'next-reown-appkit',
-  url: 'https://github.com/0xonerb/next-reown-appkit-ssr', // origin must match your domain & subdomain
+  name: 'cCOP Wrapper',
+  description: 'Cross-chain bridge for cCOP tokens',
+  url: 'https://copwrapper.xyz', // Updated to production domain
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
 
@@ -38,6 +38,9 @@ export const modal = createAppKit({
     '--w3m-color-fg-2': '#b0b0b0',
     '--w3m-border-radius': '8px',
   } as any,
+  featuredWalletIds: [
+    "dcc6ce1fc698ea19c114e7afe1bc469f" // TuCop wallet
+  ],
 });
 
 function ContextProvider({ children, cookies }: { children: ReactNode; cookies: string | null }) {
