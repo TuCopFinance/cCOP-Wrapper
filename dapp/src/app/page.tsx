@@ -3,6 +3,7 @@ import React from "react";
 import { ConnectButton } from "@/components/ConnectButton";
 import Image from "next/image";
 import { TokenMenu } from "@/components/TokenMenu";
+import { Footer } from "@/components/Footer";
 
 
 export default function Home() {
@@ -27,8 +28,8 @@ export default function Home() {
       </header>
       <div className="content">
           <TokenMenu />
-        
       </div>
+      <Footer />
     </div>
   );
 }

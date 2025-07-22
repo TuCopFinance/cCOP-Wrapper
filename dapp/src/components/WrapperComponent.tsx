@@ -22,6 +22,26 @@ import { getReferralTag } from "@divvi/referral-sdk";
 import { BalanceIndicators } from "./BalanceIndicators";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 
+// --- Helper function for blockchain explorer links ---
+const getExplorerLink = (chainId: number, txHash: string): string => {
+  switch (chainId) {
+    case 42220: // Celo Mainnet
+      return `https://explorer.celo.org/tx/${txHash}`;
+    case 44787: // Celo Alfajores Testnet
+      return `https://alfajores-blockscout.celo-testnet.org/tx/${txHash}`;
+    case 8453: // Base Mainnet
+      return `https://basescan.org/tx/${txHash}`;
+    case 84532: // Base Sepolia Testnet
+      return `https://sepolia.basescan.org/tx/${txHash}`;
+    case 42161: // Arbitrum One
+      return `https://arbiscan.io/tx/${txHash}`;
+    case 421614: // Arbitrum Sepolia Testnet
+      return `https://sepolia.arbiscan.io/tx/${txHash}`;
+    default:
+      return `https://explorer.celo.org/tx/${txHash}`;
+  }
+};
+
 // --- Notification helpers ---
 const notifyChangeChain = () =>
   toast("Changing to Celo network", {
@@ -30,21 +50,30 @@ const notifyChangeChain = () =>
     style: { background: "#333", color: "#fff" },
   });
 
-const notifyWrapAction = (deliveredPromise: Promise<any>) =>
-  toast.promise(
+const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string) => {
+  const successMessage = txHash 
+    ? `cCOP tokens wrapped successfully! <a href="${getExplorerLink(42220, txHash)}" target="_blank" style="color: #007bff; text-decoration: underline;">View Transaction</a>`
+    : `cCOP tokens wrapped successfully!`;
+    
+  const errorMessage = txHash
+    ? `Error wrapping cCOP tokens. <a href="${getExplorerLink(42220, txHash)}" target="_blank" style="color: #ff4444; text-decoration: underline;">View Transaction</a>`
+    : `Error wrapping cCOP tokens, please check hyperlane explorer using your transaction hash`;
+
+  return toast.promise(
     deliveredPromise,
     {
       loading: "Wrapping cCOP tokens...",
-      success: `cCOP tokens wrapped successfully!`,
-      error: `Error wrapping cCOP tokens, please check hyperlane explorer using your transaction hash`,
+      success: successMessage,
+      error: errorMessage,
     },
     {
       position: "bottom-right",
       style: { background: "#707070", color: "#fff" },
-      success: { duration: 5000, icon: "✅" },
-      error: { duration: 10000, icon: "❌" },
+      success: { duration: 8000, icon: "✅" },
+      error: { duration: 12000, icon: "❌" },
     }
   );
+};
 
 export const WrapperComponent = () => {
   // --- Contract configs ---
@@ -86,6 +115,11 @@ export const WrapperComponent = () => {
   
   // Get token balances
   const { celo: celoBalance, refresh: refreshBalances } = useTokenBalances();
+
+  // Refresh balances when component mounts and when domainID changes
+  useEffect(() => {
+    refreshBalances();
+  }, [domainID, refreshBalances]);
 
   // --- Handlers ---
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
@@ -356,7 +390,7 @@ export const WrapperComponent = () => {
             // Submit Divvi referral
             submitDivviReferral(txHash, chainID.mainnet.celo);
             
-            notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20));
+            notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash);
           })
           .catch(() => {})
           .finally(() => {});

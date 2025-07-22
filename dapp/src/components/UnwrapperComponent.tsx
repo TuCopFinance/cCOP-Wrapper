@@ -2,7 +2,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import styles from "./UnwrapperComponent.module.css";
-import { Abi, formatEther } from "viem";
+import { erc20Abi, formatEther } from "viem";
 import {
   getAccount,
   readContracts,
@@ -15,12 +15,35 @@ import { address } from "@/constants/address";
 import { chainID } from "@/constants/chainID";
 import WrappedCCOP from "@/constants/abis/WrappedCCOP.json";
 import toast from "react-hot-toast";
-import { waitForIsDelivered } from "@/utils/hyperlane";
-import { useWalletClient } from "wagmi";
+import { waitForIsDelivered } from "../utils/hyperlane";
+import type { Abi } from "viem";
 import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
+import { getReferralTag } from "@divvi/referral-sdk";
 import { BalanceIndicators } from "./BalanceIndicators";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
+import { useWalletClient } from "wagmi";
 
+// --- Helper function for blockchain explorer links ---
+const getExplorerLink = (chainId: number, txHash: string): string => {
+  switch (chainId) {
+    case 42220: // Celo Mainnet
+      return `https://explorer.celo.org/tx/${txHash}`;
+    case 44787: // Celo Alfajores Testnet
+      return `https://alfajores-blockscout.celo-testnet.org/tx/${txHash}`;
+    case 8453: // Base Mainnet
+      return `https://basescan.org/tx/${txHash}`;
+    case 84532: // Base Sepolia Testnet
+      return `https://sepolia.basescan.org/tx/${txHash}`;
+    case 42161: // Arbitrum One
+      return `https://arbiscan.io/tx/${txHash}`;
+    case 421614: // Arbitrum Sepolia Testnet
+      return `https://sepolia.arbiscan.io/tx/${txHash}`;
+    default:
+      return `https://explorer.celo.org/tx/${txHash}`;
+  }
+};
+
+// --- Notification helpers ---
 const notifyChangeChain = (chainName: string): string =>
   toast(`Changing to ${chainName} network`, {
     duration: 2000,
@@ -31,21 +54,31 @@ const notifyChangeChain = (chainName: string): string =>
     },
   });
 
-const notifyUnwrapAction = (deliveredPromise: Promise<unknown>) =>
-  toast.promise(
+const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string, chainId?: number) => {
+  const targetChainId = chainId || 8453; // Default to Base
+  const successMessage = txHash 
+    ? `cCOP tokens unwrapped successfully! <a href="${getExplorerLink(targetChainId, txHash)}" target="_blank" style="color: #007bff; text-decoration: underline;">View Transaction</a>`
+    : `cCOP tokens unwrapped successfully!`;
+    
+  const errorMessage = txHash
+    ? `Error unwrapping cCOP tokens. <a href="${getExplorerLink(targetChainId, txHash)}" target="_blank" style="color: #ff4444; text-decoration: underline;">View Transaction</a>`
+    : `Error unwrapping cCOP tokens, please check hyperlane explorer using your transaction hash`;
+
+  return toast.promise(
     deliveredPromise,
     {
       loading: "Unwrapping cCOP tokens...",
-      success: `cCOP tokens unwrapped successfully!`,
-      error: `Error unwrapping cCOP tokens, please check hyperlane explorer using your transaction hash`,
+      success: successMessage,
+      error: errorMessage,
     },
     {
       position: "bottom-right",
       style: { background: "#707070", color: "#fff" },
-      success: { duration: 5000, icon: "✅" },
-      error: { duration: 10000, icon: "❌" },
+      success: { duration: 8000, icon: "✅" },
+      error: { duration: 12000, icon: "❌" },
     }
   );
+};
 
 export const UnwrapperComponent = () => {
   // Contract configs
@@ -88,6 +121,11 @@ export const UnwrapperComponent = () => {
   
   // Get token balances
   const { base: baseBalance, arb: arbBalance, refresh: refreshBalances } = useTokenBalances();
+
+  // Refresh balances when chain changes
+  useEffect(() => {
+    refreshBalances();
+  }, [chainToUnwrap, refreshBalances]);
 
   //Check allowance and get quote
   const verifyTokenAllowanceAndPriceForSend = useCallback(() => {
@@ -194,6 +232,7 @@ export const UnwrapperComponent = () => {
 
     const numValue = parseFloat(value);
     const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+    console.log(`validateAndPredictAmount - Chain: ${chainToUnwrap}, Value: ${value}, CurrentBalance: ${currentBalance}, BaseBalance: ${baseBalance}, ArbBalance: ${arbBalance}`);
 
     // Basic validation
     if (isNaN(numValue)) {
@@ -253,6 +292,7 @@ export const UnwrapperComponent = () => {
 
   function setMaxAmount() {
     const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+    console.log(`MAX Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`);
     if (currentBalance > 0) {
       setAmount(currentBalance.toString());
       validateAndPredictAmount(currentBalance.toString());
@@ -345,7 +385,7 @@ export const UnwrapperComponent = () => {
             // Submit Divvi referral
             submitDivviReferral(txHash, targetChainIdContract);
             
-            notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20));
+            notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash, targetChainIdContract);
           })
           .catch((error) => {
             console.error("Error unwrapping cCOP tokens:", error);
@@ -424,6 +464,7 @@ export const UnwrapperComponent = () => {
             onClick={() => {
               const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
               const amount25 = (currentBalance * 0.25).toFixed(2);
+              console.log(`25% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount25}`);
               setAmount(amount25);
               validateAndPredictAmount(amount25);
             }}
@@ -436,6 +477,7 @@ export const UnwrapperComponent = () => {
             onClick={() => {
               const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
               const amount50 = (currentBalance * 0.5).toFixed(2);
+              console.log(`50% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount50}`);
               setAmount(amount50);
               validateAndPredictAmount(amount50);
             }}
@@ -448,6 +490,7 @@ export const UnwrapperComponent = () => {
             onClick={() => {
               const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
               const amount75 = (currentBalance * 0.75).toFixed(2);
+              console.log(`75% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount75}`);
               setAmount(amount75);
               validateAndPredictAmount(amount75);
             }}
@@ -459,6 +502,7 @@ export const UnwrapperComponent = () => {
             className={styles.percentageButton}
             onClick={() => {
               const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+              console.log(`100% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`);
               setAmount(currentBalance.toString());
               validateAndPredictAmount(currentBalance.toString());
             }}
