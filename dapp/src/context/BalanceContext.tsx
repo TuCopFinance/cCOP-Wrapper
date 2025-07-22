@@ -161,4 +161,7 @@ export const useGlobalBalances = () => {
     throw new Error("useGlobalBalances must be used within a BalanceProvider");
   }
   return context;
-}; 
+};
+
+// Export default for better compatibility
+export default { BalanceProvider, useGlobalBalances }; 

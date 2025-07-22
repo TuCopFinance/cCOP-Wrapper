@@ -22,7 +22,7 @@ import { getReferralTag } from "@divvi/referral-sdk";
 import { BalanceIndicators } from "./BalanceIndicators";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
-import { useGlobalBalances } from "@/context/BalanceContext";
+import { useGlobalBalances } from "../context/BalanceContext";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {

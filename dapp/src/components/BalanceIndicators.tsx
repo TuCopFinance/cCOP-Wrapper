@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useGlobalBalances } from "@/context/BalanceContext";
+import { useGlobalBalances } from "../context/BalanceContext";
 import { FiRefreshCcw, FiChevronDown, FiChevronUp, FiPlus } from "react-icons/fi";
 import { useWalletClient } from "wagmi";
 import { switchChain } from "@wagmi/core";
