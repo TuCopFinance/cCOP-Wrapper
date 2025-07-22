@@ -1,17 +1,42 @@
+.balanceIndicators {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
 .balanceMenuBox {
   display: flex;
   align-items: center;
   color: #fff;
   transition: background 0.2s;
+  width: 100%;
 }
 
-.refreshBtn {
+.refreshBtnOpen {
+  border-radius: 6px 0 0 0px;
+}
+
+.refreshBtnClose {
+  border-radius: 6px 0 0 6px;
+}
+
+.totalDataBoxOpen {
+  border-radius: 0 6px 0 0;
+}
+
+.totalDataBoxClose {
+  border-radius: 0 6px 6px 0;
+}
+
+.refreshBtnOpen,
+.refreshBtnClose {
   background: none;
   border: none;
   color: #2d2d2d;
   background-color: rgb(132, 179, 39);
   /*aplicar solo border radius izquierdo arriba y abajo*/
-  border-radius: 6px 0 0 6px;
+
   height: 40px;
   width: 40px;
   align-items: center;
@@ -19,20 +44,20 @@
 
   cursor: pointer;
   font-size: 18px;
-  margin-left: 4px;
   padding: 2px 4px;
   display: flex;
-  
+
   transition: color 0.2s;
-  
 }
-.refreshBtn:hover {
+
+.refreshBtnOpen:hover,
+.refreshBtnClose:hover {
   color: #fff;
 }
 
-.totalDataBox {
+.totalDataBoxOpen,
+.totalDataBoxClose {
   background: #232323;
-  border-radius: 0 6px 6px 0;
   padding: 0px 12px;
   font-size: 15px;
   display: flex;
@@ -42,58 +67,45 @@
   justify-content: space-between;
   width: 100%;
   height: 40px;
-  
 }
 
-.indicatorRow {
+.listOfAssets {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-
-  margin-bottom: 10px;
-
+  flex-direction: column;
   width: 100%;
-
-
 }
 
 .indicator {
-  background: #232323;
-  border-radius: 6px;
+  height: 20px;
   padding: 4px 14px;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #fff;
-  min-width: 120px;
-  max-width: 320px;
-  width: fit-content;
+
   white-space: nowrap;
-    
 }
 
-.indicator.celo {
-  background: linear-gradient(90deg, rgba(249,217,35,0.55) 60%, #232323 100%);
-}
-.indicator.base {
-  background: linear-gradient(90deg, rgba(58,141,222,0.65) 60%, #232323 100%);
-}
-.indicator.arb {
-  background: linear-gradient(90deg, rgba(191,196,202,0.55) 60%, #232323 100%);
-}
-
-.indicator .label, .indicator .value, .defaultLabel {
+.indicator p {
   font-family: inherit;
   font-size: 1.08em;
   font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 1.2;
-  color: #fff;
-  
-  
 }
 
+.indicator.celo {
+  background-color: rgb(224, 208, 118);
+  color: #2d2d2d;
+}
+.indicator.base {
+  background-color: #3a8dde;
+}
+.indicator.arb {
+  background-color: #00ccf0;
+  color: #2e2e2e !important;
+  border-radius: 0 0 6px 6px;
+}
 
 .value {
   font-variant-numeric: tabular-nums;
@@ -103,56 +115,35 @@
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
-  
 }
-
-
-
-
 
 .textTotalBox {
   display: flex;
   align-items: flex-start;
 }
 
-.totalDataBox:hover {
+.textTotalBox p {
+  font-family: inherit;
+  font-size: 1.08em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.totalDataBoxOpen:hover,
+.totalDataBoxClose:hover {
   background: #333;
 }
 
-.listOfAssets {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  overflow-x: auto;
-}
-
 @media (max-width: 600px) {
-  .indicatorRow {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    flex-wrap: nowrap;
-    overflow-x: visible;
-  }
   .indicator {
-    min-width: 90px;
-    max-width: 98vw;
-    width: 100%;
-    font-size: 15px;
-    padding: 6px 10px;
-    gap: 4px;
+    font-size: 14px;
+    padding: 4px 8px;
   }
-  .refreshBtn {
-    align-self: flex-end;
-    margin-top: 4px;
-    margin-left: 0;
+
+  .totalDataBoxOpen,
+  .totalDataBoxClose {
+    width: 1500px;
   }
-  .totalDataBox {
-    width: 100%;
-    font-size: 17px;
-    padding: 10px 12px;
-    min-width: unset;
-  }
-} 
+}

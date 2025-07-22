@@ -10,17 +10,17 @@ export const BalanceIndicators = () => {
   const total = [celo, base, arb].reduce((acc, v) => acc + parseFloat(v), 0);
 
   return (
-    <>
+    <div className={styles.balanceIndicators}>
       <div className={styles.balanceMenuBox}>
         <button
-          className={styles.refreshBtn}
+          className={showDetails ? styles.refreshBtnOpen : styles.refreshBtnClose}
           onClick={refresh}
           title="Refresh balances"
         >
           <FiRefreshCcw />
         </button>
         <div
-          className={styles.totalDataBox}
+          className={showDetails ? styles.totalDataBoxOpen : styles.totalDataBoxClose}
           onClick={() => setShowDetails((v) => !v)}
           style={{
             cursor: "pointer",
@@ -37,32 +37,30 @@ export const BalanceIndicators = () => {
 
           {showDetails ? <FiChevronUp /> : <FiChevronDown />}
         </div>
-
-        
       </div>
 
       {showDetails && (
         <div className={styles.listOfAssets}>
           <div className={`${styles.indicator} ${styles.celo}`}>
-            <span className={styles.label}>Celo:</span>
-            <span className={styles.value}>
+            <p>
+              Celo:{" "}
               {parseFloat(celo).toFixed(2)} cCOP
-            </span>
+            </p>
           </div>
           <div className={`${styles.indicator} ${styles.base}`}>
-            <span className={styles.label}>Base:</span>
-            <span className={styles.value}>
+            <p>
+              Base:{" "}
               {parseFloat(base).toFixed(2)} wcCOP
-            </span>
+            </p>
           </div>
           <div className={`${styles.indicator} ${styles.arb}`}>
-            <span className={styles.label}>Arbitrum:</span>
-            <span className={styles.value}>
+            <p>
+              Arbitrum:{" "}
               {parseFloat(arb).toFixed(2)} wcCOP
-            </span>
+            </p>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
