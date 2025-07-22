@@ -82,7 +82,33 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
     : `Error ${action} cCOP tokens.`;
   
   const toastId = toast(
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative' }}>
+      {/* Close button */}
+      <button
+        onClick={() => toast.dismiss(toastId)}
+        style={{
+          position: 'absolute',
+          top: '-8px',
+          right: '-8px',
+          background: '#ff4444',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: '16px',
+          height: '16px',
+          fontSize: '11px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          zIndex: 1000
+        }}
+        title="Close message"
+      >
+        ×
+      </button>
+      
       <div>{message}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span style={{ fontSize: '12px', opacity: 0.8 }}>
@@ -113,10 +139,51 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
       style: { 
         background: "#707070", 
         color: "#fff",
-        minWidth: '300px'
+        minWidth: '300px',
+        position: 'relative'
       },
       duration: Infinity,
       icon: isSuccess ? "✅" : "❌"
+    }
+  );
+};
+
+// --- Helper function to create toast with close button ---
+const createToastWithClose = (message: string, type: 'success' | 'error' | 'info', duration: number = Infinity) => {
+  const toastId = toast(
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', position: 'relative' }}>
+      <span>{message}</span>
+      <button
+        onClick={() => toast.dismiss(toastId)}
+        style={{
+          background: '#ff4444',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: '14px',
+          height: '14px',
+          fontSize: '10px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          flexShrink: 0
+        }}
+        title="Close message"
+      >
+        ×
+      </button>
+    </div>,
+    {
+      position: "bottom-right",
+      style: { 
+        background: type === 'success' ? "#28a745" : type === 'error' ? "#dc3545" : "#707070", 
+        color: "#fff",
+        minWidth: '250px'
+      },
+      duration: duration,
+      icon: type === 'success' ? "✅" : type === 'error' ? "❌" : "ℹ️"
     }
   );
 };
@@ -150,16 +217,6 @@ const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string,
         if (onRefresh) {
           onRefresh();
           console.log("=== BALANCE REFRESH EXECUTED AFTER DELIVERY ===");
-          
-          // Show confirmation toast for balance update
-          setTimeout(() => {
-            toast.success("Balances updated automatically!", {
-              position: "bottom-right",
-              style: { background: "#28a745", color: "#fff" },
-              duration: 3000,
-              icon: "🔄"
-            });
-          }, 1000);
         } else {
           console.log("=== NO REFRESH FUNCTION PROVIDED ===");
         }
@@ -169,12 +226,7 @@ const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string,
       if (txHash) {
         showTransactionToast(true, targetChainId, txHash, "unwrapped");
       } else {
-        toast.success("cCOP tokens unwrapped successfully!", {
-          position: "bottom-right",
-          style: { background: "#707070", color: "#fff" },
-          duration: Infinity,
-          icon: "✅"
-        });
+        createToastWithClose("cCOP tokens unwrapped successfully!", "success");
       }
     })
     .catch((error) => {
@@ -185,12 +237,7 @@ const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string,
       if (txHash) {
         showTransactionToast(false, targetChainId, txHash, "unwrapping");
       } else {
-        toast.error("Error unwrapping cCOP tokens, please check hyperlane explorer using your transaction hash", {
-          position: "bottom-right",
-          style: { background: "#707070", color: "#fff" },
-          duration: Infinity,
-          icon: "❌"
-        });
+        createToastWithClose("Error unwrapping cCOP tokens, please check hyperlane explorer using your transaction hash", "error");
       }
     });
 };
