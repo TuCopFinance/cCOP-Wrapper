@@ -25,6 +25,7 @@ import { useWalletClient } from "wagmi";
 import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
 import { useGlobalBalances } from "../context/BalanceContext";
 import { estimateUnwrapGas, calculateApproximateGas } from "@/utils/gas-estimation";
+import { calculateUSDValue, debugPriceFeed, formatHyperlanePrice } from "@/utils/price-feeds";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -276,6 +277,7 @@ export const UnwrapperComponent = () => {
   const [hasSufficientAmount, setHasSufficientAmount] =
     useState<boolean>(false);
   const [quote, setQuote] = useState<bigint | null>(null);
+  const [formattedPrice, setFormattedPrice] = useState<string>("");
   const [chainToUnwrap, setChainToUnwrap] = useState("base");
 
   const { data: walletClient } = useWalletClient();
@@ -376,12 +378,16 @@ export const UnwrapperComponent = () => {
           console.log("Setting has sufficient amount to:", data[0].result >= amountFixed);
           setQuote(data[1].result);
           setHasSufficientAmount(data[0].result >= amountFixed);
+          
+          // Format the price in USD
+          formatHyperlanePrice(data[1].result, false).then(setFormattedPrice);
         } else {
           console.error("Failed to get valid data from contracts");
           console.error("Data[0] type:", typeof data[0].result);
           console.error("Data[1] type:", typeof data[1].result);
           setQuote(null);
           setHasSufficientAmount(false);
+          setFormattedPrice("");
         }
       })
       .catch((error) => {
@@ -389,6 +395,7 @@ export const UnwrapperComponent = () => {
         console.error("Error reading contracts:", error);
         setQuote(null);
         setHasSufficientAmount(false);
+        setFormattedPrice("");
       })
       .finally(() => {
         console.log("=== CHECKING CHAIN AND CHANGE ===");
@@ -401,6 +408,7 @@ export const UnwrapperComponent = () => {
     if (!amount) {
       setHasSufficientAmount(false);
       setQuote(null);
+      setFormattedPrice("");
       return;
     }
     const timeout = setTimeout(() => {
@@ -427,10 +435,10 @@ export const UnwrapperComponent = () => {
     setAmount(value);
     
     // Validate and predict amount
-    validateAndPredictAmount(value);
+    validateAndPredictAmount(value).catch(console.error);
   }
 
-  function validateAndPredictAmount(value: string) {
+  async function validateAndPredictAmount(value: string) {
     if (!value || value === "") {
       setAmountValidation(null);
       setAmountPrediction(null);
@@ -497,9 +505,15 @@ export const UnwrapperComponent = () => {
     // Estimate gas using improved calculation
     const gasEstimate = calculateApproximateGas(value, targetChainId);
     
+    // Calculate USD value using price feed
+    const usdValue = await calculateUSDValue(value, targetChainId);
+    
+    // Debug price feed
+    await debugPriceFeed(targetChainId, value);
+    
     setAmountPrediction({
       percentageOfBalance: percentageOfBalance,
-      usdValue: `~$${(numValue * 0.1).toFixed(2)}`, // Approximate USD value
+      usdValue: usdValue,
       gasEstimate: gasEstimate
     });
 
@@ -509,7 +523,7 @@ export const UnwrapperComponent = () => {
         try {
           const account = getAccount(config);
           const targetAddress = account.address || "";
-          const realGasEstimate = await estimateUnwrapGas(value, targetAddress, chainToUnwrap);
+          const realGasEstimate = await estimateUnwrapGas(value, targetAddress, chainToUnwrap, quote || undefined);
           setAmountPrediction(prev => prev ? {
             ...prev,
             gasEstimate: realGasEstimate
@@ -526,7 +540,7 @@ export const UnwrapperComponent = () => {
     console.log(`MAX Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`);
     if (currentBalance > 0) {
       setAmount(currentBalance.toString());
-      validateAndPredictAmount(currentBalance.toString());
+      validateAndPredictAmount(currentBalance.toString()).catch(console.error);
       toast.success(`Monto establecido al máximo: ${currentBalance.toFixed(2)} wcCOP`, {
         position: "bottom-right",
         style: { background: "#333", color: "#fff" },
@@ -781,7 +795,7 @@ export const UnwrapperComponent = () => {
               const amount25 = (currentBalance * 0.25).toFixed(2);
               console.log(`25% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount25}`);
               setAmount(amount25);
-              validateAndPredictAmount(amount25);
+              validateAndPredictAmount(amount25).catch(console.error);
             }}
             type="button"
           >
@@ -794,7 +808,7 @@ export const UnwrapperComponent = () => {
               const amount50 = (currentBalance * 0.5).toFixed(2);
               console.log(`50% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount50}`);
               setAmount(amount50);
-              validateAndPredictAmount(amount50);
+              validateAndPredictAmount(amount50).catch(console.error);
             }}
             type="button"
           >
@@ -807,7 +821,7 @@ export const UnwrapperComponent = () => {
               const amount75 = (currentBalance * 0.75).toFixed(2);
               console.log(`75% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount75}`);
               setAmount(amount75);
-              validateAndPredictAmount(amount75);
+              validateAndPredictAmount(amount75).catch(console.error);
             }}
             type="button"
           >
@@ -819,7 +833,7 @@ export const UnwrapperComponent = () => {
               const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
               console.log(`100% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`);
               setAmount(currentBalance.toString());
-              validateAndPredictAmount(currentBalance.toString());
+              validateAndPredictAmount(currentBalance.toString()).catch(console.error);
             }}
             type="button"
           >
@@ -850,9 +864,9 @@ export const UnwrapperComponent = () => {
         </div>
       </div>
 
-      {quote && (
+      {formattedPrice && (
         <p className={styles.priceLabel}>
-          Price for unwrapping: {formatEther(quote)} ETH
+          Price for unwrapping: {formattedPrice}
         </p>
       )}
 

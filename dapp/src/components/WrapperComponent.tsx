@@ -24,6 +24,7 @@ import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
 import { useGlobalBalances } from "../context/BalanceContext";
 import { estimateWrapGas, calculateApproximateGas } from "@/utils/gas-estimation";
+import { calculateUSDValue, debugPriceFeed, formatHyperlanePrice } from "@/utils/price-feeds";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -276,6 +277,7 @@ export const WrapperComponent = () => {
     boolean | null
   >(null);
   const [quote, setQuote] = useState<bigint | null>(null);
+  const [formattedPrice, setFormattedPrice] = useState<string>("");
 
   const account = getAccount(config);
   const connectedAddress = account.address || "";
@@ -336,14 +338,19 @@ export const WrapperComponent = () => {
         ) {
           setQuote(data[1].result);
           setAllowanceIsMoreThanAmount(amountFixed <= data[0].result);
+          
+          // Format the price in USD
+          formatHyperlanePrice(data[1].result, true).then(setFormattedPrice);
         } else {
           setQuote(null);
           setAllowanceIsMoreThanAmount(null);
+          setFormattedPrice("");
         }
       })
       .catch(() => {
         setQuote(null);
         setAllowanceIsMoreThanAmount(null);
+        setFormattedPrice("");
       })
       .finally(() => {
         checkChainAndChange();
@@ -365,7 +372,7 @@ export const WrapperComponent = () => {
   // Revalidate amount when balance changes
   useEffect(() => {
     if (amount) {
-      validateAndPredictAmount(amount);
+      validateAndPredictAmount(amount).catch(console.error);
     }
   }, [celoBalance]);
 
@@ -374,10 +381,10 @@ export const WrapperComponent = () => {
     setAmount(value);
     
     // Validate and predict amount
-    validateAndPredictAmount(value);
+    validateAndPredictAmount(value).catch(console.error);
   }
 
-  function validateAndPredictAmount(value: string) {
+  async function validateAndPredictAmount(value: string) {
     if (!value || value === "") {
       setAmountValidation(null);
       setAmountPrediction(null);
@@ -444,9 +451,15 @@ export const WrapperComponent = () => {
     // Estimate gas using improved calculation
     const gasEstimate = calculateApproximateGas(value, chainID.mainnet.celo);
     
+    // Calculate USD value using price feed
+    const usdValue = await calculateUSDValue(value, chainID.mainnet.celo);
+    
+    // Debug price feed
+    await debugPriceFeed(chainID.mainnet.celo, value);
+    
     setAmountPrediction({
       percentageOfBalance: percentageOfBalance,
-      usdValue: `~$${(numValue * 0.1).toFixed(2)}`, // Approximate USD value (you can integrate real price API)
+      usdValue: usdValue,
       gasEstimate: gasEstimate
     });
 
@@ -454,7 +467,7 @@ export const WrapperComponent = () => {
     setTimeout(async () => {
       if (value === amount && account.address) {
         try {
-          const realGasEstimate = await estimateWrapGas(value, account.address, 1); // domainID = 1 for Base
+          const realGasEstimate = await estimateWrapGas(value, account.address, parseInt(domainID), quote || undefined);
           setAmountPrediction(prev => prev ? {
             ...prev,
             gasEstimate: realGasEstimate
@@ -470,7 +483,7 @@ export const WrapperComponent = () => {
     const balance = parseFloat(celoBalance);
     if (balance > 0) {
       setAmount(balance.toString());
-      validateAndPredictAmount(balance.toString());
+      validateAndPredictAmount(balance.toString()).catch(console.error);
       toast.success(`Monto establecido al máximo: ${balance.toFixed(2)} cCOP`, {
         position: "bottom-right",
         style: { background: "#333", color: "#fff" },
@@ -716,7 +729,7 @@ export const WrapperComponent = () => {
               const balance = parseFloat(celoBalance);
               const amount25 = (balance * 0.25).toFixed(2);
               setAmount(amount25);
-              validateAndPredictAmount(amount25);
+              validateAndPredictAmount(amount25).catch(console.error);
             }}
             type="button"
           >
@@ -728,7 +741,7 @@ export const WrapperComponent = () => {
               const balance = parseFloat(celoBalance);
               const amount50 = (balance * 0.5).toFixed(2);
               setAmount(amount50);
-              validateAndPredictAmount(amount50);
+              validateAndPredictAmount(amount50).catch(console.error);
             }}
             type="button"
           >
@@ -740,7 +753,7 @@ export const WrapperComponent = () => {
               const balance = parseFloat(celoBalance);
               const amount75 = (balance * 0.75).toFixed(2);
               setAmount(amount75);
-              validateAndPredictAmount(amount75);
+              validateAndPredictAmount(amount75).catch(console.error);
             }}
             type="button"
           >
@@ -751,7 +764,7 @@ export const WrapperComponent = () => {
             onClick={() => {
               const balance = parseFloat(celoBalance);
               setAmount(balance.toString());
-              validateAndPredictAmount(balance.toString());
+              validateAndPredictAmount(balance.toString()).catch(console.error);
             }}
             type="button"
           >
@@ -780,9 +793,9 @@ export const WrapperComponent = () => {
           </button>
         </div>
       </div>
-      {quote && (
+      {formattedPrice && (
         <p className={styles.priceLabel}>
-          Price for wrapping: {formatEther(quote)} CELO
+          Price for wrapping: {formattedPrice}
         </p>
       )}
 

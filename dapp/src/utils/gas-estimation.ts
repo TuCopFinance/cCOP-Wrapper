@@ -10,17 +10,17 @@ import { formatEther, parseEther } from 'viem';
 const GAS_ESTIMATES = {
   CELO: {
     BASE_GAS: 300000, // Base gas for Celo transactions
-    GAS_PER_TOKEN: 1000, // Additional gas per token amount
+    GAS_PER_TOKEN: 0, // No additional gas per token (gas is constant)
     GAS_PRICE: 0.000000001, // CELO per gas unit (approximate)
   },
   BASE: {
     BASE_GAS: 150000, // Base gas for Base transactions
-    GAS_PER_TOKEN: 500, // Additional gas per token amount
+    GAS_PER_TOKEN: 0, // No additional gas per token (gas is constant)
     GAS_PRICE: 0.000000001, // ETH per gas unit (approximate)
   },
   ARBITRUM: {
     BASE_GAS: 200000, // Base gas for Arbitrum transactions
-    GAS_PER_TOKEN: 800, // Additional gas per token amount
+    GAS_PER_TOKEN: 0, // No additional gas per token (gas is constant)
     GAS_PRICE: 0.000000001, // ETH per gas unit (approximate)
   }
 };
@@ -71,18 +71,22 @@ const getGasConfig = (chainId: number) => {
 export const estimateWrapGas = async (
   amount: string, 
   targetAddress: string,
-  domainID: number
+  domainID: number,
+  quote?: bigint
 ): Promise<string> => {
   try {
     const amountFixed = parseEther(amount);
     
+    // Use quote if provided, otherwise use 0
+    const simulationValue = quote || BigInt(0);
+
     const simulation = await simulateContract(config, {
       chainId: chainID.mainnet.celo,
       abi: Treasury.abi,
       address: address.mainnet.treasury as `0x${string}`,
       functionName: "wrap",
       args: [domainID, targetAddress as `0x${string}`, amountFixed],
-      value: BigInt(0), // We'll add the actual quote later
+      value: simulationValue,
     });
 
     // Get gas estimate from simulation
@@ -101,7 +105,8 @@ export const estimateWrapGas = async (
 export const estimateUnwrapGas = async (
   amount: string,
   targetAddress: string,
-  chainToUnwrap: string
+  chainToUnwrap: string,
+  quote?: bigint
 ): Promise<string> => {
   try {
     const amountFixed = parseEther(amount);
@@ -110,13 +115,16 @@ export const estimateUnwrapGas = async (
       ? address.mainnet.wrapToken.base 
       : address.mainnet.wrapToken.arb;
 
+    // Use quote if provided, otherwise use 0
+    const simulationValue = quote || BigInt(0);
+
     const simulation = await simulateContract(config, {
       chainId: targetChainId,
       abi: WrappedCCOP.abi,
       address: targetChainContractAddress as `0x${string}`,
       functionName: "unwrap",
       args: [targetAddress as `0x${string}`, amountFixed],
-      value: BigInt(0), // We'll add the actual quote later
+      value: simulationValue,
     });
 
     // Get gas estimate from simulation
