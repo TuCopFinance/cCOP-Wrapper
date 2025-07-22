@@ -564,6 +564,10 @@ export const UnwrapperComponent = () => {
         chainId: targetChainId,
       }).then(() => {
         notifyChangeChain(chainToUnwrap);
+      }).catch((error) => {
+        console.log('Could not switch chain automatically:', error);
+        // Don't show error to user, just log it
+        // The user can manually switch chains if needed
       });
     }
   }

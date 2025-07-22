@@ -501,7 +501,11 @@ export const WrapperComponent = () => {
     if (account.chainId !== chainID.mainnet.celo) {
       switchChain(config, { chainId: chainID.mainnet.celo }).then(
         notifyChangeChain
-      );
+      ).catch((error) => {
+        console.log('Could not switch chain automatically:', error);
+        // Don't show error to user, just log it
+        // The user can manually switch chains if needed
+      });
     }
   }
 
