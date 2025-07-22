@@ -42,25 +42,25 @@ export const BalanceIndicators = () => {
       {showDetails && (
         <div className={styles.listOfAssets}>
           <div className={`${styles.indicator} ${styles.celo}`}>
+            <img src="assets/Celo.png" alt="cCOP Token" />
             <p>
               Celo:{" "}
               {parseFloat(celo).toFixed(2)} cCOP
             </p>
-            <img src="assets/Celo.png" alt="cCOP Token" />
           </div>
           <div className={`${styles.indicator} ${styles.base}`}>
+            <img src="assets/Base.png" alt="wcCOP Token" />
             <p>
               Base:{" "}
               {parseFloat(base).toFixed(2)} wcCOP
             </p>
-            <img src="assets/Base.png" alt="wcCOP Token" />
           </div>
           <div className={`${styles.indicator} ${styles.arb}`}>
+            <img src="assets/Arbitrum.png" alt="wcCOP Token"  />
             <p>
               Arbitrum:{" "}
               {parseFloat(arb).toFixed(2)} wcCOP
             </p>
-            <img src="assets/Arbitrum.png" alt="wcCOP Token"  />
           </div>
         </div>
       )}
