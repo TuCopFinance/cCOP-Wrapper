@@ -20,11 +20,22 @@ const queryClient = new QueryClient({
   },
 })
 
+// Get the current URL dynamically
+const getCurrentUrl = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  // Fallback for server-side rendering
+  return process.env.NODE_ENV === 'production' 
+    ? 'https://copwrapper.xyz' 
+    : 'http://localhost:3001';
+};
+
 // Set up metadata
 const metadata = {
   name: 'cCOP Wrapper',
   description: 'Cross-chain bridge for cCOP tokens - Wrap and unwrap cCOP tokens across Celo, Base, and Arbitrum networks',
-  url: 'https://copwrapper.xyz',
+  url: getCurrentUrl(),
   icons: [
     'https://avatars.githubusercontent.com/u/179229932',
     '/cCOP_token.png'

@@ -105,6 +105,17 @@ export const formatGasAndTokenPrice = (amount: number, tokenSymbol: string): str
 };
 
 /**
+ * Format gas and token prices with USD value first, then token amount
+ * @param usdValue - The USD value
+ * @param tokenAmount - The token amount
+ * @param tokenSymbol - The token symbol (e.g., 'CELO', 'ETH')
+ * @returns Formatted string: "$0.35 USD (0.7060 CELO)"
+ */
+export const formatGasAndTokenPriceWithUSD = (usdValue: number, tokenAmount: number, tokenSymbol: string): string => {
+  return `$${usdValue.toFixed(2)} USD (${tokenAmount.toFixed(4)} ${tokenSymbol})`;
+};
+
+/**
  * Format USD value consistently across the application
  * @param value - The numeric USD value
  * @param includeApproximate - Whether to include the ~ symbol (default: true)

@@ -450,7 +450,7 @@ export const WrapperComponent = () => {
     const targetAddress = account.address || "";
     
     // Estimate gas using improved calculation
-    const gasEstimate = calculateApproximateGas(value, chainID.mainnet.celo);
+    const gasEstimate = await calculateApproximateGas(value, chainID.mainnet.celo);
     
     // Calculate USD value using price feed
     const usdValue = await calculateUSDValue(value, chainID.mainnet.celo);

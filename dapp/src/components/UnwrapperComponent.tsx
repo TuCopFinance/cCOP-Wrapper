@@ -504,7 +504,7 @@ export const UnwrapperComponent = () => {
     const targetChainId = chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
     
     // Estimate gas using improved calculation
-    const gasEstimate = calculateApproximateGas(value, targetChainId);
+    const gasEstimate = await calculateApproximateGas(value, targetChainId);
     
     // Calculate USD value using price feed
     const usdValue = await calculateUSDValue(value, targetChainId);

@@ -5,7 +5,7 @@ import { chainID } from '@/constants/chainID';
 import Treasury from '@/constants/abis/Treasury.json';
 import WrappedCCOP from '@/constants/abis/WrappedCCOP.json';
 import { formatEther, parseEther } from 'viem';
-import { formatGasAndTokenPrice } from '@/utils/price-feeds';
+import { formatGasAndTokenPriceWithUSD, getCELOUSDPrice, getETHUSDPrice } from '@/utils/price-feeds';
 
 // Gas estimation constants
 const GAS_ESTIMATES = {
@@ -40,7 +40,7 @@ export const getGasTokenName = (chainId: number): string => {
 };
 
 // Calculate approximate gas estimate based on amount
-export const calculateApproximateGas = (amount: string, chainId: number): string => {
+export const calculateApproximateGas = async (amount: string, chainId: number): Promise<string> => {
   console.log(`🚀 calculateApproximateGas CALLED - Amount: ${amount}, ChainId: ${chainId}`);
   const numAmount = parseFloat(amount) || 0;
   const gasConfig = getGasConfig(chainId);
@@ -59,7 +59,26 @@ export const calculateApproximateGas = (amount: string, chainId: number): string
   console.log(`calculateApproximateGas - Rounded gas cost: ${roundedGasCost}`);
   
   const tokenName = getGasTokenName(chainId);
-  const result = formatGasAndTokenPrice(roundedGasCost, tokenName);
+  
+  // Get USD price for the token
+  let usdPrice: number;
+  try {
+    if (chainId === chainID.mainnet.celo) {
+      usdPrice = await getCELOUSDPrice();
+    } else {
+      usdPrice = await getETHUSDPrice();
+    }
+  } catch (error) {
+    console.error('Error getting USD price for gas estimation:', error);
+    usdPrice = chainId === chainID.mainnet.celo ? 0.5 : 3000; // Fallback prices
+  }
+  
+  // Calculate USD value
+  const usdValue = roundedGasCost * usdPrice;
+  
+  // Format the result with USD value first
+  const result = formatGasAndTokenPriceWithUSD(usdValue, roundedGasCost, tokenName);
+  
   console.log(`calculateApproximateGas - Final result: ${result}`);
   
   return result;
@@ -112,7 +131,21 @@ export const estimateWrapGas = async (
     
     console.log(`estimateWrapGas - Rounded gas cost: ${roundedGasCost}`);
     
-    const result = formatGasAndTokenPrice(roundedGasCost, 'CELO');
+    // Get CELO USD price
+    let celoUsdPrice: number;
+    try {
+      celoUsdPrice = await getCELOUSDPrice();
+    } catch (error) {
+      console.error('Error getting CELO USD price:', error);
+      celoUsdPrice = 0.5; // Fallback price
+    }
+    
+    // Calculate USD value
+    const usdValue = roundedGasCost * celoUsdPrice;
+    
+    // Format the result with USD value first
+    const result = formatGasAndTokenPriceWithUSD(usdValue, roundedGasCost, 'CELO');
+    
     console.log(`estimateWrapGas - Final result: ${result}`);
     
     return result;
@@ -162,7 +195,22 @@ export const estimateUnwrapGas = async (
     console.log(`estimateUnwrapGas - Rounded gas cost: ${roundedGasCost}`);
     
     const tokenName = getGasTokenName(targetChainId);
-    const result = formatGasAndTokenPrice(roundedGasCost, tokenName);
+    
+    // Get ETH USD price
+    let ethUsdPrice: number;
+    try {
+      ethUsdPrice = await getETHUSDPrice();
+    } catch (error) {
+      console.error('Error getting ETH USD price:', error);
+      ethUsdPrice = 3000; // Fallback price
+    }
+    
+    // Calculate USD value
+    const usdValue = roundedGasCost * ethUsdPrice;
+    
+    // Format the result with USD value first
+    const result = formatGasAndTokenPriceWithUSD(usdValue, roundedGasCost, tokenName);
+    
     console.log(`estimateUnwrapGas - Final result: ${result}`);
     
     return result;

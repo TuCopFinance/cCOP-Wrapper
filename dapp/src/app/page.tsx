@@ -23,6 +23,9 @@ export default function Home() {
         </div>
 
         <div className="headerContainerRight">
+          <a href="/dashboard" className="dashboardLink">
+            📊 Dashboard
+          </a>
           <ConnectButton />
         </div>
       </header>
