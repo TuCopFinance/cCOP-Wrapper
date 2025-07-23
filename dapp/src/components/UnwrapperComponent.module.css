@@ -453,6 +453,63 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Toast Styles */
+.toastContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.toastCloseButton {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  font-size: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  z-index: 1000;
+  line-height: 1;
+}
+
+.toastTransactionDetails {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toastTransactionText {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.toastViewButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.toastStyle {
+  background: #707070;
+  color: #fff;
+  min-width: 300px;
+  position: relative;
+}
+
 /* Responsive Styles */
 @media (max-width: 600px) {
   .amountInput,
@@ -638,4 +695,4 @@
     height: 36px !important;
     font-size: 12px !important;
   }
-} 
+}

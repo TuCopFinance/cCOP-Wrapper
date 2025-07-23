@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import styles from "./WrapperComponent.module.css";
 import { erc20Abi, formatEther } from "viem";
 import {
   getAccount,
@@ -21,11 +20,25 @@ import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
 import { getReferralTag } from "@divvi/referral-sdk";
 import { BalanceIndicators } from "./BalanceIndicators";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
-import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
+import {
+  isMobile,
+  getMobileErrorMessage,
+  getMobileLoadingMessage,
+} from "@/utils/mobile";
 import { useGlobalBalances } from "../context/BalanceContext";
-import { estimateWrapGas, calculateApproximateGas } from "@/utils/gas-estimation";
-import { calculateUSDValue, debugPriceFeed, formatHyperlanePrice, formatUSDValue, formatTokenAmount } from "@/utils/price-feeds";
+import {
+  estimateWrapGas,
+  calculateApproximateGas,
+} from "@/utils/gas-estimation";
+import {
+  calculateUSDValue,
+  debugPriceFeed,
+  formatHyperlanePrice,
+  formatUSDValue,
+  formatTokenAmount,
+} from "@/utils/price-feeds";
 import Image from "next/image";
+import styles from "./WrapperComponent.module.css";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -50,13 +63,20 @@ const getExplorerLink = (chainId: number, txHash: string): string => {
 // --- Helper function to get chain name ---
 const getChainName = (chainId: number): string => {
   switch (chainId) {
-    case 42220: return "Celo";
-    case 44787: return "Celo Testnet";
-    case 8453: return "Base";
-    case 84532: return "Base Testnet";
-    case 42161: return "Arbitrum";
-    case 421614: return "Arbitrum Testnet";
-    default: return "Unknown";
+    case 42220:
+      return "Celo";
+    case 44787:
+      return "Celo Testnet";
+    case 8453:
+      return "Base";
+    case 84532:
+      return "Base Testnet";
+    case 42161:
+      return "Arbitrum";
+    case 421614:
+      return "Arbitrum Testnet";
+    default:
+      return "Unknown";
   }
 };
 
@@ -64,7 +84,7 @@ const getChainName = (chainId: number): string => {
 const formatTransactionLink = (chainId: number, txHash: string): string => {
   const chainName = getChainName(chainId);
   const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
-  
+
   return `${chainName} (${shortTxHash})`;
 };
 
@@ -74,64 +94,50 @@ const getExplorerUrl = (chainId: number, txHash: string): string => {
 };
 
 // --- Helper function to show transaction toast with clickable link ---
-const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: string, action: string) => {
+const showTransactionToast = (
+  isSuccess: boolean,
+  chainId: number,
+  txHash: string,
+  action: string
+) => {
   const chainName = getChainName(chainId);
   const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
   const explorerUrl = getExplorerLink(chainId, txHash);
-  
-  const message = isSuccess 
+
+  const message = isSuccess
     ? `cCOP tokens ${action} successfully!`
     : `Error ${action} cCOP tokens.`;
-  
+
   const toastId = toast(
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative' }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        position: "relative",
+      }}
+      className={styles.toastContainer}
+    >
       {/* Close button */}
       <button
         onClick={() => toast.dismiss(toastId)}
-        style={{
-          position: 'absolute',
-          top: '-6px',
-          right: '-6px',
-          background: '#ff4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          width: '12px',
-          height: '12px',
-          fontSize: '8px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold',
-          zIndex: 1000,
-          lineHeight: '1'
-        }}
+        className={styles.toastCloseButton}
         title="Close message"
       >
         ×
       </button>
-      
-      <div>{message}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '12px', opacity: 0.8 }}>
+
+      <div className={styles.toastMessage}>{message}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span style={{ fontSize: "12px", opacity: 0.8 }}>
           Transaction: {chainName} ({shortTxHash})
         </span>
         <button
           onClick={() => {
-            window.open(explorerUrl, '_blank');
+            window.open(explorerUrl, "_blank");
             toast.dismiss(toastId);
           }}
-          style={{
-            background: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '4px 8px',
-            fontSize: '12px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
+          className={styles.toastButton}
         >
           View
         </button>
@@ -139,41 +145,38 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
     </div>,
     {
       position: "bottom-right",
-      style: { 
-        background: "#707070", 
+      style: {
+        background: "#707070",
         color: "#fff",
-        minWidth: '300px',
-        position: 'relative'
+        minWidth: "300px",
+        position: "relative",
       },
       duration: Infinity,
-      icon: isSuccess ? "✅" : "❌"
+      icon: isSuccess ? "✅" : "❌",
     }
   );
 };
 
 // --- Helper function to create toast with close button ---
-const createToastWithClose = (message: string, type: 'success' | 'error' | 'info', duration: number = Infinity) => {
+const createToastWithClose = (
+  message: string,
+  type: "success" | "error" | "info",
+  duration: number = Infinity
+) => {
   const toastId = toast(
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', position: 'relative' }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "8px",
+        position: "relative",
+      }}
+    >
       <span>{message}</span>
       <button
         onClick={() => toast.dismiss(toastId)}
-        style={{
-          background: '#ff4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          width: '12px',
-          height: '12px',
-          fontSize: '8px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold',
-          flexShrink: 0,
-          lineHeight: '1'
-        }}
+        className={styles.toastCloseButton}
         title="Close message"
       >
         ×
@@ -181,13 +184,18 @@ const createToastWithClose = (message: string, type: 'success' | 'error' | 'info
     </div>,
     {
       position: "bottom-right",
-      style: { 
-        background: type === 'success' ? "#28a745" : type === 'error' ? "#dc3545" : "#707070", 
+      style: {
+        background:
+          type === "success"
+            ? "#28a745"
+            : type === "error"
+            ? "#dc3545"
+            : "#707070",
         color: "#fff",
-        minWidth: '250px'
+        minWidth: "250px",
       },
       duration: duration,
-      icon: type === 'success' ? "✅" : type === 'error' ? "❌" : "ℹ️"
+      icon: type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️",
     }
   );
 };
@@ -200,18 +208,22 @@ const notifyChangeChain = () =>
     style: { background: "#333", color: "#fff" },
   });
 
-const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string, onRefresh?: () => void) => {
+const notifyWrapAction = (
+  deliveredPromise: Promise<any>,
+  txHash?: string,
+  onRefresh?: () => void
+) => {
   // Show loading toast
   const loadingToast = toast.loading("Wrapping cCOP tokens...", {
-      position: "bottom-right",
-      style: { background: "#707070", color: "#fff" },
+    position: "bottom-right",
+    style: { background: "#707070", color: "#fff" },
   });
-  
+
   deliveredPromise
     .then(() => {
       // Dismiss loading toast
       toast.dismiss(loadingToast);
-      
+
       // Refresh balances after successful delivery
       console.log("=== TRANSACTION DELIVERED - REFRESHING BALANCES ===");
       setTimeout(() => {
@@ -224,7 +236,7 @@ const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string, onRef
           console.log("=== NO REFRESH FUNCTION PROVIDED ===");
         }
       }, 2000); // Wait 2 seconds for delivery to be processed
-      
+
       // Show success toast
       if (txHash) {
         showTransactionToast(true, 42220, txHash, "wrapped");
@@ -235,12 +247,15 @@ const notifyWrapAction = (deliveredPromise: Promise<any>, txHash?: string, onRef
     .catch((error) => {
       // Dismiss loading toast
       toast.dismiss(loadingToast);
-      
+
       // Show error toast
       if (txHash) {
         showTransactionToast(false, 42220, txHash, "wrapping");
       } else {
-        createToastWithClose("Error wrapping cCOP tokens, please check hyperlane explorer using your transaction hash", "error");
+        createToastWithClose(
+          "Error wrapping cCOP tokens, please check hyperlane explorer using your transaction hash",
+          "error"
+        );
       }
     });
 };
@@ -266,7 +281,7 @@ export const WrapperComponent = () => {
   const [amountValidation, setAmountValidation] = useState<{
     isValid: boolean;
     message: string;
-    type: 'success' | 'error' | 'warning' | 'info';
+    type: "success" | "error" | "warning" | "info";
   } | null>(null);
   const [amountPrediction, setAmountPrediction] = useState<{
     usdValue?: string;
@@ -283,7 +298,7 @@ export const WrapperComponent = () => {
   const account = getAccount(config);
   const connectedAddress = account.address || "";
   const [customAddress, setCustomAddress] = useState("");
-  
+
   // Get token balances
   const { balances, refresh: refreshBalances } = useGlobalBalances();
   const celoBalance = balances.celo;
@@ -339,7 +354,7 @@ export const WrapperComponent = () => {
         ) {
           setQuote(data[1].result);
           setAllowanceIsMoreThanAmount(amountFixed <= data[0].result);
-          
+
           // Format the price in USD
           formatHyperlanePrice(data[1].result, true).then(setFormattedPrice);
         } else {
@@ -368,7 +383,12 @@ export const WrapperComponent = () => {
       verifyTokenAllowanceAndPriceForSend();
     }, 500);
     return () => clearTimeout(timeout);
-  }, [amount, domainID, differentAddressFlag, verifyTokenAllowanceAndPriceForSend]);
+  }, [
+    amount,
+    domainID,
+    differentAddressFlag,
+    verifyTokenAllowanceAndPriceForSend,
+  ]);
 
   // Revalidate amount when balance changes
   useEffect(() => {
@@ -380,7 +400,7 @@ export const WrapperComponent = () => {
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setAmount(value);
-    
+
     // Validate and predict amount
     validateAndPredictAmount(value).catch(console.error);
   }
@@ -400,7 +420,7 @@ export const WrapperComponent = () => {
       setAmountValidation({
         isValid: false,
         message: "Por favor ingresa un número válido",
-        type: 'error'
+        type: "error",
       });
       setAmountPrediction(null);
       return;
@@ -410,7 +430,7 @@ export const WrapperComponent = () => {
       setAmountValidation({
         isValid: false,
         message: "El monto debe ser mayor a 0",
-        type: 'error'
+        type: "error",
       });
       setAmountPrediction(null);
       return;
@@ -419,62 +439,77 @@ export const WrapperComponent = () => {
     if (numValue > balance) {
       setAmountValidation({
         isValid: false,
-        message: `Saldo insuficiente. Disponible: ${formatTokenAmount(balance, 'cCOP')}`,
-        type: 'error'
+        message: `Saldo insuficiente. Disponible: ${formatTokenAmount(
+          balance,
+          "cCOP"
+        )}`,
+        type: "error",
       });
     } else if (numValue === balance) {
       setAmountValidation({
         isValid: true,
         message: "Usando todo el saldo disponible",
-        type: 'success'
+        type: "success",
       });
     } else if (numValue > balance * 0.9) {
       setAmountValidation({
         isValid: true,
         message: "Usando más del 90% del saldo",
-        type: 'warning'
+        type: "warning",
       });
     } else {
       setAmountValidation({
         isValid: true,
         message: "Monto válido",
-        type: 'success'
+        type: "success",
       });
     }
 
     // Calculate predictions
     const percentageOfBalance = (numValue / balance) * 100;
-    
+
     // Get account for gas estimation
     const account = getAccount(config);
     const targetAddress = account.address || "";
-    
+
     // Estimate gas using improved calculation
-    const gasEstimate = await calculateApproximateGas(value, chainID.mainnet.celo);
-    
+    const gasEstimate = await calculateApproximateGas(
+      value,
+      chainID.mainnet.celo
+    );
+
     // Calculate USD value using price feed
     const usdValue = await calculateUSDValue(value, chainID.mainnet.celo);
-    
+
     // Debug price feed
     await debugPriceFeed(chainID.mainnet.celo, value);
-    
+
     setAmountPrediction({
       percentageOfBalance: percentageOfBalance,
       usdValue: usdValue,
-      gasEstimate: gasEstimate
+      gasEstimate: gasEstimate,
     });
 
     // Update gas estimate with real simulation if user has been idle for 2 seconds
     setTimeout(async () => {
       if (value === amount && account.address) {
         try {
-          const realGasEstimate = await estimateWrapGas(value, account.address, parseInt(domainID), quote || undefined);
-          setAmountPrediction(prev => prev ? {
-            ...prev,
-            gasEstimate: realGasEstimate
-          } : null);
+          const realGasEstimate = await estimateWrapGas(
+            value,
+            account.address,
+            parseInt(domainID),
+            quote || undefined
+          );
+          setAmountPrediction((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  gasEstimate: realGasEstimate,
+                }
+              : null
+          );
         } catch (error) {
-          console.log('Could not get real gas estimate, using approximation');
+          console.log("Could not get real gas estimate, using approximation");
         }
       }
     }, 2000);
@@ -485,10 +520,13 @@ export const WrapperComponent = () => {
     if (balance > 0) {
       setAmount(balance.toString());
       validateAndPredictAmount(balance.toString()).catch(console.error);
-      toast.success(`Monto establecido al máximo: ${formatTokenAmount(balance, 'cCOP')}`, {
-        position: "bottom-right",
-        style: { background: "#333", color: "#fff" },
-      });
+      toast.success(
+        `Monto establecido al máximo: ${formatTokenAmount(balance, "cCOP")}`,
+        {
+          position: "bottom-right",
+          style: { background: "#333", color: "#fff" },
+        }
+      );
     } else {
       toast.error("No hay saldo disponible", {
         position: "bottom-right",
@@ -500,29 +538,29 @@ export const WrapperComponent = () => {
   function checkChainAndChange() {
     const account = getAccount(config);
     if (account.chainId !== chainID.mainnet.celo) {
-      switchChain(config, { chainId: chainID.mainnet.celo }).then(
-        notifyChangeChain
-      ).catch((error) => {
-        console.log('Could not switch chain automatically:', error);
-        // Don't show error to user, just log it
-        // The user can manually switch chains if needed
-      });
+      switchChain(config, { chainId: chainID.mainnet.celo })
+        .then(notifyChangeChain)
+        .catch((error) => {
+          console.log("Could not switch chain automatically:", error);
+          // Don't show error to user, just log it
+          // The user can manually switch chains if needed
+        });
     }
   }
 
   function setAllowance() {
     checkChainAndChange();
-    
+
     // Check if we're on mobile
     const mobileDevice = isMobile();
-    
+
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
     } catch {
       return;
     }
-    
+
     const account = getAccount(config);
     if (!account.address) return;
 
@@ -548,12 +586,12 @@ export const WrapperComponent = () => {
       .then((txHash) => {
         // Submit Divvi referral
         submitDivviReferral(txHash, chainID.mainnet.celo);
-        
+
         // Dismiss loading toast if mobile
         if (mobileDevice) {
           toast.dismiss();
         }
-        
+
         setTimeout(() => {
           verifyTokenAllowanceAndPriceForSend();
         }, 2500);
@@ -562,8 +600,8 @@ export const WrapperComponent = () => {
         console.error("Error setting allowance:", error);
         setAllowanceIsMoreThanAmount(false);
         toast.error(
-          mobileDevice 
-            ? getMobileErrorMessage("Allowance") 
+          mobileDevice
+            ? getMobileErrorMessage("Allowance")
             : "Error setting allowance",
           {
             position: "bottom-right",
@@ -577,10 +615,10 @@ export const WrapperComponent = () => {
     if (quote === null) return;
     const account = getAccount(config);
     if (!account.address) return;
-    
+
     // Check if we're on mobile
     const mobileDevice = isMobile();
-    
+
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
@@ -590,7 +628,7 @@ export const WrapperComponent = () => {
     const differentAddressInput = document.getElementById(
       "wrapperAddressInput"
     ) as HTMLInputElement | null;
-    
+
     const targetAddress = differentAddressFlag
       ? differentAddressInput?.value || account.address || ""
       : (account.address as `0x${string}`);
@@ -611,46 +649,42 @@ export const WrapperComponent = () => {
       abi: treasury.abi,
       address: address.mainnet.treasury as `0x${string}`,
       functionName: "wrap",
-      args: [
-        domainID,
-        targetAddress,
-        amountFixed,
-      ],
+      args: [domainID, targetAddress, amountFixed],
       value: quote + BigInt(1),
       dataSuffix: `0x${referralTag}` as `0x${string}`,
     })
       .then((data) => {
         const msgIdentifier = data.result;
-        
+
         // Dismiss loading toast if mobile
         if (mobileDevice) {
           toast.dismiss();
         }
-        
+
         writeContract(config, {
           chainId: chainID.mainnet.celo,
           abi: treasury.abi,
           address: address.mainnet.treasury as `0x${string}`,
           functionName: "wrap",
-          args: [
-            domainID,
-            targetAddress,
-            amountFixed,
-          ],
+          args: [domainID, targetAddress, amountFixed],
           value: quote + BigInt(1),
           dataSuffix: `0x${referralTag}` as `0x${string}`,
         })
           .then((txHash) => {
             // Submit Divvi referral
             submitDivviReferral(txHash, chainID.mainnet.celo);
-            
-            notifyWrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash, refreshBalances);
+
+            notifyWrapAction(
+              waitForIsDelivered(msgIdentifier, 5000, 20),
+              txHash,
+              refreshBalances
+            );
           })
           .catch((error) => {
             console.error("Error in wrap transaction:", error);
             toast.error(
-              mobileDevice 
-                ? getMobileErrorMessage("Wrap") 
+              mobileDevice
+                ? getMobileErrorMessage("Wrap")
                 : "Error wrapping cCOP tokens",
               {
                 position: "bottom-right",
@@ -663,8 +697,8 @@ export const WrapperComponent = () => {
       .catch((error) => {
         console.error("Error simulating wrap transaction:", error);
         toast.error(
-          mobileDevice 
-            ? getMobileErrorMessage("Transaction preparation") 
+          mobileDevice
+            ? getMobileErrorMessage("Transaction preparation")
             : "Error preparing wrap transaction",
           {
             position: "bottom-right",
@@ -678,15 +712,17 @@ export const WrapperComponent = () => {
   return (
     <>
       <BalanceIndicators />
-      
+
       <div className={styles.amountContainer}>
-      <label className={styles.amountLabel}>Amount</label>
+        <label className={styles.amountLabel}>Amount</label>
         <div className={styles.amountInputContainer}>
-      <input
-            className={`${styles.amountInput} ${amountValidation?.type === 'error' ? styles.amountInputError : ''}`}
-        placeholder="Enter amount of cCOP tokens to wrap"
-        value={amount}
-        onChange={handleAmountChange}
+          <input
+            className={`${styles.amountInput} ${
+              amountValidation?.type === "error" ? styles.amountInputError : ""
+            }`}
+            placeholder="Enter amount of cCOP tokens to wrap"
+            value={amount}
+            onChange={handleAmountChange}
             type="number"
             step="0.01"
             min="0"
@@ -700,28 +736,43 @@ export const WrapperComponent = () => {
             MAX
           </button>
         </div>
-        
+
         {/* Validation Message */}
         {amountValidation && (
-          <div className={`${styles.validationMessage} ${styles[`validation${amountValidation.type.charAt(0).toUpperCase() + amountValidation.type.slice(1)}`]}`}>
+          <div
+            className={`${styles.validationMessage} ${
+              styles[
+                `validation${
+                  amountValidation.type.charAt(0).toUpperCase() +
+                  amountValidation.type.slice(1)
+                }`
+              ]
+            }`}
+          >
             {amountValidation.message}
           </div>
         )}
-        
+
         {/* Predictions */}
         {amountPrediction && amountValidation?.isValid && (
           <div className={styles.predictionContainer}>
             <div className={styles.predictionItem}>
-              <span className={styles.predictionLabel}>Porcentaje del saldo:</span>
-              <span className={styles.predictionValue}>{amountPrediction.percentageOfBalance?.toFixed(1)}%</span>
+              <span className={styles.predictionLabel}>
+                Porcentaje del saldo:
+              </span>
+              <span className={styles.predictionValue}>
+                {amountPrediction.percentageOfBalance?.toFixed(1)}%
+              </span>
             </div>
             <div className={styles.predictionItem}>
               <span className={styles.predictionLabel}>Valor aproximado:</span>
-              <span className={styles.predictionValue}>{amountPrediction.usdValue}</span>
+              <span className={styles.predictionValue}>
+                {amountPrediction.usdValue}
+              </span>
             </div>
           </div>
         )}
-        
+
         {/* Percentage Buttons */}
         <div className={styles.percentageButtons}>
           <button
@@ -779,17 +830,26 @@ export const WrapperComponent = () => {
         </div>
         <div className={styles.chainSelector}>
           <button
-            className={`${styles.chainOption} ${domainID === '8453' ? styles.chainOptionActive : ''}`}
-            onClick={() => setDomainID('8453')}
+            className={`${styles.chainOption} ${
+              domainID === "8453" ? styles.chainOptionActive : ""
+            }`}
+            onClick={() => setDomainID("8453")}
           >
             <Image src="/assets/Base.png" alt="Base" width={24} height={24} />
             <span>Base</span>
           </button>
           <button
-            className={`${styles.chainOption} ${domainID === '42161' ? styles.chainOptionActive : ''}`}
-            onClick={() => setDomainID('42161')}
+            className={`${styles.chainOption} ${
+              domainID === "42161" ? styles.chainOptionActive : ""
+            }`}
+            onClick={() => setDomainID("42161")}
           >
-            <Image src="/assets/Arbitrum.png" alt="Arbitrum" width={24} height={24} />
+            <Image
+              src="/assets/Arbitrum.png"
+              alt="Arbitrum"
+              width={24}
+              height={24}
+            />
             <span>Arbitrum</span>
           </button>
         </div>
@@ -798,20 +858,24 @@ export const WrapperComponent = () => {
       {(formattedPrice || (amountPrediction && amountValidation?.isValid)) && (
         <div className={styles.transactionCostsContainer}>
           <label className={styles.sectionLabel}>Costos de Transacción</label>
-          
+
           {formattedPrice && (
             <div className={styles.costItem}>
               <span className={styles.costLabel}>Precio de wrapping:</span>
               <span className={styles.costValue}>{formattedPrice}</span>
             </div>
           )}
-          
-          {amountPrediction && amountValidation?.isValid && amountPrediction.gasEstimate && (
-            <div className={styles.costItem}>
-              <span className={styles.costLabel}>Gas estimado:</span>
-              <span className={styles.costValue}>{amountPrediction.gasEstimate}</span>
-            </div>
-          )}
+
+          {amountPrediction &&
+            amountValidation?.isValid &&
+            amountPrediction.gasEstimate && (
+              <div className={styles.costItem}>
+                <span className={styles.costLabel}>Gas estimado:</span>
+                <span className={styles.costValue}>
+                  {amountPrediction.gasEstimate}
+                </span>
+              </div>
+            )}
         </div>
       )}
 
@@ -839,93 +903,103 @@ export const WrapperComponent = () => {
       <div className={styles.addressSelector} style={{ marginTop: 20 }}>
         <label className={styles.sectionLabel}>Dirección de destino</label>
         <input
-          className={styles.addressInput}
+          className={`${styles.addressInput} ${
+            differentAddressFlag
+              ? styles.addressInputEditable
+              : styles.addressInputReadOnly
+          }`}
           value={differentAddressFlag ? customAddress : connectedAddress}
-          onChange={e => setCustomAddress(e.target.value)}
+          onChange={(e) => setCustomAddress(e.target.value)}
           readOnly={!differentAddressFlag}
-          style={{ 
-            background: differentAddressFlag ? '#444444' : '#333', 
-            color: '#fff', 
-            width: '100%',
-            border: '1px solid #555',
-            borderRadius: '8px',
-            padding: '12px',
-            fontSize: '14px'
-          }}
-          placeholder={differentAddressFlag ? "Ingresa la dirección de destino" : ""}
+          placeholder={
+            differentAddressFlag ? "Ingresa la dirección de destino" : ""
+          }
         />
         {!differentAddressFlag && (
-          <span style={{ fontSize: 13, color: '#aaa', marginTop: 4, display: 'block', fontStyle: 'italic' }}>
-            Los tokens se enviarán a la misma dirección que actualmente está conectada
+          <span
+            style={{
+              fontSize: 13,
+              color: "#aaa",
+              marginTop: 4,
+              display: "block",
+              fontStyle: "italic",
+            }}
+          >
+            Los tokens se enviarán a la misma dirección que actualmente está
+            conectada
           </span>
         )}
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
             checked={differentAddressFlag}
-            onChange={e => {
+            onChange={(e) => {
               if (e.target.checked) {
-                toast((t) => (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '300px' }}>
-                    <div style={{ fontWeight: 600, fontSize: '16px' }}>Confirmar dirección diferente</div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                      ¿Estás seguro de que quieres enviar los tokens a una dirección diferente? Verifica cuidadosamente la dirección de destino.
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                      <button
-                        onClick={() => {
-                          toast.dismiss(t.id);
-                        }}
+                toast(
+                  (t) => (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "12px",
+                        minWidth: "300px",
+                      }}
+                    >
+                      <div style={{ fontWeight: 600, fontSize: "16px" }}>
+                        Confirmar dirección diferente
+                      </div>
+                      <div style={{ fontSize: "14px", lineHeight: "1.4" }}>
+                        ¿Estás seguro de que quieres enviar los tokens a una
+                        dirección diferente? Verifica cuidadosamente la
+                        dirección de destino.
+                      </div>
+                      <div
                         style={{
-                          padding: '6px 12px',
-                          background: '#555',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
+                          display: "flex",
+                          gap: "8px",
+                          justifyContent: "flex-end",
                         }}
                       >
-                        Cancelar
-                      </button>
-                      <button
-                        onClick={() => {
-                          setDifferentAddressFlag(true);
-                          toast.dismiss(t.id);
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          background: 'var(--primary)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Confirmar
-                      </button>
+                        <button
+                          onClick={() => {
+                            toast.dismiss(t.id);
+                          }}
+                          className={styles.toastButton}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDifferentAddressFlag(true);
+                            toast.dismiss(t.id);
+                          }}
+                          className={styles.toastButton}
+                        >
+                          Confirmar
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ), {
-                  duration: 0,
-                  position: "bottom-center",
-                  style: { 
-                    background: "#232323", 
-                    color: "#fff",
-                    border: "1px solid #444",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    bottom: "50%",
-                    transform: "translateY(50%)",
-                    marginBottom: "0"
-                  },
-                });
+                  ),
+                  {
+                    duration: 0,
+                    position: "bottom-center",
+                    style: {
+                      background: "#232323",
+                      color: "#fff",
+                      border: "1px solid #444",
+                      borderRadius: "8px",
+                      padding: "16px",
+                      bottom: "50%",
+                      transform: "translateY(50%)",
+                      marginBottom: "0",
+                    },
+                  }
+                );
                 return;
               }
               setDifferentAddressFlag(e.target.checked);
             }}
-            style={{ marginRight: 10, transform: 'scale(1.2)' }}
+            className={styles.checkboxInput}
           />
           Enviar a otra dirección
         </label>

@@ -2,7 +2,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import styles from "./UnwrapperComponent.module.css";
-import { erc20Abi, formatEther } from "viem";
 import {
   getAccount,
   readContracts,
@@ -18,9 +17,7 @@ import toast from "react-hot-toast";
 import { waitForIsDelivered } from "../utils/hyperlane";
 import type { Abi } from "viem";
 import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
-import { getReferralTag } from "@divvi/referral-sdk";
 import { BalanceIndicators } from "./BalanceIndicators";
-import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useWalletClient } from "wagmi";
 import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
 import { useGlobalBalances } from "../context/BalanceContext";
@@ -79,43 +76,25 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
   const chainName = getChainName(chainId);
   const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
   const explorerUrl = getExplorerLink(chainId, txHash);
-  
+
   const message = isSuccess 
     ? `cCOP tokens ${action} successfully!`
     : `Error ${action} cCOP tokens.`;
-  
+
   const toastId = toast(
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative' }}>
+    <div className="toastContainer">
       {/* Close button */}
       <button
         onClick={() => toast.dismiss(toastId)}
-        style={{
-          position: 'absolute',
-          top: '-6px',
-          right: '-6px',
-          background: '#ff4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          width: '12px',
-          height: '12px',
-          fontSize: '8px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold',
-          zIndex: 1000,
-          lineHeight: '1'
-        }}
+        className="toastCloseButton"
         title="Close message"
       >
         ×
       </button>
       
       <div>{message}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '12px', opacity: 0.8 }}>
+      <div className="toastTransactionDetails">
+        <span className="toastTransactionText">
           Transaction: {chainName} ({shortTxHash})
         </span>
         <button
@@ -123,16 +102,7 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
             window.open(explorerUrl, '_blank');
             toast.dismiss(toastId);
           }}
-          style={{
-            background: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '4px 8px',
-            fontSize: '12px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
+          className="toastViewButton"
         >
           View
         </button>
@@ -140,12 +110,7 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
     </div>,
     {
       position: "bottom-right",
-      style: { 
-        background: "#707070", 
-        color: "#fff",
-        minWidth: '300px',
-        position: 'relative'
-      },
+      className: "toastStyle",
       duration: Infinity,
       icon: isSuccess ? "✅" : "❌"
     }
@@ -215,15 +180,10 @@ const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string,
       toast.dismiss(loadingToast);
       
       // Refresh balances after successful delivery
-      console.log("=== TRANSACTION DELIVERED - REFRESHING BALANCES ===");
       setTimeout(() => {
-        console.log("=== EXECUTING BALANCE REFRESH AFTER DELIVERY ===");
-        console.log("Executing refresh after transaction delivery...");
+  
         if (onRefresh) {
           onRefresh();
-          console.log("=== BALANCE REFRESH EXECUTED AFTER DELIVERY ===");
-        } else {
-          console.log("=== NO REFRESH FUNCTION PROVIDED ===");
         }
       }, 2000); // Wait 2 seconds for delivery to be processed
       
