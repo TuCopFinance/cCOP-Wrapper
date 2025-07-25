@@ -14,6 +14,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@hyperlane-xyz/core": "^8.0.0"
+    "@hyperlane-xyz/core": "^8.0.0",
+    "@selfxyz/contracts": "^1.2.0"
   }
 }

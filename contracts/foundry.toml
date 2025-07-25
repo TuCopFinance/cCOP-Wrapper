@@ -7,6 +7,7 @@ remappings = [
     '@hyperlane-xyz/core/=node_modules/@hyperlane-xyz/core/',
     '@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/',
     '@cCOP_wrapper/=src/',
+    '@selfxyz/contracts/=node_modules/@selfxyz/contracts/',
 ]
 
 [fuzz]

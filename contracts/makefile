@@ -37,6 +37,11 @@ ARB_MAINNET_ARGS := --rpc-url $(RPC_URL_ARB_MAINNET) \
 					 --verify \
 					 --etherscan-api-key $(ETHERSCAN_API) \
 
+deployGasFeeSponsorship:
+	@forge clean
+	@echo "Deploying GasFeeSponsorship to Celo Alfajores testnet"
+	@forge script script/GasFeeSponsorship.s.sol:GasFeeSponsorshipScript $(CELO_ALFAJORES_ARGS)
+
 deployCCOPMock:
 	@forge clean
 	@echo "Deploying CCOPMock to Celo Alfajores testnet"
