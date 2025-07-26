@@ -24,6 +24,7 @@ export const SelfGasFeeSponsorshipComponent = ({
 }) => {
   const [selfApp, setSelfApp] = React.useState<SelfApp | null>(null);
   const [showButton, setShowButton] = React.useState(false);
+  const [showDoneVerification, setShowDoneVerification] = React.useState(false);
 
   const verifyUserSponsorship = async () => {
     const account = getAccount(config);
@@ -117,6 +118,7 @@ export const SelfGasFeeSponsorshipComponent = ({
             }
           }
         }
+        
       } else {
         setShowButton(false);
         console.error("Failed to fetch user sponsorship data");
@@ -146,7 +148,8 @@ export const SelfGasFeeSponsorshipComponent = ({
           }}
         >
           <p>
-            Por favor escanea el código QR con la app de self para validar tu humanidad
+            Por favor escanea el código QR con la app de self para validar tu
+            humanidad
           </p>
 
           <SelfQRcodeWrapper
@@ -163,6 +166,8 @@ export const SelfGasFeeSponsorshipComponent = ({
                 },
               });
               setSelfApp(null);
+              setShowButton(false);
+              setShowDoneVerification(true);
             }}
             onError={() => {
               console.error("Verification failed");
@@ -176,6 +181,8 @@ export const SelfGasFeeSponsorshipComponent = ({
                 },
               });
               setSelfApp(null);
+              setShowButton(true);
+              setShowDoneVerification(false);
             }}
           />
 
@@ -189,17 +196,42 @@ export const SelfGasFeeSponsorshipComponent = ({
             <span>Cerrar</span>
           </button>
         </div>
+      ) : showButton ? (
+        <button onClick={verifyUser} className={styles.selfButton}>
+          <Image
+            src="/assets/SelfLogo.svg"
+            alt="Arbitrum"
+            width={24}
+            height={24}
+          />
+          <span>{`Apadrinar wrapping`}</span>
+        </button>
       ) : (
-        showButton && (
-          <button onClick={verifyUser} className={styles.selfButton}>
-            <Image
-              src="/assets/SelfLogo.svg"
-              alt="Arbitrum"
-              width={24}
-              height={24}
-            />
-            <span>{`Apadrinar wrapping`}</span>
-          </button>
+        showDoneVerification && (
+          <div
+            style={{
+              //permitir en columnas
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <p>
+              Has verificado tu humanidad, se te ha depositado{" "}
+              {(Number(quote) / 1e18).toFixed(6)} CELO en tu cuenta
+            </p>
+            <button
+              onClick={() => {
+                setShowDoneVerification(false);
+              }}
+              className={styles.selfButton}
+              style={{ marginTop: "20px" }}
+            >
+              <span>Cerrar</span>
+            </button>
+          </div>
         )
       )}
     </div>
