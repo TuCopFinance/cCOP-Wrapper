@@ -12,9 +12,7 @@ contract CCOPMockScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        token = new CCOPMock(
-            0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309
-        );
+        token = new CCOPMock(0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309);
 
         vm.stopBroadcast();
     }
