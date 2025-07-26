@@ -1,9 +1,12 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { getAccount } from '@wagmi/core';
-import { config } from '@/config';
-import { getAllRealTransactions, RealTransaction } from '@/utils/transaction-service';
-import styles from './TransactionHistory.module.css';
+import React, { useState, useEffect } from "react";
+import { getAccount } from "@wagmi/core";
+import { config } from "@/config";
+import {
+  getAllRealTransactions,
+  RealTransaction,
+} from "@/utils/transaction-service";
+import styles from "./TransactionHistory.module.css";
 
 // Using RealTransaction interface from transaction-service
 
@@ -16,23 +19,23 @@ export const TransactionHistory = () => {
   const calculateTotals = () => {
     // Wraps: cCOP → wcCOP (CELO to Base/Arbitrum)
     const wrapTotal = transactions
-      .filter(tx => tx.type === 'wrap')
+      .filter((tx) => tx.type === "wrap")
       .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
-    
+
     // Unwraps: wcCOP → cCOP (Base/Arbitrum to CELO) - Total of wrapped tokens unwrapped
     const unwrapTotal = transactions
-      .filter(tx => tx.type === 'unwrap')
+      .filter((tx) => tx.type === "unwrap")
       .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
-    
+
     // Net position: wraps - unwraps (how many cCOP are currently wrapped)
     const netWrapped = wrapTotal - unwrapTotal;
-    
+
     return {
       wrapTotal: wrapTotal.toFixed(2),
       unwrapTotal: unwrapTotal.toFixed(2),
       netWrapped: netWrapped.toFixed(2),
-      wrapCount: transactions.filter(tx => tx.type === 'wrap').length,
-      unwrapCount: transactions.filter(tx => tx.type === 'unwrap').length
+      wrapCount: transactions.filter((tx) => tx.type === "wrap").length,
+      unwrapCount: transactions.filter((tx) => tx.type === "unwrap").length,
     };
   };
 
@@ -50,7 +53,7 @@ export const TransactionHistory = () => {
         const realTransactions = await getAllRealTransactions(account.address);
         setTransactions(realTransactions);
       } catch (error) {
-        console.error('Error fetching real transactions:', error);
+        console.error("Error fetching real transactions:", error);
         setTransactions([]);
       } finally {
         setLoading(false);
@@ -75,7 +78,7 @@ export const TransactionHistory = () => {
     <div className={styles.container}>
       <h2>Historial de Transacciones</h2>
       <p>Wallet: {account.address}</p>
-      
+
       {/* Summary Section */}
       <div className={styles.summaryContainer}>
         <div className={styles.summaryCard}>
@@ -85,21 +88,27 @@ export const TransactionHistory = () => {
           </div>
           <div className={styles.summaryContent}>
             <div className={styles.summaryAmount}>{totals.wrapTotal} cCOP</div>
-            <div className={styles.summaryCount}>{totals.wrapCount} transacciones</div>
+            <div className={styles.summaryCount}>
+              {totals.wrapCount} transacciones
+            </div>
           </div>
         </div>
-        
+
         <div className={styles.summaryCard}>
           <div className={styles.summaryHeader}>
             <span className={styles.summaryIcon}>📤</span>
             <span className={styles.summaryTitle}>Total Desenvuelto</span>
           </div>
           <div className={styles.summaryContent}>
-            <div className={styles.summaryAmount}>{totals.unwrapTotal} wcCOP</div>
-            <div className={styles.summaryCount}>{totals.unwrapCount} transacciones</div>
+            <div className={styles.summaryAmount}>
+              {totals.unwrapTotal} wcCOP
+            </div>
+            <div className={styles.summaryCount}>
+              {totals.unwrapCount} transacciones
+            </div>
           </div>
         </div>
-        
+
         <div className={styles.summaryCard}>
           <div className={styles.summaryHeader}>
             <span className={styles.summaryIcon}>📊</span>
@@ -107,7 +116,9 @@ export const TransactionHistory = () => {
           </div>
           <div className={styles.summaryContent}>
             <div className={styles.summaryAmount}>{totals.netWrapped} cCOP</div>
-            <div className={styles.summaryCount}>{totals.wrapCount + totals.unwrapCount} transacciones</div>
+            <div className={styles.summaryCount}>
+              {totals.wrapCount + totals.unwrapCount} transacciones
+            </div>
           </div>
         </div>
       </div>
@@ -123,43 +134,54 @@ export const TransactionHistory = () => {
         ) : (
           <>
             {/* Wrap Transactions */}
-            {transactions.filter(tx => tx.type === 'wrap').length > 0 && (
+            {transactions.filter((tx) => tx.type === "wrap").length > 0 && (
               <div className={styles.transactionGroup}>
                 <h3 className={styles.groupTitle}>
                   <span className={styles.groupIcon}>📦</span>
                   Wraps - CELO → Base/Arbitrum ({totals.wrapCount})
                 </h3>
                 {transactions
-                  .filter(tx => tx.type === 'wrap')
+                  .filter((tx) => tx.type === "wrap")
                   .map((tx) => (
                     <div key={tx.id} className={styles.transactionCard}>
                       <div className={styles.transactionHeader}>
                         <div className={styles.transactionType}>
-                          <div className={`${styles.typeBadge} ${styles[tx.type]}`}>
+                          <div
+                            className={`${styles.typeBadge} ${styles[tx.type]}`}
+                          >
                             📦 Wrap
                           </div>
                           <span>{tx.chain}</span>
                         </div>
                         <div className={styles.transactionStatus}>
-                          <span 
+                          <span
                             className={styles.statusBadge}
-                            style={{ 
-                              backgroundColor: tx.status === 'completed' ? '#10b981' : 
-                                             tx.status === 'pending' ? '#f59e0b' : '#ef4444' 
+                            style={{
+                              backgroundColor:
+                                tx.status === "completed"
+                                  ? "#10b981"
+                                  : tx.status === "pending"
+                                  ? "#f59e0b"
+                                  : "#ef4444",
                             }}
                           >
-                            {tx.status === 'completed' ? 'Completado' : 
-                             tx.status === 'pending' ? 'Pendiente' : 'Fallido'}
+                            {tx.status === "completed"
+                              ? "Completado"
+                              : tx.status === "pending"
+                              ? "Pendiente"
+                              : "Fallido"}
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className={styles.transactionDetails}>
                         <div className={styles.amountSection}>
                           <span className={styles.amountLabel}>Cantidad:</span>
-                          <span className={styles.amount}>{tx.amount} cCOP → wcCOP</span>
+                          <span className={styles.amount}>
+                            {tx.amount} cCOP → wcCOP
+                          </span>
                         </div>
-                        
+
                         <div className={styles.timeSection}>
                           <span className={styles.timeLabel}>Fecha:</span>
                           <span className={styles.time}>
@@ -173,43 +195,54 @@ export const TransactionHistory = () => {
             )}
 
             {/* Unwrap Transactions */}
-            {transactions.filter(tx => tx.type === 'unwrap').length > 0 && (
+            {transactions.filter((tx) => tx.type === "unwrap").length > 0 && (
               <div className={styles.transactionGroup}>
                 <h3 className={styles.groupTitle}>
                   <span className={styles.groupIcon}>📤</span>
                   Unwraps - Base/Arbitrum → CELO ({totals.unwrapCount})
                 </h3>
                 {transactions
-                  .filter(tx => tx.type === 'unwrap')
+                  .filter((tx) => tx.type === "unwrap")
                   .map((tx) => (
                     <div key={tx.id} className={styles.transactionCard}>
                       <div className={styles.transactionHeader}>
                         <div className={styles.transactionType}>
-                          <div className={`${styles.typeBadge} ${styles[tx.type]}`}>
+                          <div
+                            className={`${styles.typeBadge} ${styles[tx.type]}`}
+                          >
                             📤 Unwrap
                           </div>
                           <span>{tx.chain}</span>
                         </div>
                         <div className={styles.transactionStatus}>
-                          <span 
+                          <span
                             className={styles.statusBadge}
-                            style={{ 
-                              backgroundColor: tx.status === 'completed' ? '#10b981' : 
-                                             tx.status === 'pending' ? '#f59e0b' : '#ef4444' 
+                            style={{
+                              backgroundColor:
+                                tx.status === "completed"
+                                  ? "#10b981"
+                                  : tx.status === "pending"
+                                  ? "#f59e0b"
+                                  : "#ef4444",
                             }}
                           >
-                            {tx.status === 'completed' ? 'Completado' : 
-                             tx.status === 'pending' ? 'Pendiente' : 'Fallido'}
+                            {tx.status === "completed"
+                              ? "Completado"
+                              : tx.status === "pending"
+                              ? "Pendiente"
+                              : "Fallido"}
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className={styles.transactionDetails}>
                         <div className={styles.amountSection}>
                           <span className={styles.amountLabel}>Cantidad:</span>
-                          <span className={styles.amount}>{tx.amount} wcCOP → cCOP</span>
+                          <span className={styles.amount}>
+                            {tx.amount} wcCOP → cCOP
+                          </span>
                         </div>
-                        
+
                         <div className={styles.timeSection}>
                           <span className={styles.timeLabel}>Fecha:</span>
                           <span className={styles.time}>
@@ -226,4 +259,4 @@ export const TransactionHistory = () => {
       </div>
     </div>
   );
-}; 
+};

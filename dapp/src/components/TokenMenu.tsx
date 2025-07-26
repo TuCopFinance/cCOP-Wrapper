@@ -15,19 +15,29 @@ export const TokenMenu = () => {
             <span
               className={styles.sliderBg}
               style={{
-                transform: actionFlag === 1 ? 'translateX(0%)' : 'translateX(100%)',
-                background: actionFlag === 1 ? 'var(--primary)' : 'var(--secondary)'
+                transform:
+                  actionFlag === 1 ? "translateX(0%)" : "translateX(100%)",
+                background:
+                  actionFlag === 1 ? "var(--primary)" : "var(--secondary)",
               }}
             />
             <span
-              className={actionFlag === 1 ? styles.toggleLabelLeft : styles.toggleLabelLeft + ' ' + styles.toggleLabelInactive}
+              className={
+                actionFlag === 1
+                  ? styles.toggleLabelLeft
+                  : styles.toggleLabelLeft + " " + styles.toggleLabelInactive
+              }
               onClick={() => setActionFlag(1)}
               style={{ zIndex: 2 }}
             >
               Wrap
             </span>
             <span
-              className={actionFlag === 2 ? styles.toggleLabelRight : styles.toggleLabelRight + ' ' + styles.toggleLabelInactive}
+              className={
+                actionFlag === 2
+                  ? styles.toggleLabelRight
+                  : styles.toggleLabelRight + " " + styles.toggleLabelInactive
+              }
               onClick={() => setActionFlag(2)}
               style={{ zIndex: 2 }}
             >

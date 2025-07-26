@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { useGlobalBalances } from "../context/BalanceContext";
 import { formatTokenAmount } from "@/utils/price-feeds";
-import { FiRefreshCcw, FiChevronDown, FiChevronUp, FiPlus } from "react-icons/fi";
+import {
+  FiRefreshCcw,
+  FiChevronDown,
+  FiChevronUp,
+  FiPlus,
+} from "react-icons/fi";
 import { useWalletClient } from "wagmi";
 import Image from "next/image";
 import { switchChain } from "@wagmi/core";
@@ -16,12 +21,15 @@ export const BalanceIndicators = () => {
   const [showDetails, setShowDetails] = useState(false);
   const { data: walletClient } = useWalletClient();
 
-  const total = [balances.celo, balances.base, balances.arb].reduce((acc, v) => acc + parseFloat(v), 0);
+  const total = [balances.celo, balances.base, balances.arb].reduce(
+    (acc, v) => acc + parseFloat(v),
+    0
+  );
 
   // Log balance changes
   console.log("=== BALANCE INDICATORS RENDER ===");
   console.log("Current balances:", balances);
-  console.log("Total:", formatTokenAmount(total, 'cCOP'));
+  console.log("Total:", formatTokenAmount(total, "cCOP"));
   console.log("Is loading:", isLoading);
   console.log("Error:", error);
 
@@ -30,7 +38,7 @@ export const BalanceIndicators = () => {
     refresh();
   };
 
-  const addTokenToWallet = async (network: 'celo' | 'base' | 'arb') => {
+  const addTokenToWallet = async (network: "celo" | "base" | "arb") => {
     if (!walletClient) {
       toast.error("No wallet client detected", {
         position: "bottom-right",
@@ -95,19 +103,27 @@ export const BalanceIndicators = () => {
     <div className={styles.balanceIndicators}>
       <div className={styles.balanceMenuBox}>
         <button
-          className={showDetails ? styles.refreshBtnOpen : styles.refreshBtnClose}
+          className={
+            showDetails ? styles.refreshBtnOpen : styles.refreshBtnClose
+          }
           onClick={handleRefresh}
           title="Refresh balances"
         >
           <FiRefreshCcw />
         </button>
         <div
-          className={showDetails ? styles.totalDataBoxOpen : styles.totalDataBoxClose}
+          className={
+            showDetails ? styles.totalDataBoxOpen : styles.totalDataBoxClose
+          }
           onClick={() => setShowDetails((v) => !v)}
         >
           <div className={styles.textTotalBox}>
             <p className={styles.defaultLabel}>
-              {isLoading ? "Loading..." : error ? "Error loading balances" : `Total: ${formatTokenAmount(total, 'cCOP')}`}
+              {isLoading
+                ? "Loading..."
+                : error
+                ? "Error loading balances"
+                : `Total: ${formatTokenAmount(total, "cCOP")}`}
             </p>{" "}
           </div>
 
@@ -118,42 +134,69 @@ export const BalanceIndicators = () => {
       {showDetails && (
         <div className={styles.listOfAssets}>
           <div className={`${styles.indicator} ${styles.celo}`}>
-            <Image src="/assets/Celo.png" alt="cCOP Token" width={24} height={24} />
+            <Image
+              src="/assets/Celo.png"
+              alt="cCOP Token"
+              width={24}
+              height={24}
+            />
             <p>
               Celo:{" "}
-              {isLoading ? "Loading..." : parseFloat(balances.celo) > 0 ? formatTokenAmount(parseFloat(balances.celo), 'cCOP') : "0.00 cCOP"}
+              {isLoading
+                ? "Loading..."
+                : parseFloat(balances.celo) > 0
+                ? formatTokenAmount(parseFloat(balances.celo), "cCOP")
+                : "0.00 cCOP"}
             </p>
             <button
               className={styles.addTokenBtn}
-              onClick={() => addTokenToWallet('celo')}
+              onClick={() => addTokenToWallet("celo")}
               title="Add cCOP to wallet"
             >
               <FiPlus />
             </button>
           </div>
           <div className={`${styles.indicator} ${styles.base}`}>
-            <Image src="/assets/Base.png" alt="wcCOP Token" width={24} height={24} />
+            <Image
+              src="/assets/Base.png"
+              alt="wcCOP Token"
+              width={24}
+              height={24}
+            />
             <p>
               Base:{" "}
-              {isLoading ? "Loading..." : parseFloat(balances.base) > 0 ? formatTokenAmount(parseFloat(balances.base), 'wcCOP') : "0.00 wcCOP"}
+              {isLoading
+                ? "Loading..."
+                : parseFloat(balances.base) > 0
+                ? formatTokenAmount(parseFloat(balances.base), "wcCOP")
+                : "0.00 wcCOP"}
             </p>
             <button
               className={styles.addTokenBtn}
-              onClick={() => addTokenToWallet('base')}
+              onClick={() => addTokenToWallet("base")}
               title="Add wcCOP to wallet"
             >
               <FiPlus />
             </button>
           </div>
           <div className={`${styles.indicator} ${styles.arb}`}>
-            <Image src="/assets/Arbitrum.png" alt="wcCOP Token" width={24} height={24} />
+            <Image
+              src="/assets/Arbitrum.png"
+              alt="wcCOP Token"
+              width={24}
+              height={24}
+            />
             <p>
               Arbitrum:{" "}
-              {isLoading ? "Loading..." : parseFloat(balances.arb) > 0 ? formatTokenAmount(parseFloat(balances.arb), 'wcCOP') : "0.00 wcCOP"}
+              {isLoading
+                ? "Loading..."
+                : parseFloat(balances.arb) > 0
+                ? formatTokenAmount(parseFloat(balances.arb), "wcCOP")
+                : "0.00 wcCOP"}
             </p>
             <button
               className={styles.addTokenBtn}
-              onClick={() => addTokenToWallet('arb')}
+              onClick={() => addTokenToWallet("arb")}
               title="Add wcCOP to wallet"
             >
               <FiPlus />

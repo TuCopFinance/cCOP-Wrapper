@@ -19,10 +19,23 @@ import type { Abi } from "viem";
 import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
 import { BalanceIndicators } from "./BalanceIndicators";
 import { useWalletClient } from "wagmi";
-import { isMobile, getMobileErrorMessage, getMobileLoadingMessage } from "@/utils/mobile";
+import {
+  isMobile,
+  getMobileErrorMessage,
+  getMobileLoadingMessage,
+} from "@/utils/mobile";
 import { useGlobalBalances } from "../context/BalanceContext";
-import { estimateUnwrapGas, calculateApproximateGas } from "@/utils/gas-estimation";
-import { calculateUSDValue, debugPriceFeed, formatHyperlanePrice, formatUSDValue, formatTokenAmount } from "@/utils/price-feeds";
+import {
+  estimateUnwrapGas,
+  calculateApproximateGas,
+} from "@/utils/gas-estimation";
+import {
+  calculateUSDValue,
+  debugPriceFeed,
+  formatHyperlanePrice,
+  formatUSDValue,
+  formatTokenAmount,
+} from "@/utils/price-feeds";
 import Image from "next/image";
 
 // --- Helper function for blockchain explorer links ---
@@ -48,13 +61,20 @@ const getExplorerLink = (chainId: number, txHash: string): string => {
 // --- Helper function to get chain name ---
 const getChainName = (chainId: number): string => {
   switch (chainId) {
-    case 42220: return "Celo";
-    case 44787: return "Celo Testnet";
-    case 8453: return "Base";
-    case 84532: return "Base Testnet";
-    case 42161: return "Arbitrum";
-    case 421614: return "Arbitrum Testnet";
-    default: return "Unknown";
+    case 42220:
+      return "Celo";
+    case 44787:
+      return "Celo Testnet";
+    case 8453:
+      return "Base";
+    case 84532:
+      return "Base Testnet";
+    case 42161:
+      return "Arbitrum";
+    case 421614:
+      return "Arbitrum Testnet";
+    default:
+      return "Unknown";
   }
 };
 
@@ -62,7 +82,7 @@ const getChainName = (chainId: number): string => {
 const formatTransactionLink = (chainId: number, txHash: string): string => {
   const chainName = getChainName(chainId);
   const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
-  
+
   return `${chainName} (${shortTxHash})`;
 };
 
@@ -72,12 +92,17 @@ const getExplorerUrl = (chainId: number, txHash: string): string => {
 };
 
 // --- Helper function to show transaction toast with clickable link ---
-const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: string, action: string) => {
+const showTransactionToast = (
+  isSuccess: boolean,
+  chainId: number,
+  txHash: string,
+  action: string
+) => {
   const chainName = getChainName(chainId);
   const shortTxHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
   const explorerUrl = getExplorerLink(chainId, txHash);
 
-  const message = isSuccess 
+  const message = isSuccess
     ? `cCOP tokens ${action} successfully!`
     : `Error ${action} cCOP tokens.`;
 
@@ -91,7 +116,7 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
       >
         ×
       </button>
-      
+
       <div>{message}</div>
       <div className="toastTransactionDetails">
         <span className="toastTransactionText">
@@ -99,7 +124,7 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
         </span>
         <button
           onClick={() => {
-            window.open(explorerUrl, '_blank');
+            window.open(explorerUrl, "_blank");
             toast.dismiss(toastId);
           }}
           className="toastViewButton"
@@ -112,33 +137,45 @@ const showTransactionToast = (isSuccess: boolean, chainId: number, txHash: strin
       position: "bottom-right",
       className: "toastStyle",
       duration: Infinity,
-      icon: isSuccess ? "✅" : "❌"
+      icon: isSuccess ? "✅" : "❌",
     }
   );
 };
 
 // --- Helper function to create toast with close button ---
-const createToastWithClose = (message: string, type: 'success' | 'error' | 'info', duration: number = Infinity) => {
+const createToastWithClose = (
+  message: string,
+  type: "success" | "error" | "info",
+  duration: number = Infinity
+) => {
   const toastId = toast(
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', position: 'relative' }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "8px",
+        position: "relative",
+      }}
+    >
       <span>{message}</span>
       <button
         onClick={() => toast.dismiss(toastId)}
         style={{
-          background: '#ff4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          width: '12px',
-          height: '12px',
-          fontSize: '8px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold',
+          background: "#ff4444",
+          color: "white",
+          border: "none",
+          borderRadius: "50%",
+          width: "12px",
+          height: "12px",
+          fontSize: "8px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: "bold",
           flexShrink: 0,
-          lineHeight: '1'
+          lineHeight: "1",
         }}
         title="Close message"
       >
@@ -147,13 +184,18 @@ const createToastWithClose = (message: string, type: 'success' | 'error' | 'info
     </div>,
     {
       position: "bottom-right",
-      style: { 
-        background: type === 'success' ? "#28a745" : type === 'error' ? "#dc3545" : "#707070", 
+      style: {
+        background:
+          type === "success"
+            ? "#28a745"
+            : type === "error"
+            ? "#dc3545"
+            : "#707070",
         color: "#fff",
-        minWidth: '250px'
+        minWidth: "250px",
       },
       duration: duration,
-      icon: type === 'success' ? "✅" : type === 'error' ? "❌" : "ℹ️"
+      icon: type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️",
     }
   );
 };
@@ -165,28 +207,32 @@ const notifyChangeChain = (chainName: string): string =>
     style: { background: "#333", color: "#fff" },
   });
 
-const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string, chainId?: number, onRefresh?: () => void) => {
+const notifyUnwrapAction = (
+  deliveredPromise: Promise<unknown>,
+  txHash?: string,
+  chainId?: number,
+  onRefresh?: () => void
+) => {
   const targetChainId = chainId || 8453; // Default to Base
-  
+
   // Show loading toast
   const loadingToast = toast.loading("Unwrapping cCOP tokens...", {
-      position: "bottom-right",
-      style: { background: "#707070", color: "#fff" },
+    position: "bottom-right",
+    style: { background: "#707070", color: "#fff" },
   });
-  
+
   deliveredPromise
     .then(() => {
       // Dismiss loading toast
       toast.dismiss(loadingToast);
-      
+
       // Refresh balances after successful delivery
       setTimeout(() => {
-  
         if (onRefresh) {
           onRefresh();
         }
       }, 2000); // Wait 2 seconds for delivery to be processed
-      
+
       // Show success toast
       if (txHash) {
         showTransactionToast(true, targetChainId, txHash, "unwrapped");
@@ -197,12 +243,15 @@ const notifyUnwrapAction = (deliveredPromise: Promise<unknown>, txHash?: string,
     .catch((error) => {
       // Dismiss loading toast
       toast.dismiss(loadingToast);
-      
+
       // Show error toast
       if (txHash) {
         showTransactionToast(false, targetChainId, txHash, "unwrapping");
       } else {
-        createToastWithClose("Error unwrapping cCOP tokens, please check hyperlane explorer using your transaction hash", "error");
+        createToastWithClose(
+          "Error unwrapping cCOP tokens, please check hyperlane explorer using your transaction hash",
+          "error"
+        );
       }
     });
 };
@@ -228,7 +277,7 @@ export const UnwrapperComponent = () => {
   const [amountValidation, setAmountValidation] = useState<{
     isValid: boolean;
     message: string;
-    type: 'success' | 'error' | 'warning' | 'info';
+    type: "success" | "error" | "warning" | "info";
   } | null>(null);
   const [amountPrediction, setAmountPrediction] = useState<{
     usdValue?: string;
@@ -246,7 +295,7 @@ export const UnwrapperComponent = () => {
   const account = getAccount(config);
   const connectedAddress = account.address || "";
   const [customAddress, setCustomAddress] = useState("");
-  
+
   // Get token balances
   const { balances, refresh: refreshBalances } = useGlobalBalances();
   const baseBalance = balances.base;
@@ -262,7 +311,7 @@ export const UnwrapperComponent = () => {
     console.log("=== VERIFY TOKEN ALLOWANCE AND PRICE DEBUG ===");
     const account = getAccount(config);
     console.log("Account in verify:", account);
-    
+
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
@@ -285,11 +334,11 @@ export const UnwrapperComponent = () => {
     const differentAddressInput = document.getElementById(
       "unwrapperAddressInput"
     ) as HTMLInputElement | null;
-    
+
     const targetAddress = differentAddressFlag
       ? differentAddressInput?.value || account.address || ""
       : (account.address as `0x${string}`);
-      
+
     console.log("Target address in verify:", targetAddress);
     console.log("Different address flag:", differentAddressFlag);
 
@@ -328,7 +377,7 @@ export const UnwrapperComponent = () => {
         console.log("Data[1] status:", data[1].status);
         console.log("Data[0] result:", data[0].result);
         console.log("Data[1] result:", data[1].result);
-        
+
         if (
           data[0].status === "success" &&
           data[1].status === "success" &&
@@ -336,10 +385,13 @@ export const UnwrapperComponent = () => {
           typeof data[1].result === "bigint"
         ) {
           console.log("Setting quote to:", data[1].result.toString());
-          console.log("Setting has sufficient amount to:", data[0].result >= amountFixed);
+          console.log(
+            "Setting has sufficient amount to:",
+            data[0].result >= amountFixed
+          );
           setQuote(data[1].result);
           setHasSufficientAmount(data[0].result >= amountFixed);
-          
+
           // Format the price in USD
           formatHyperlanePrice(data[1].result, false).then(setFormattedPrice);
         } else {
@@ -394,7 +446,7 @@ export const UnwrapperComponent = () => {
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setAmount(value);
-    
+
     // Validate and predict amount
     validateAndPredictAmount(value).catch(console.error);
   }
@@ -407,15 +459,20 @@ export const UnwrapperComponent = () => {
     }
 
     const numValue = parseFloat(value);
-    const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
-    console.log(`validateAndPredictAmount - Chain: ${chainToUnwrap}, Value: ${value}, CurrentBalance: ${currentBalance}, BaseBalance: ${baseBalance}, ArbBalance: ${arbBalance}`);
+    const currentBalance =
+      chainToUnwrap === "base"
+        ? parseFloat(baseBalance)
+        : parseFloat(arbBalance);
+    console.log(
+      `validateAndPredictAmount - Chain: ${chainToUnwrap}, Value: ${value}, CurrentBalance: ${currentBalance}, BaseBalance: ${baseBalance}, ArbBalance: ${arbBalance}`
+    );
 
     // Basic validation
     if (isNaN(numValue)) {
       setAmountValidation({
         isValid: false,
         message: "Por favor ingresa un número válido",
-        type: 'error'
+        type: "error",
       });
       setAmountPrediction(null);
       return;
@@ -425,7 +482,7 @@ export const UnwrapperComponent = () => {
       setAmountValidation({
         isValid: false,
         message: "El monto debe ser mayor a 0",
-        type: 'error'
+        type: "error",
       });
       setAmountPrediction(null);
       return;
@@ -434,48 +491,52 @@ export const UnwrapperComponent = () => {
     if (numValue > currentBalance) {
       setAmountValidation({
         isValid: false,
-        message: `Saldo insuficiente. Disponible: ${formatTokenAmount(currentBalance, 'wcCOP')}`,
-        type: 'error'
+        message: `Saldo insuficiente. Disponible: ${formatTokenAmount(
+          currentBalance,
+          "wcCOP"
+        )}`,
+        type: "error",
       });
     } else if (numValue === currentBalance) {
       setAmountValidation({
         isValid: true,
         message: "Usando todo el saldo disponible",
-        type: 'success'
+        type: "success",
       });
     } else if (numValue > currentBalance * 0.9) {
       setAmountValidation({
         isValid: true,
         message: "Usando más del 90% del saldo",
-        type: 'warning'
+        type: "warning",
       });
     } else {
       setAmountValidation({
         isValid: true,
         message: "Monto válido",
-        type: 'success'
+        type: "success",
       });
     }
 
     // Calculate predictions
     const percentageOfBalance = (numValue / currentBalance) * 100;
-    
+
     // Get target chain ID for gas estimation
-    const targetChainId = chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
-    
+    const targetChainId =
+      chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
+
     // Estimate gas using improved calculation
     const gasEstimate = await calculateApproximateGas(value, targetChainId);
-    
+
     // Calculate USD value using price feed
     const usdValue = await calculateUSDValue(value, targetChainId);
-    
+
     // Debug price feed
     await debugPriceFeed(targetChainId, value);
-    
+
     setAmountPrediction({
       percentageOfBalance: percentageOfBalance,
       usdValue: usdValue,
-      gasEstimate: gasEstimate
+      gasEstimate: gasEstimate,
     });
 
     // Update gas estimate with real simulation if user has been idle for 2 seconds
@@ -484,28 +545,48 @@ export const UnwrapperComponent = () => {
         try {
           const account = getAccount(config);
           const targetAddress = account.address || "";
-          const realGasEstimate = await estimateUnwrapGas(value, targetAddress, chainToUnwrap, quote || undefined);
-          setAmountPrediction(prev => prev ? {
-            ...prev,
-            gasEstimate: realGasEstimate
-          } : null);
+          const realGasEstimate = await estimateUnwrapGas(
+            value,
+            targetAddress,
+            chainToUnwrap,
+            quote || undefined
+          );
+          setAmountPrediction((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  gasEstimate: realGasEstimate,
+                }
+              : null
+          );
         } catch (error) {
-          console.log('Could not get real gas estimate, using approximation');
+          console.log("Could not get real gas estimate, using approximation");
         }
       }
     }, 2000);
   }
 
   function setMaxAmount() {
-    const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
-    console.log(`MAX Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`);
+    const currentBalance =
+      chainToUnwrap === "base"
+        ? parseFloat(baseBalance)
+        : parseFloat(arbBalance);
+    console.log(
+      `MAX Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`
+    );
     if (currentBalance > 0) {
       setAmount(currentBalance.toString());
       validateAndPredictAmount(currentBalance.toString()).catch(console.error);
-      toast.success(`Monto establecido al máximo: ${formatTokenAmount(currentBalance, 'wcCOP')}`, {
-        position: "bottom-right",
-        style: { background: "#333", color: "#fff" },
-      });
+      toast.success(
+        `Monto establecido al máximo: ${formatTokenAmount(
+          currentBalance,
+          "wcCOP"
+        )}`,
+        {
+          position: "bottom-right",
+          style: { background: "#333", color: "#fff" },
+        }
+      );
     } else {
       toast.error("No hay saldo disponible", {
         position: "bottom-right",
@@ -523,13 +604,15 @@ export const UnwrapperComponent = () => {
       //change to selected chain
       switchChain(config, {
         chainId: targetChainId,
-      }).then(() => {
-        notifyChangeChain(chainToUnwrap);
-      }).catch((error) => {
-        console.log('Could not switch chain automatically:', error);
-        // Don't show error to user, just log it
-        // The user can manually switch chains if needed
-      });
+      })
+        .then(() => {
+          notifyChangeChain(chainToUnwrap);
+        })
+        .catch((error) => {
+          console.log("Could not switch chain automatically:", error);
+          // Don't show error to user, just log it
+          // The user can manually switch chains if needed
+        });
     }
   }
 
@@ -539,7 +622,7 @@ export const UnwrapperComponent = () => {
     console.log("Amount:", amount);
     console.log("Chain to unwrap:", chainToUnwrap);
     console.log("Has sufficient amount:", hasSufficientAmount);
-    
+
     if (quote === null) {
       console.error("Quote is null, cannot proceed with unwrap");
       return;
@@ -547,16 +630,16 @@ export const UnwrapperComponent = () => {
 
     const account = getAccount(config);
     console.log("Account:", account);
-    
+
     if (!account.address) {
       console.error("No account address found");
       return;
     }
-    
+
     // Check if we're on mobile
     const mobileDevice = isMobile();
     console.log("Mobile device:", mobileDevice);
-    
+
     let amountFixed: bigint;
     try {
       amountFixed = BigInt(Math.floor(parseFloat(amount) * 10 ** 18));
@@ -565,7 +648,7 @@ export const UnwrapperComponent = () => {
       console.error("Error converting amount to BigInt:", error);
       return;
     }
-    
+
     const differentAddressInput = document.getElementById(
       "unwrapperAddressInput"
     ) as HTMLInputElement | null;
@@ -607,7 +690,7 @@ export const UnwrapperComponent = () => {
       functionName: "unwrap",
       args: [targetAddress, amountFixed],
       value: quote + BigInt(1),
-      dataSuffix: `0x${referralTag}`
+      dataSuffix: `0x${referralTag}`,
     });
 
     simulateContract(config, {
@@ -615,10 +698,7 @@ export const UnwrapperComponent = () => {
       abi: WrappedCCOP.abi,
       address: targetChainContractAddress as `0x${string}`,
       functionName: "unwrap",
-      args: [
-        targetAddress,
-        amountFixed,
-      ],
+      args: [targetAddress, amountFixed],
       value: quote + BigInt(1),
       dataSuffix: `0x${referralTag}` as `0x${string}`,
     })
@@ -627,7 +707,7 @@ export const UnwrapperComponent = () => {
         console.log("Simulation result:", data);
         const msgIdentifier = data.result;
         console.log("Message identifier:", msgIdentifier);
-        
+
         // Dismiss loading toast if mobile
         if (mobileDevice) {
           toast.dismiss();
@@ -639,21 +719,23 @@ export const UnwrapperComponent = () => {
           abi: WrappedCCOP.abi,
           address: targetChainContractAddress as `0x${string}`,
           functionName: "unwrap",
-          args: [
-            targetAddress,
-            amountFixed,
-          ],
+          args: [targetAddress, amountFixed],
           value: quote + BigInt(1), // Ensure value is set to quote if available
           dataSuffix: `0x${referralTag}` as `0x${string}`,
         })
           .then((txHash) => {
             console.log("=== WRITE SUCCESS ===");
             console.log("Transaction hash:", txHash);
-            
+
             // Submit Divvi referral
             submitDivviReferral(txHash, targetChainIdContract);
-            
-            notifyUnwrapAction(waitForIsDelivered(msgIdentifier, 5000, 20), txHash, targetChainIdContract, refreshBalances);
+
+            notifyUnwrapAction(
+              waitForIsDelivered(msgIdentifier, 5000, 20),
+              txHash,
+              targetChainIdContract,
+              refreshBalances
+            );
           })
           .catch((error) => {
             console.error("=== WRITE ERROR ===");
@@ -662,11 +744,11 @@ export const UnwrapperComponent = () => {
               message: error.message,
               code: error.code,
               data: error.data,
-              stack: error.stack
+              stack: error.stack,
             });
             toast.error(
-              mobileDevice 
-                ? getMobileErrorMessage("Unwrap") 
+              mobileDevice
+                ? getMobileErrorMessage("Unwrap")
                 : "Error unwrapping cCOP tokens",
               {
                 position: "bottom-right",
@@ -682,11 +764,11 @@ export const UnwrapperComponent = () => {
           message: error.message,
           code: error.code,
           data: error.data,
-          stack: error.stack
+          stack: error.stack,
         });
         toast.error(
-          mobileDevice 
-            ? getMobileErrorMessage("Transaction preparation") 
+          mobileDevice
+            ? getMobileErrorMessage("Transaction preparation")
             : "Error during unwrap check your wcCOP balance or ETH balance",
           {
             position: "bottom-right",
@@ -703,15 +785,17 @@ export const UnwrapperComponent = () => {
   return (
     <>
       <BalanceIndicators />
-      
+
       <div className={styles.amountContainer}>
-      <label className={styles.amountLabel}>Amount</label>
+        <label className={styles.amountLabel}>Amount</label>
         <div className={styles.amountInputContainer}>
-      <input
-            className={`${styles.amountInput} ${amountValidation?.type === 'error' ? styles.amountInputError : ''}`}
+          <input
+            className={`${styles.amountInput} ${
+              amountValidation?.type === "error" ? styles.amountInputError : ""
+            }`}
             placeholder="Enter amount of wcCOP tokens to unwrap"
-        value={amount}
-        onChange={handleAmountChange}
+            value={amount}
+            onChange={handleAmountChange}
             type="number"
             step="0.01"
             min="0"
@@ -725,36 +809,56 @@ export const UnwrapperComponent = () => {
             MAX
           </button>
         </div>
-        
+
         {/* Validation Message */}
         {amountValidation && (
-          <div className={`${styles.validationMessage} ${styles[`validation${amountValidation.type.charAt(0).toUpperCase() + amountValidation.type.slice(1)}`]}`}>
+          <div
+            className={`${styles.validationMessage} ${
+              styles[
+                `validation${
+                  amountValidation.type.charAt(0).toUpperCase() +
+                  amountValidation.type.slice(1)
+                }`
+              ]
+            }`}
+          >
             {amountValidation.message}
           </div>
         )}
-        
+
         {/* Predictions */}
         {amountPrediction && amountValidation?.isValid && (
           <div className={styles.predictionContainer}>
             <div className={styles.predictionItem}>
-              <span className={styles.predictionLabel}>Porcentaje del saldo:</span>
-              <span className={styles.predictionValue}>{amountPrediction.percentageOfBalance?.toFixed(1)}%</span>
+              <span className={styles.predictionLabel}>
+                Porcentaje del saldo:
+              </span>
+              <span className={styles.predictionValue}>
+                {amountPrediction.percentageOfBalance?.toFixed(1)}%
+              </span>
             </div>
             <div className={styles.predictionItem}>
               <span className={styles.predictionLabel}>Valor aproximado:</span>
-              <span className={styles.predictionValue}>{amountPrediction.usdValue}</span>
+              <span className={styles.predictionValue}>
+                {amountPrediction.usdValue}
+              </span>
             </div>
           </div>
         )}
-        
+
         {/* Percentage Buttons */}
         <div className={styles.percentageButtons}>
           <button
             className={styles.percentageButton}
             onClick={() => {
-              const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+              const currentBalance =
+                chainToUnwrap === "base"
+                  ? parseFloat(baseBalance)
+                  : parseFloat(arbBalance);
               const amount25 = (currentBalance * 0.25).toFixed(2);
-              console.log(`25% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount25}`);
+              console.log(
+                `25% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount25}`
+              );
               setAmount(amount25);
               validateAndPredictAmount(amount25).catch(console.error);
             }}
@@ -765,9 +869,14 @@ export const UnwrapperComponent = () => {
           <button
             className={styles.percentageButton}
             onClick={() => {
-              const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+              const currentBalance =
+                chainToUnwrap === "base"
+                  ? parseFloat(baseBalance)
+                  : parseFloat(arbBalance);
               const amount50 = (currentBalance * 0.5).toFixed(2);
-              console.log(`50% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount50}`);
+              console.log(
+                `50% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount50}`
+              );
               setAmount(amount50);
               validateAndPredictAmount(amount50).catch(console.error);
             }}
@@ -778,9 +887,14 @@ export const UnwrapperComponent = () => {
           <button
             className={styles.percentageButton}
             onClick={() => {
-              const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
+              const currentBalance =
+                chainToUnwrap === "base"
+                  ? parseFloat(baseBalance)
+                  : parseFloat(arbBalance);
               const amount75 = (currentBalance * 0.75).toFixed(2);
-              console.log(`75% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount75}`);
+              console.log(
+                `75% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount75}`
+              );
               setAmount(amount75);
               validateAndPredictAmount(amount75).catch(console.error);
             }}
@@ -791,10 +905,17 @@ export const UnwrapperComponent = () => {
           <button
             className={styles.percentageButton}
             onClick={() => {
-              const currentBalance = chainToUnwrap === "base" ? parseFloat(baseBalance) : parseFloat(arbBalance);
-              console.log(`100% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`);
+              const currentBalance =
+                chainToUnwrap === "base"
+                  ? parseFloat(baseBalance)
+                  : parseFloat(arbBalance);
+              console.log(
+                `100% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`
+              );
               setAmount(currentBalance.toString());
-              validateAndPredictAmount(currentBalance.toString()).catch(console.error);
+              validateAndPredictAmount(currentBalance.toString()).catch(
+                console.error
+              );
             }}
             type="button"
           >
@@ -809,17 +930,26 @@ export const UnwrapperComponent = () => {
         </div>
         <div className={styles.chainSelector}>
           <button
-            className={`${styles.chainOption} ${chainToUnwrap === 'base' ? styles.chainOptionActive : ''}`}
-            onClick={() => setChainToUnwrap('base')}
+            className={`${styles.chainOption} ${
+              chainToUnwrap === "base" ? styles.chainOptionActive : ""
+            }`}
+            onClick={() => setChainToUnwrap("base")}
           >
             <Image src="/assets/Base.png" alt="Base" width={24} height={24} />
             <span>Base</span>
           </button>
           <button
-            className={`${styles.chainOption} ${chainToUnwrap === 'arbitrum' ? styles.chainOptionActive : ''}`}
-            onClick={() => setChainToUnwrap('arbitrum')}
+            className={`${styles.chainOption} ${
+              chainToUnwrap === "arbitrum" ? styles.chainOptionActive : ""
+            }`}
+            onClick={() => setChainToUnwrap("arbitrum")}
           >
-            <Image src="/assets/Arbitrum.png" alt="Arbitrum" width={24} height={24} />
+            <Image
+              src="/assets/Arbitrum.png"
+              alt="Arbitrum"
+              width={24}
+              height={24}
+            />
             <span>Arbitrum</span>
           </button>
         </div>
@@ -829,20 +959,24 @@ export const UnwrapperComponent = () => {
       {(formattedPrice || (amountPrediction && amountValidation?.isValid)) && (
         <div className={styles.transactionCostsContainer}>
           <label className={styles.sectionLabel}>Costos de Transacción</label>
-          
+
           {formattedPrice && (
             <div className={styles.costItem}>
               <span className={styles.costLabel}>Precio de unwrapping:</span>
               <span className={styles.costValue}>{formattedPrice}</span>
             </div>
           )}
-          
-          {amountPrediction && amountValidation?.isValid && amountPrediction.gasEstimate && (
-            <div className={styles.costItem}>
-              <span className={styles.costLabel}>Gas estimado:</span>
-              <span className={styles.costValue}>{amountPrediction.gasEstimate}</span>
-            </div>
-          )}
+
+          {amountPrediction &&
+            amountValidation?.isValid &&
+            amountPrediction.gasEstimate && (
+              <div className={styles.costItem}>
+                <span className={styles.costLabel}>Gas estimado:</span>
+                <span className={styles.costValue}>
+                  {amountPrediction.gasEstimate}
+                </span>
+              </div>
+            )}
         </div>
       )}
 
@@ -862,91 +996,122 @@ export const UnwrapperComponent = () => {
         <input
           className={styles.addressInput}
           value={differentAddressFlag ? customAddress : connectedAddress}
-          onChange={e => setCustomAddress(e.target.value)}
+          onChange={(e) => setCustomAddress(e.target.value)}
           readOnly={!differentAddressFlag}
-          style={{ 
-            background: differentAddressFlag ? '#444444' : '#333', 
-            color: '#fff', 
-            width: '100%',
-            border: '1px solid #555',
-            borderRadius: '8px',
-            padding: '12px',
-            fontSize: '14px'
+          style={{
+            background: differentAddressFlag ? "#444444" : "#333",
+            color: "#fff",
+            width: "100%",
+            border: "1px solid #555",
+            borderRadius: "8px",
+            padding: "12px",
+            fontSize: "14px",
           }}
-          placeholder={differentAddressFlag ? "Ingresa la dirección de destino" : ""}
+          placeholder={
+            differentAddressFlag ? "Ingresa la dirección de destino" : ""
+          }
         />
         {!differentAddressFlag && (
-          <span style={{ fontSize: 13, color: '#aaa', marginTop: 4, display: 'block', fontStyle: 'italic' }}>
-            Los tokens se enviarán a la misma dirección que actualmente está conectada
+          <span
+            style={{
+              fontSize: 13,
+              color: "#aaa",
+              marginTop: 4,
+              display: "block",
+              fontStyle: "italic",
+            }}
+          >
+            Los tokens se enviarán a la misma dirección que actualmente está
+            conectada
           </span>
         )}
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
             checked={differentAddressFlag}
-            onChange={e => {
+            onChange={(e) => {
               if (e.target.checked) {
-                toast((t) => (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '300px' }}>
-                    <div style={{ fontWeight: 600, fontSize: '16px' }}>Confirmar dirección diferente</div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                      ¿Estás seguro de que quieres enviar los tokens a una dirección diferente? Verifica cuidadosamente la dirección de destino.
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                      <button
-                        onClick={() => {
-                          toast.dismiss(t.id);
-                        }}
+                toast(
+                  (t) => (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "12px",
+                        minWidth: "300px",
+                      }}
+                    >
+                      <div style={{ fontWeight: 600, fontSize: "16px" }}>
+                        Confirmar dirección diferente
+                      </div>
+                      <div style={{ fontSize: "14px", lineHeight: "1.4" }}>
+                        ¿Estás seguro de que quieres enviar los tokens a una
+                        dirección diferente? Verifica cuidadosamente la
+                        dirección de destino.
+                      </div>
+                      <div
                         style={{
-                          padding: '6px 12px',
-                          background: '#555',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
+                          display: "flex",
+                          gap: "8px",
+                          justifyContent: "flex-end",
                         }}
                       >
-                        Cancelar
-                      </button>
-                      <button
-                        onClick={() => {
-                          setDifferentAddressFlag(true);
-                          toast.dismiss(t.id);
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          background: 'var(--primary)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Confirmar
-                      </button>
+                        <button
+                          onClick={() => {
+                            toast.dismiss(t.id);
+                          }}
+                          style={{
+                            padding: "6px 12px",
+                            background: "#555",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDifferentAddressFlag(true);
+                            toast.dismiss(t.id);
+                          }}
+                          style={{
+                            padding: "6px 12px",
+                            background: "var(--primary)",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Confirmar
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ), {
-                  duration: 0,
-                  position: "bottom-center",
-                  style: { 
-                    background: "#232323", 
-                    color: "#fff",
-                    border: "1px solid #444",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    bottom: "50%",
-                    transform: "translateY(50%)",
-                    marginBottom: "0"
-                  },
-                });
+                  ),
+                  {
+                    duration: 0,
+                    position: "bottom-center",
+                    style: {
+                      background: "#232323",
+                      color: "#fff",
+                      border: "1px solid #444",
+                      borderRadius: "8px",
+                      padding: "16px",
+                      bottom: "50%",
+                      transform: "translateY(50%)",
+                      marginBottom: "0",
+                    },
+                  }
+                );
                 return;
               }
               setDifferentAddressFlag(e.target.checked);
             }}
-            style={{ marginRight: 10, transform: 'scale(1.2)' }}
+            style={{ marginRight: 10, transform: "scale(1.2)" }}
           />
           Enviar a otra dirección
         </label>
