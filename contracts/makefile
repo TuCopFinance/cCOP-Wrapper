@@ -37,11 +37,6 @@ ARB_MAINNET_ARGS := --rpc-url $(RPC_URL_ARB_MAINNET) \
 					 --verify \
 					 --etherscan-api-key $(ETHERSCAN_API) \
 
-deployGasFeeSponsorship:
-	@forge clean
-	@echo "Deploying GasFeeSponsorship to Celo Alfajores testnet"
-	@forge script script/GasFeeSponsorship.s.sol:GasFeeSponsorshipScript $(CELO_ALFAJORES_ARGS)
-
 deployCCOPMock:
 	@forge clean
 	@echo "Deploying CCOPMock to Celo Alfajores testnet"
@@ -76,6 +71,16 @@ deployWrappedCCOP_Arb:
 	@forge clean
 	@echo "Deploying WrappedCCOP to Arbitrum Mainnet"
 	@forge script script/WrappedCCOP_ARB.s.sol:WrappedCCOP_Arb_Script $(ARB_MAINNET_ARGS)
+
+deployGasFeeSponsorship_TEST:
+	@forge clean
+	@echo "Deploying GasFeeSponsorship to Celo Alfajores testnet"
+	@forge script script/GasFeeSponsorship.s.sol:GasFeeSponsorshipScript $(CELO_ALFAJORES_ARGS)
+
+deployGasFeeSponsorship:
+	@forge clean
+	@echo "Deploying GasFeeSponsorship to Celo Mainnet"
+	@forge script script/GasFeeSponsorship.s.sol:GasFeeSponsorshipScript $(CELO_MAINNET_ARGS)
 
 unitTest:
 	@forge test --match-path "test/unit/$(type)/$(contract).t.sol" -vvv --show-progress --summary --detailed
