@@ -39,6 +39,7 @@ import {
 } from "@/utils/price-feeds";
 import Image from "next/image";
 import styles from "./WrapperComponent.module.css";
+import { SelfGasFeeSponsorshipComponent } from "./SelfGasFeeSponsorshipComponent";
 
 // --- Helper function for blockchain explorer links ---
 const getExplorerLink = (chainId: number, txHash: string): string => {
@@ -869,12 +870,17 @@ export const WrapperComponent = () => {
           {amountPrediction &&
             amountValidation?.isValid &&
             amountPrediction.gasEstimate && (
-              <div className={styles.costItem}>
-                <span className={styles.costLabel}>Gas estimado:</span>
-                <span className={styles.costValue}>
-                  {amountPrediction.gasEstimate}
-                </span>
-              </div>
+              <>
+                <div className={styles.costItem}>
+                  <span className={styles.costLabel}>Gas estimado:</span>
+                  <span className={styles.costValue}>
+                    {amountPrediction.gasEstimate}
+                  </span>
+                </div>
+                {quote && (
+                  <SelfGasFeeSponsorshipComponent quote={quote} />
+                )}
+              </>
             )}
         </div>
       )}

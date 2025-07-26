@@ -1,0 +1,195 @@
+{
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "_identityVerificationHubV2Address",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_adminAddress",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "acceptNewAdminProposal",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "cancelNewAdminProposal",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "getAdminFullData",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct GasFeeSponsorship.AddressTypeProposal",
+          "components": [
+            { "name": "current", "type": "address", "internalType": "address" },
+            {
+              "name": "proposal",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "timeToAccept",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getAmountOnContract",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getConfigId",
+      "inputs": [
+        {
+          "name": "_destinationChainId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "_userIdentifier",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        { "name": "_userDefinedData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getUserInfo",
+      "inputs": [
+        { "name": "_user", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct GasFeeSponsorship.InfoVerification",
+          "components": [
+            {
+              "name": "timeStamp",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "timesToSponsor",
+              "type": "uint8",
+              "internalType": "uint8"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "onVerificationSuccess",
+      "inputs": [
+        { "name": "output", "type": "bytes", "internalType": "bytes" },
+        { "name": "userData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "proposeNewAdminProposal",
+      "inputs": [
+        { "name": "_newAdmin", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "scope",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "sendCeloToContract",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "setScope",
+      "inputs": [
+        { "name": "_scope", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "verifySelfProof",
+      "inputs": [
+        { "name": "proofPayload", "type": "bytes", "internalType": "bytes" },
+        { "name": "userContextData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "withdrawFunds",
+      "inputs": [
+        { "name": "_amount", "type": "uint256", "internalType": "uint256" },
+        { "name": "_to", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "ScopeUpdated",
+      "inputs": [
+        {
+          "name": "newScope",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    { "type": "error", "name": "InvalidDataFormat", "inputs": [] },
+    { "type": "error", "name": "NoFundsToSponsor", "inputs": [] },
+    { "type": "error", "name": "TooManySponsors", "inputs": [] },
+    { "type": "error", "name": "TransferFailed", "inputs": [] },
+    { "type": "error", "name": "UnauthorizedAccount", "inputs": [] },
+    { "type": "error", "name": "UnauthorizedCaller", "inputs": [] },
+    { "type": "error", "name": "WaitingPeriodNotExpired", "inputs": [] }
+  ]
+ }
