@@ -63,7 +63,7 @@ export const SelfGasFeeSponsorshipComponent = ({
     const account = getAccount(config);
     const selfApp = new SelfAppBuilder({
       // Contract integration settings
-      endpoint: address.mainnet.GasFeeSponsorship, // Your SelfVerificationRoot contract
+      endpoint: "0xD4C37ed2C0A4de515382d2EEa0940ea99234Ca72", // Your SelfVerificationRoot contract
       endpointType: "celo", // "staging_celo" or "celo"
       version: 2, // Always use V2 for contracts
 
