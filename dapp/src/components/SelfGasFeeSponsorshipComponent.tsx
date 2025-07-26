@@ -135,8 +135,19 @@ export const SelfGasFeeSponsorshipComponent = ({
     >
       {selfApp ? (
         <div
-          style={{ width: "100%", display: "flex", justifyContent: "center" }}
+          style={{
+            //permitir en columnas
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
         >
+          <p>
+            Por favor escanea el código QR con la app de self para validar tu humanidad
+          </p>
+
           <SelfQRcodeWrapper
             selfApp={selfApp}
             onSuccess={() => {
@@ -166,6 +177,16 @@ export const SelfGasFeeSponsorshipComponent = ({
               setSelfApp(null);
             }}
           />
+
+          <button
+            onClick={() => {
+              setSelfApp(null);
+            }}
+            className={styles.selfButton}
+            style={{ marginTop: "20px" }}
+          >
+            <span>Cerrar</span>
+          </button>
         </div>
       ) : (
         showButton && (
