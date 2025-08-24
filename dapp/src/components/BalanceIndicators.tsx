@@ -21,7 +21,13 @@ export const BalanceIndicators = () => {
   const [showDetails, setShowDetails] = useState(false);
   const { data: walletClient } = useWalletClient();
 
-  const total = [balances.celo, balances.base, balances.arb, balances.op || "0"].reduce(
+  const total = [
+    balances.celo,
+    balances.base,
+    balances.arb,
+    balances.op || "0",
+    (balances as any).avax || "0",
+  ].reduce(
     (acc, v) => acc + parseFloat(v),
     0
   );
@@ -38,7 +44,7 @@ export const BalanceIndicators = () => {
     refresh();
   };
 
-  const addTokenToWallet = async (network: "celo" | "base" | "arb" | "op") => {
+  const addTokenToWallet = async (network: "celo" | "base" | "arb" | "op" | "avax") => {
     if (!walletClient) {
       toast.error("No wallet client detected", {
         position: "bottom-right",
@@ -49,7 +55,7 @@ export const BalanceIndicators = () => {
 
     try {
       // Switch to the appropriate network first
-      const targetChainId = chainID.mainnet[network];
+  const targetChainId = chainID.mainnet[network];
       await switchChain(config, { chainId: targetChainId });
 
       // Token configuration based on network
@@ -74,6 +80,12 @@ export const BalanceIndicators = () => {
         },
         op: {
           address: address.mainnet.wrapToken.op as `0x${string}`,
+          symbol: "wcCOP",
+          decimals: 18,
+          image: "/cCOP_token.png",
+        },
+        avax: {
+          address: address.mainnet.wrapToken.avax as `0x${string}`,
           symbol: "wcCOP",
           decimals: 18,
           image: "/cCOP_token.png",
@@ -137,7 +149,7 @@ export const BalanceIndicators = () => {
       </div>
 
       {showDetails && (
-        <div className={styles.listOfAssets}>
+  <div className={styles.listOfAssets}>
           <div className={`${styles.indicator} ${styles.celo}`}>
             <Image
               src="/assets/Celo.png"
@@ -179,6 +191,29 @@ export const BalanceIndicators = () => {
             <button
               className={styles.addTokenBtn}
               onClick={() => addTokenToWallet("op")}
+              title="Add wcCOP to wallet"
+            >
+              <FiPlus />
+            </button>
+          </div>
+      <div className={`${styles.indicator} ${styles.avax}`}>
+            <Image
+              src="/assets/Avalanche.svg"
+              alt="wcCOP Token"
+              width={24}
+              height={24}
+            />
+            <p>
+              Avalanche:{" "}
+              {isLoading
+                ? "Loading..."
+        : parseFloat((balances as any).avax || "0") > 0
+        ? formatTokenAmount(parseFloat((balances as any).avax || "0"), "wcCOP")
+                : "0.00 wcCOP"}
+            </p>
+            <button
+              className={styles.addTokenBtn}
+              onClick={() => addTokenToWallet("avax")}
               title="Add wcCOP to wallet"
             >
               <FiPlus />

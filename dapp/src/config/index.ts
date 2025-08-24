@@ -1,10 +1,10 @@
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-import { celo, arbitrum, base, optimism } from "@reown/appkit/networks";
+import { celo, arbitrum, base, optimism, avalanche } from "@reown/appkit/networks";
 import type { AppKitNetwork } from "@reown/appkit/networks";
 
 export const projectId = "35df4a7708f828a4182e8382ac81c981";
 
-export const networks = [celo, arbitrum, base, optimism] as [
+export const networks = [celo, arbitrum, base, optimism, avalanche] as [
   AppKitNetwork,
   ...AppKitNetwork[]
 ];

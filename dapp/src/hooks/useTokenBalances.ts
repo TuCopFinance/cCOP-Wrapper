@@ -27,6 +27,12 @@ export function useTokenBalances() {
     chainId: chainID.mainnet.op,
   } as const;
 
+  const wrappedCCOPContractAvax = {
+    address: address.mainnet.wrapToken.avax as `0x${string}`,
+    abi: WrappedCCOP.abi as Abi,
+    chainId: chainID.mainnet.avax,
+  } as const;
+
   const cCOPContractCelo = {
     address: address.mainnet.cCOP as `0x${string}`,
     abi: erc20Abi as Abi,
@@ -37,6 +43,7 @@ export function useTokenBalances() {
     base: "0",
     arb: "0",
   op: "0",
+  avax: "0",
     celo: "0",
   });
 
@@ -51,7 +58,7 @@ export function useTokenBalances() {
     
     if (!account.address) {
       console.log("No account address, setting balances to 0");
-  setTokenBalances({ base: "0", arb: "0", op: "0", celo: "0" });
+  setTokenBalances({ base: "0", arb: "0", op: "0", avax: "0", celo: "0" });
       setCurrentAccount(null);
       return;
     }
@@ -76,6 +83,7 @@ export function useTokenBalances() {
           args: [account.address],
         },
   { ...wrappedCCOPContractOp, functionName: "balanceOf", args: [account.address] },
+  { ...wrappedCCOPContractAvax, functionName: "balanceOf", args: [account.address] },
   { ...cCOPContractCelo, functionName: "balanceOf", args: [account.address] },
       ],
     })
@@ -88,20 +96,23 @@ export function useTokenBalances() {
         data[1].status === "success" &&
         data[2].status === "success" &&
         data[3].status === "success" &&
+        data[4].status === "success" &&
         typeof data[0].result === "bigint" &&
         typeof data[1].result === "bigint" &&
         typeof data[2].result === "bigint" &&
-        typeof data[3].result === "bigint"
+        typeof data[3].result === "bigint" &&
+        typeof data[4].result === "bigint"
       ) {
           const newBalances = {
           base: (data[0].result / BigInt(10 ** 18)).toString(),
           arb: (data[1].result / BigInt(10 ** 18)).toString(),
           op: (data[2].result / BigInt(10 ** 18)).toString(),
-          celo: (data[3].result / BigInt(10 ** 18)).toString(),
+          avax: (data[3].result / BigInt(10 ** 18)).toString(),
+          celo: (data[4].result / BigInt(10 ** 18)).toString(),
           };
           console.log("Setting new balances:", newBalances);
           console.log("🎉 BALANCES UPDATED SUCCESSFULLY! 🎉");
-          console.log("📊 New Total:", (parseFloat(newBalances.base) + parseFloat(newBalances.arb) + parseFloat(newBalances.op) + parseFloat(newBalances.celo)).toFixed(2), "cCOP");
+          console.log("📊 New Total:", (parseFloat(newBalances.base) + parseFloat(newBalances.arb) + parseFloat(newBalances.op) + parseFloat(newBalances.avax) + parseFloat(newBalances.celo)).toFixed(2), "cCOP");
           setTokenBalances(newBalances);
         } else {
           console.error("Failed to fetch balances:", data);

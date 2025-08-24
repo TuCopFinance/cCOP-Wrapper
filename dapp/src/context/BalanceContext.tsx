@@ -13,6 +13,7 @@ interface TokenBalances {
   arb: string;
   celo: string;
   op?: string;
+  avax?: string;
 }
 
 interface BalanceContextType {
@@ -31,6 +32,7 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     arb: "0",
     celo: "0",
   op: "0",
+  avax: "0",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +57,12 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     chainId: chainID.mainnet.op,
   } as const), []);
 
+  const wrappedCCOPContractAvax = useMemo(() => ({
+    address: address.mainnet.wrapToken.avax as `0x${string}`,
+    abi: WrappedCCOP.abi as Abi,
+    chainId: chainID.mainnet.avax,
+  } as const), []);
+
   const cCOPContractCelo = useMemo(() => ({
     address: address.mainnet.cCOP as `0x${string}`,
     abi: erc20Abi as Abi,
@@ -68,7 +76,7 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     if (!account.address) {
       console.log("No account address, setting balances to 0");
-      setBalances({ base: "0", arb: "0", celo: "0" });
+  setBalances({ base: "0", arb: "0", celo: "0", op: "0", avax: "0" });
       setCurrentAccount(null);
       return;
     }
@@ -92,11 +100,8 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           functionName: "balanceOf",
           args: [account.address],
         },
-        {
-          ...wrappedCCOPContractOp,
-          functionName: "balanceOf",
-          args: [account.address],
-        },
+  { ...wrappedCCOPContractOp, functionName: "balanceOf", args: [account.address] },
+  { ...wrappedCCOPContractAvax, functionName: "balanceOf", args: [account.address] },
         {
           ...cCOPContractCelo,
           functionName: "balanceOf",
@@ -113,20 +118,33 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           data[1].status === "success" &&
           data[2].status === "success" &&
           data[3].status === "success" &&
+          data[4].status === "success" &&
           typeof data[0].result === "bigint" &&
           typeof data[1].result === "bigint" &&
           typeof data[2].result === "bigint" &&
-          typeof data[3].result === "bigint"
+          typeof data[3].result === "bigint" &&
+          typeof data[4].result === "bigint"
         ) {
           const newBalances = {
             base: (data[0].result / BigInt(10 ** 18)).toString(),
             arb: (data[1].result / BigInt(10 ** 18)).toString(),
             op: (data[2].result / BigInt(10 ** 18)).toString(),
-            celo: (data[3].result / BigInt(10 ** 18)).toString(),
+            avax: (data[3].result / BigInt(10 ** 18)).toString(),
+            celo: (data[4].result / BigInt(10 ** 18)).toString(),
           };
           console.log("Setting new global balances:", newBalances);
           console.log("🎉 GLOBAL BALANCES UPDATED SUCCESSFULLY! 🎉");
-          console.log("📊 New Global Total:", formatTokenAmount(parseFloat(newBalances.base) + parseFloat(newBalances.arb) + parseFloat(newBalances.celo), "cCOP"));
+          console.log(
+            "📊 New Global Total:",
+            formatTokenAmount(
+              parseFloat(newBalances.base) +
+                parseFloat(newBalances.arb) +
+                parseFloat(newBalances.op) +
+                parseFloat(newBalances.avax) +
+                parseFloat(newBalances.celo),
+              "cCOP"
+            )
+          );
           setBalances(newBalances);
         } else {
           console.error("Failed to fetch balances:", data);
@@ -141,7 +159,7 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.log("=== GLOBAL REFRESH COMPLETED ===");
         setIsLoading(false);
       });
-  }, [wrappedCCOPContractBase, wrappedCCOPContractArb, cCOPContractCelo]);
+  }, [wrappedCCOPContractBase, wrappedCCOPContractArb, wrappedCCOPContractOp, wrappedCCOPContractAvax, cCOPContractCelo]);
 
   const forceRefresh = useCallback(() => {
     refresh();

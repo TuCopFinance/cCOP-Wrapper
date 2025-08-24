@@ -33,6 +33,7 @@ export const getGasTokenName = (chainId: number): string => {
       return 'CELO';
     case chainID.mainnet.base:
     case chainID.mainnet.arb:
+  case chainID.mainnet.avax:
       return 'ETH';
     default:
       return 'ETH';
@@ -94,6 +95,8 @@ const getGasConfig = (chainId: number) => {
     case chainID.mainnet.arb:
       return GAS_ESTIMATES.ARBITRUM;
     case chainID.mainnet.op:
+      return GAS_ESTIMATES.ARBITRUM;
+    case chainID.mainnet.avax:
       return GAS_ESTIMATES.ARBITRUM;
     default:
       return GAS_ESTIMATES.CELO;
@@ -173,13 +176,17 @@ export const estimateUnwrapGas = async (
         ? chainID.mainnet.base
         : chainToUnwrap === "arbitrum"
         ? chainID.mainnet.arb
-        : chainID.mainnet.op;
+        : chainToUnwrap === "optimism"
+        ? chainID.mainnet.op
+        : chainID.mainnet.avax;
     const targetChainContractAddress =
       chainToUnwrap === "base"
         ? address.mainnet.wrapToken.base
         : chainToUnwrap === "arbitrum"
         ? address.mainnet.wrapToken.arb
-        : address.mainnet.wrapToken.op;
+        : chainToUnwrap === "optimism"
+        ? address.mainnet.wrapToken.op
+        : address.mainnet.wrapToken.avax;
 
     // For gas estimation, we don't need to include the quote value
     // The quote is the cost of the cross-chain message, not the gas cost
@@ -232,7 +239,9 @@ export const estimateUnwrapGas = async (
         ? chainID.mainnet.base
         : chainToUnwrap === "arbitrum"
         ? chainID.mainnet.arb
-        : chainID.mainnet.op;
+        : chainToUnwrap === "optimism"
+        ? chainID.mainnet.op
+        : chainID.mainnet.avax;
     return calculateApproximateGas(amount, targetChainId);
   }
 };

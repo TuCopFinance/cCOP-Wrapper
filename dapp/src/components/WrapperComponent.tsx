@@ -867,6 +867,14 @@ export const WrapperComponent = () => {
             />
             <span>Optimism</span>
           </button>
+            <button
+              className={`${styles.chainOption} ${domainID === "43114" ? styles.chainOptionActive : ""}`}
+              onClick={() => setDomainID("43114")}
+              type="button"
+            >
+              <Image src="/assets/Avalanche.svg" alt="Avalanche" width={24} height={24} />
+              <span>Avalanche</span>
+            </button>
         </div>
       </div>
       {/* Transaction Costs Section */}
