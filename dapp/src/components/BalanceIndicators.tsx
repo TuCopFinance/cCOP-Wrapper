@@ -1,4 +1,11 @@
 import React, { useState } from "react";
+interface TokenBalances {
+  base: string;
+  arb: string;
+  celo: string;
+  op?: string;
+  avax?: string;
+}
 import { useGlobalBalances } from "../context/BalanceContext";
 import { formatTokenAmount } from "@/utils/price-feeds";
 import {
@@ -17,7 +24,12 @@ import toast from "react-hot-toast";
 import styles from "./BalanceIndicators.module.css";
 
 export const BalanceIndicators = () => {
-  const { balances, isLoading, error, refresh } = useGlobalBalances();
+  const { balances, isLoading, error, refresh } = useGlobalBalances() as {
+    balances: TokenBalances;
+    isLoading: boolean;
+    error: string | null;
+    refresh: () => void;
+  };
   const [showDetails, setShowDetails] = useState(false);
   const { data: walletClient } = useWalletClient();
 
@@ -26,11 +38,8 @@ export const BalanceIndicators = () => {
     balances.base,
     balances.arb,
     balances.op || "0",
-    (balances as any).avax || "0",
-  ].reduce(
-    (acc, v) => acc + parseFloat(v),
-    0
-  );
+    balances.avax || "0",
+  ].reduce((acc, v) => acc + parseFloat(v), 0);
 
   // Log balance changes
   console.log("=== BALANCE INDICATORS RENDER ===");
@@ -196,7 +205,7 @@ export const BalanceIndicators = () => {
               <FiPlus />
             </button>
           </div>
-      <div className={`${styles.indicator} ${styles.avax}`}>
+          <div className={`${styles.indicator} ${styles.avax}`}>
             <Image
               src="/assets/Avalanche.svg"
               alt="wcCOP Token"
@@ -207,8 +216,8 @@ export const BalanceIndicators = () => {
               Avalanche:{" "}
               {isLoading
                 ? "Loading..."
-        : parseFloat((balances as any).avax || "0") > 0
-        ? formatTokenAmount(parseFloat((balances as any).avax || "0"), "wcCOP")
+                : parseFloat(balances.avax || "0") > 0
+                ? formatTokenAmount(parseFloat(balances.avax || "0"), "wcCOP")
                 : "0.00 wcCOP"}
             </p>
             <button
