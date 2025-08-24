@@ -9,11 +9,13 @@ export const PRICE_FEED_ADDRESSES = {
   [chainID.mainnet.celo]: "0x8bDd8DBcBDf0C066cA5f3286d33673aA7A553C10", // Polygon COP/USD feed
   [chainID.mainnet.base]: "0x8bDd8DBcBDf0C066cA5f3286d33673aA7A553C10", // Polygon COP/USD feed
   [chainID.mainnet.arb]: "0x8bDd8DBcBDf0C066cA5f3286d33673aA7A553C10", // Polygon COP/USD feed
+  [chainID.mainnet.op]: "0x8bDd8DBcBDf0C066cA5f3286d33673aA7A553C10", // Polygon COP/USD feed
   
   // Testnet addresses - Using Polygon Mumbai testnet feed
   [chainID.testnet.celo]: "0x0000000000000000000000000000000000000000", // No testnet feed available
   [chainID.testnet.base]: "0x0000000000000000000000000000000000000000", // No testnet feed available
   [chainID.testnet.arb]: "0x0000000000000000000000000000000000000000", // No testnet feed available
+  [chainID.testnet.op]: "0x0000000000000000000000000000000000000000", // No testnet feed available
 } as const;
 
 // Fallback prices for when Chainlink feeds are not available
@@ -37,6 +39,10 @@ export const getPriceFeedStatus = () => {
     arbitrum: {
       mainnet: PRICE_FEED_ADDRESSES[chainID.mainnet.arb] !== "0x0000000000000000000000000000000000000000",
       testnet: PRICE_FEED_ADDRESSES[chainID.testnet.arb] !== "0x0000000000000000000000000000000000000000",
+    },
+    optimism: {
+      mainnet: PRICE_FEED_ADDRESSES[chainID.mainnet.op] !== "0x0000000000000000000000000000000000000000",
+      testnet: PRICE_FEED_ADDRESSES[chainID.testnet.op] !== "0x0000000000000000000000000000000000000000",
     },
   };
 };

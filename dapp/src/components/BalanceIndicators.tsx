@@ -21,7 +21,7 @@ export const BalanceIndicators = () => {
   const [showDetails, setShowDetails] = useState(false);
   const { data: walletClient } = useWalletClient();
 
-  const total = [balances.celo, balances.base, balances.arb].reduce(
+  const total = [balances.celo, balances.base, balances.arb, balances.op || "0"].reduce(
     (acc, v) => acc + parseFloat(v),
     0
   );
@@ -38,7 +38,7 @@ export const BalanceIndicators = () => {
     refresh();
   };
 
-  const addTokenToWallet = async (network: "celo" | "base" | "arb") => {
+  const addTokenToWallet = async (network: "celo" | "base" | "arb" | "op") => {
     if (!walletClient) {
       toast.error("No wallet client detected", {
         position: "bottom-right",
@@ -72,13 +72,18 @@ export const BalanceIndicators = () => {
           decimals: 18,
           image: "/cCOP_token.png",
         },
-      };
+        op: {
+          address: address.mainnet.wrapToken.op as `0x${string}`,
+          symbol: "wcCOP",
+          decimals: 18,
+          image: "/cCOP_token.png",
+        },
+      } as const;
 
       const success = await walletClient.watchAsset({
         type: "ERC20",
         options: tokenConfig[network],
       });
-
       if (success) {
         toast.success(`${tokenConfig[network].symbol} added to your wallet`, {
           position: "bottom-right",
@@ -152,6 +157,29 @@ export const BalanceIndicators = () => {
               className={styles.addTokenBtn}
               onClick={() => addTokenToWallet("celo")}
               title="Add cCOP to wallet"
+            >
+              <FiPlus />
+            </button>
+          </div>
+          <div className={`${styles.indicator} ${styles.op}`}>
+            <Image
+              src="/assets/Optimism.svg"
+              alt="wcCOP Token"
+              width={24}
+              height={24}
+            />
+            <p>
+              Optimism:{" "}
+              {isLoading
+                ? "Loading..."
+                : parseFloat(balances.op || "0") > 0
+                ? formatTokenAmount(parseFloat(balances.op || "0"), "wcCOP")
+                : "0.00 wcCOP"}
+            </p>
+            <button
+              className={styles.addTokenBtn}
+              onClick={() => addTokenToWallet("op")}
+              title="Add wcCOP to wallet"
             >
               <FiPlus />
             </button>

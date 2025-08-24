@@ -271,6 +271,12 @@ export const UnwrapperComponent = () => {
     chainId: chainID.mainnet.arb,
   } as const;
 
+  const wrappedCCOPContractOp = {
+    address: address.mainnet.wrapToken.op as `0x${string}`,
+    abi: WrappedCCOP.abi as Abi,
+    chainId: chainID.mainnet.op,
+  } as const;
+
   // State
   const [differentAddressFlag, setDifferentAddressFlag] = useState(false);
   const [amount, setAmount] = useState("");
@@ -300,6 +306,7 @@ export const UnwrapperComponent = () => {
   const { balances, refresh: refreshBalances } = useGlobalBalances();
   const baseBalance = balances.base;
   const arbBalance = balances.arb;
+  const opBalance = (balances as any).op || "0";
 
   // Refresh balances when chain changes
   useEffect(() => {
@@ -326,7 +333,9 @@ export const UnwrapperComponent = () => {
     const targetChainContract =
       chainToUnwrap === "base"
         ? wrappedCCOPContractBase
-        : wrappedCCOPContractArb;
+        : chainToUnwrap === "arbitrum"
+        ? wrappedCCOPContractArb
+        : wrappedCCOPContractOp;
 
     console.log("Target chain contract:", targetChainContract);
     console.log("Chain to unwrap:", chainToUnwrap);
@@ -440,7 +449,7 @@ export const UnwrapperComponent = () => {
     if (amount) {
       validateAndPredictAmount(amount);
     }
-  }, [chainToUnwrap, baseBalance, arbBalance]);
+  }, [chainToUnwrap, baseBalance, arbBalance, opBalance]);
 
   // Handler: Amount input change
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -462,7 +471,9 @@ export const UnwrapperComponent = () => {
     const currentBalance =
       chainToUnwrap === "base"
         ? parseFloat(baseBalance)
-        : parseFloat(arbBalance);
+        : chainToUnwrap === "arbitrum"
+        ? parseFloat(arbBalance)
+        : parseFloat(opBalance);
     console.log(
       `validateAndPredictAmount - Chain: ${chainToUnwrap}, Value: ${value}, CurrentBalance: ${currentBalance}, BaseBalance: ${baseBalance}, ArbBalance: ${arbBalance}`
     );
@@ -522,7 +533,11 @@ export const UnwrapperComponent = () => {
 
     // Get target chain ID for gas estimation
     const targetChainId =
-      chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
+      chainToUnwrap === "base"
+        ? chainID.mainnet.base
+        : chainToUnwrap === "arbitrum"
+        ? chainID.mainnet.arb
+        : chainID.mainnet.op;
 
     // Estimate gas using improved calculation
     const gasEstimate = await calculateApproximateGas(value, targetChainId);
@@ -570,7 +585,9 @@ export const UnwrapperComponent = () => {
     const currentBalance =
       chainToUnwrap === "base"
         ? parseFloat(baseBalance)
-        : parseFloat(arbBalance);
+        : chainToUnwrap === "arbitrum"
+        ? parseFloat(arbBalance)
+        : parseFloat(opBalance);
     console.log(
       `MAX Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`
     );
@@ -598,7 +615,11 @@ export const UnwrapperComponent = () => {
   function checkChainAndChange() {
     const account = getAccount(config);
     const targetChainId =
-      chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
+      chainToUnwrap === "base"
+        ? chainID.mainnet.base
+        : chainToUnwrap === "arbitrum"
+        ? chainID.mainnet.arb
+        : chainID.mainnet.op;
 
     if (account.chainId !== targetChainId) {
       //change to selected chain
@@ -656,10 +677,16 @@ export const UnwrapperComponent = () => {
     const targetChainContractAddress =
       chainToUnwrap === "base"
         ? address.mainnet.wrapToken.base
-        : address.mainnet.wrapToken.arb;
+        : chainToUnwrap === "arbitrum"
+        ? address.mainnet.wrapToken.arb
+        : address.mainnet.wrapToken.op;
 
     const targetChainIdContract =
-      chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
+      chainToUnwrap === "base"
+        ? chainID.mainnet.base
+        : chainToUnwrap === "arbitrum"
+        ? chainID.mainnet.arb
+        : chainID.mainnet.op;
 
     console.log("Target chain contract address:", targetChainContractAddress);
     console.log("Target chain ID:", targetChainIdContract);
@@ -854,7 +881,9 @@ export const UnwrapperComponent = () => {
               const currentBalance =
                 chainToUnwrap === "base"
                   ? parseFloat(baseBalance)
-                  : parseFloat(arbBalance);
+                  : chainToUnwrap === "arbitrum"
+                  ? parseFloat(arbBalance)
+                  : parseFloat(opBalance);
               const amount25 = (currentBalance * 0.25).toFixed(2);
               console.log(
                 `25% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount25}`
@@ -872,7 +901,9 @@ export const UnwrapperComponent = () => {
               const currentBalance =
                 chainToUnwrap === "base"
                   ? parseFloat(baseBalance)
-                  : parseFloat(arbBalance);
+                  : chainToUnwrap === "arbitrum"
+                  ? parseFloat(arbBalance)
+                  : parseFloat(opBalance);
               const amount50 = (currentBalance * 0.5).toFixed(2);
               console.log(
                 `50% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount50}`
@@ -890,7 +921,9 @@ export const UnwrapperComponent = () => {
               const currentBalance =
                 chainToUnwrap === "base"
                   ? parseFloat(baseBalance)
-                  : parseFloat(arbBalance);
+                  : chainToUnwrap === "arbitrum"
+                  ? parseFloat(arbBalance)
+                  : parseFloat(opBalance);
               const amount75 = (currentBalance * 0.75).toFixed(2);
               console.log(
                 `75% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount75}`
@@ -951,6 +984,15 @@ export const UnwrapperComponent = () => {
               height={24}
             />
             <span>Arbitrum</span>
+          </button>
+          <button
+            className={`${styles.chainOption} ${
+              chainToUnwrap === "optimism" ? styles.chainOptionActive : ""
+            }`}
+            onClick={() => setChainToUnwrap("optimism")}
+          >
+            <Image src="/assets/Base.png" alt="Optimism" width={24} height={24} />
+            <span>Optimism</span>
           </button>
         </div>
       </div>
@@ -1026,6 +1068,20 @@ export const UnwrapperComponent = () => {
           </span>
         )}
         <label className={styles.checkboxLabel}>
+          <button
+            className={`${styles.chainOption} ${
+              chainToUnwrap === "optimism" ? styles.chainOptionActive : ""
+            }`}
+            onClick={() => setChainToUnwrap("optimism")}
+          >
+            <Image
+              src="/assets/Optimism.svg"
+              alt="Optimism"
+              width={24}
+              height={24}
+            />
+            <span>Optimism</span>
+          </button>
           <input
             type="checkbox"
             checked={differentAddressFlag}

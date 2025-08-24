@@ -93,6 +93,8 @@ const getGasConfig = (chainId: number) => {
       return GAS_ESTIMATES.BASE;
     case chainID.mainnet.arb:
       return GAS_ESTIMATES.ARBITRUM;
+    case chainID.mainnet.op:
+      return GAS_ESTIMATES.ARBITRUM;
     default:
       return GAS_ESTIMATES.CELO;
   }
@@ -166,10 +168,18 @@ export const estimateUnwrapGas = async (
   console.log(`🚀 estimateUnwrapGas CALLED - Amount: ${amount}, ChainToUnwrap: ${chainToUnwrap}`);
   try {
     const amountFixed = parseEther(amount);
-    const targetChainId = chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
-    const targetChainContractAddress = chainToUnwrap === "base" 
-      ? address.mainnet.wrapToken.base 
-      : address.mainnet.wrapToken.arb;
+    const targetChainId =
+      chainToUnwrap === "base"
+        ? chainID.mainnet.base
+        : chainToUnwrap === "arbitrum"
+        ? chainID.mainnet.arb
+        : chainID.mainnet.op;
+    const targetChainContractAddress =
+      chainToUnwrap === "base"
+        ? address.mainnet.wrapToken.base
+        : chainToUnwrap === "arbitrum"
+        ? address.mainnet.wrapToken.arb
+        : address.mainnet.wrapToken.op;
 
     // For gas estimation, we don't need to include the quote value
     // The quote is the cost of the cross-chain message, not the gas cost
@@ -217,7 +227,12 @@ export const estimateUnwrapGas = async (
   } catch (error) {
     console.error('Error estimating unwrap gas:', error);
     // Fallback to approximate calculation
-    const targetChainId = chainToUnwrap === "base" ? chainID.mainnet.base : chainID.mainnet.arb;
+    const targetChainId =
+      chainToUnwrap === "base"
+        ? chainID.mainnet.base
+        : chainToUnwrap === "arbitrum"
+        ? chainID.mainnet.arb
+        : chainID.mainnet.op;
     return calculateApproximateGas(amount, targetChainId);
   }
 };

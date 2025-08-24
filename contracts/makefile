@@ -37,6 +37,30 @@ ARB_MAINNET_ARGS := --rpc-url $(RPC_URL_ARB_MAINNET) \
 					 --verify \
 					 --etherscan-api-key $(ETHERSCAN_API) \
 
+OP_SEPOLIA_ARGS := --rpc-url $(RPC_URL_OP_SEPOLIA) \
+					 --account defaultKey \
+					 --broadcast \
+					 --verify \
+					 --etherscan-api-key $(ETHERSCAN_API) \
+
+OP_MAINNET_ARGS := --rpc-url $(RPC_URL_OP) \
+					 --account defaultKeyTwo \
+					 --broadcast \
+					 --verify \
+					 --etherscan-api-key $(ETHERSCAN_API) \
+
+AVAX_FUJI_ARGS := --rpc-url $(RPC_URL_AVAX_FUJI) \
+					 --account defaultKey \
+					 --broadcast \
+					 --verify \
+					 --etherscan-api-key $(ETHERSCAN_API) \
+
+AVAX_MAINNET_ARGS := --rpc-url $(RPC_URL_AVAX) \
+					 --account defaultKeyTwo \
+					 --broadcast \
+					 --verify \
+					 --etherscan-api-key $(ETHERSCAN_API) \
+
 deployCCOPMock:
 	@forge clean
 	@echo "Deploying CCOPMock to Celo Alfajores testnet"
@@ -56,6 +80,26 @@ deployWrappedCCOP_ArbTest:
 	@forge clean
 	@echo "Deploying WrappedCCOP to Arbitrum Sepolia"
 	@forge script script/WrappedCCOP_ARB.s.sol:WrappedCCOP_ARB_Script $(ARB_SEPOLIA_ARGS)
+
+deployWrappedCCOP_OPTest:
+	@forge clean
+	@echo "Deploying WrappedCCOP to Optimism Sepolia"
+	@forge script script/WrappedCCOP_OP.s.sol:WrappedCCOP_OP_Script $(OP_SEPOLIA_ARGS)
+
+deployWrappedCCOP_OP:
+	@forge clean
+	@echo "Deploying WrappedCCOP to Optimism Mainnet"
+	@forge script script/WrappedCCOP_OP.s.sol:WrappedCCOP_OP_Script $(OP_MAINNET_ARGS)
+
+deployWrappedCCOP_AVAXTest:
+	@forge clean
+	@echo "Deploying WrappedCCOP to Avalanche Fuji"
+	@forge script script/WrappedCCOP_AVAX.s.sol:WrappedCCOP_AVAX_Script $(AVAX_FUJI_ARGS)
+
+deployWrappedCCOP_AVAX:
+	@forge clean
+	@echo "Deploying WrappedCCOP to Avalanche Mainnet"
+	@forge script script/WrappedCCOP_AVAX.s.sol:WrappedCCOP_AVAX_Script $(AVAX_MAINNET_ARGS)
 
 deployTreasury:
 	@forge clean

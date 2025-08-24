@@ -34,7 +34,7 @@ const getCurrentUrl = () => {
 // Set up metadata
 const metadata = {
   name: 'cCOP Wrapper',
-  description: 'Cross-chain bridge for cCOP tokens - Wrap and unwrap cCOP tokens across Celo, Base, and Arbitrum networks',
+  description: 'Cross-chain bridge for cCOP tokens - Wrap and unwrap cCOP tokens across Celo, Base, Arbitrum, and Optimism networks',
   url: getCurrentUrl(),
   icons: [
     'https://avatars.githubusercontent.com/u/179229932',

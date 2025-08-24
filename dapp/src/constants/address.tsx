@@ -13,6 +13,7 @@ export const address = {
     wrapToken: {
       base: "0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22",
       arb: "0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22",
+      op: "0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22",
     },
     GasFeeSponsorship: "0xD4C37ed2C0A4de515382d2EEa0940ea99234Ca72",
   },

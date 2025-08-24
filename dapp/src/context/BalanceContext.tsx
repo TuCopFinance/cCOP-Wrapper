@@ -12,6 +12,7 @@ interface TokenBalances {
   base: string;
   arb: string;
   celo: string;
+  op?: string;
 }
 
 interface BalanceContextType {
@@ -29,6 +30,7 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     base: "0",
     arb: "0",
     celo: "0",
+  op: "0",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +47,12 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     address: address.mainnet.wrapToken.arb as `0x${string}`,
     abi: WrappedCCOP.abi as Abi,
     chainId: chainID.mainnet.arb,
+  } as const), []);
+
+  const wrappedCCOPContractOp = useMemo(() => ({
+    address: address.mainnet.wrapToken.op as `0x${string}`,
+    abi: WrappedCCOP.abi as Abi,
+    chainId: chainID.mainnet.op,
   } as const), []);
 
   const cCOPContractCelo = useMemo(() => ({
@@ -85,6 +93,11 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           args: [account.address],
         },
         {
+          ...wrappedCCOPContractOp,
+          functionName: "balanceOf",
+          args: [account.address],
+        },
+        {
           ...cCOPContractCelo,
           functionName: "balanceOf",
           args: [account.address],
@@ -99,14 +112,17 @@ export const BalanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           data[0].status === "success" &&
           data[1].status === "success" &&
           data[2].status === "success" &&
+          data[3].status === "success" &&
           typeof data[0].result === "bigint" &&
           typeof data[1].result === "bigint" &&
-          typeof data[2].result === "bigint"
+          typeof data[2].result === "bigint" &&
+          typeof data[3].result === "bigint"
         ) {
           const newBalances = {
             base: (data[0].result / BigInt(10 ** 18)).toString(),
             arb: (data[1].result / BigInt(10 ** 18)).toString(),
-            celo: (data[2].result / BigInt(10 ** 18)).toString(),
+            op: (data[2].result / BigInt(10 ** 18)).toString(),
+            celo: (data[3].result / BigInt(10 ** 18)).toString(),
           };
           console.log("Setting new global balances:", newBalances);
           console.log("🎉 GLOBAL BALANCES UPDATED SUCCESSFULLY! 🎉");

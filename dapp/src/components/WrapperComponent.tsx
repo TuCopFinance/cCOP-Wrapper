@@ -853,6 +853,20 @@ export const WrapperComponent = () => {
             />
             <span>Arbitrum</span>
           </button>
+          <button
+            className={`${styles.chainOption} ${
+              domainID === "10" ? styles.chainOptionActive : ""
+            }`}
+            onClick={() => setDomainID("10")}
+          >
+            <Image
+              src="/assets/Optimism.svg"
+              alt="Optimism"
+              width={24}
+              height={24}
+            />
+            <span>Optimism</span>
+          </button>
         </div>
       </div>
       {/* Transaction Costs Section */}
