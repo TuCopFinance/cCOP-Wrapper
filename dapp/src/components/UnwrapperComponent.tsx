@@ -1099,20 +1099,6 @@ export const UnwrapperComponent = () => {
           </span>
         )}
         <label className={styles.checkboxLabel}>
-          <button
-            className={`${styles.chainOption} ${
-              chainToUnwrap === "optimism" ? styles.chainOptionActive : ""
-            }`}
-            onClick={() => setChainToUnwrap("optimism")}
-          >
-            <Image
-              src="/assets/Optimism.svg"
-              alt="Optimism"
-              width={24}
-              height={24}
-            />
-            <span>Optimism</span>
-          </button>
           <input
             type="checkbox"
             checked={differentAddressFlag}
