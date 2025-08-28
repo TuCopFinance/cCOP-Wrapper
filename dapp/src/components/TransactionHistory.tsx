@@ -17,17 +17,19 @@ export const TransactionHistory = () => {
 
   // Calculate totals
   const calculateTotals = () => {
-    // Wraps: cCOP → wcCOP (CELO to Base/Arbitrum)
+    // Wraps: cCOP → wcCOP (CELO to Base/Arbitrum) 
+    // Amount represents the exact cCOP tokens wrapped (excluding gas fees)
     const wrapTotal = transactions
       .filter((tx) => tx.type === "wrap")
       .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
 
-    // Unwraps: wcCOP → cCOP (Base/Arbitrum to CELO) - Total of wrapped tokens unwrapped
+    // Unwraps: wcCOP → cCOP (Base/Arbitrum to CELO)
+    // Amount represents wcCOP tokens burned, which equals cCOP tokens unlocked (1:1 ratio)
     const unwrapTotal = transactions
       .filter((tx) => tx.type === "unwrap")
       .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
 
-    // Net position: wraps - unwraps (how many cCOP are currently wrapped)
+    // Net position: total wrapped - total unwrapped (how many cCOP are currently wrapped as wcCOP)
     const netWrapped = wrapTotal - unwrapTotal;
 
     return {
@@ -101,7 +103,7 @@ export const TransactionHistory = () => {
           </div>
           <div className={styles.summaryContent}>
             <div className={styles.summaryAmount}>
-              {totals.unwrapTotal} wcCOP
+              {totals.unwrapTotal} cCOP
             </div>
             <div className={styles.summaryCount}>
               {totals.unwrapCount} transacciones
@@ -138,7 +140,7 @@ export const TransactionHistory = () => {
               <div className={styles.transactionGroup}>
                 <h3 className={styles.groupTitle}>
                   <span className={styles.groupIcon}>📦</span>
-                  Wraps - CELO → Base/Arbitrum ({totals.wrapCount})
+                  Wraps - CELO → Base/Arbitrum/Optimism/Avalanche ({totals.wrapCount})
                 </h3>
                 {transactions
                   .filter((tx) => tx.type === "wrap")
@@ -194,16 +196,20 @@ export const TransactionHistory = () => {
               </div>
             )}
 
-            {/* Unwrap Transactions */}
-            {transactions.filter((tx) => tx.type === "unwrap").length > 0 && (
-              <div className={styles.transactionGroup}>
-                <h3 className={styles.groupTitle}>
-                  <span className={styles.groupIcon}>📤</span>
-                  Unwraps - Base/Arbitrum → CELO ({totals.unwrapCount})
-                </h3>
-                {transactions
-                  .filter((tx) => tx.type === "unwrap")
-                  .map((tx) => (
+            {/* Unwrap Transactions - Grouped by Chain */}
+            {['Base', 'Arbitrum', 'Optimism', 'Avalanche'].map((chain) => {
+              const chainUnwraps = transactions.filter((tx) => tx.type === "unwrap" && tx.chain === chain);
+              const chainTotal = chainUnwraps.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+              
+              if (chainUnwraps.length === 0) return null;
+              
+              return (
+                <div key={chain} className={styles.transactionGroup}>
+                  <h3 className={styles.groupTitle}>
+                    <span className={styles.groupIcon}>📤</span>
+                    Unwraps - {chain} → CELO ({chainUnwraps.length} transacciones, {chainTotal.toFixed(2)} cCOP)
+                  </h3>
+                  {chainUnwraps.map((tx) => (
                     <div key={tx.id} className={styles.transactionCard}>
                       <div className={styles.transactionHeader}>
                         <div className={styles.transactionType}>
@@ -252,8 +258,9 @@ export const TransactionHistory = () => {
                       </div>
                     </div>
                   ))}
-              </div>
-            )}
+                </div>
+              );
+            })}
           </>
         )}
       </div>

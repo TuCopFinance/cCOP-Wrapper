@@ -1,10 +1,12 @@
 import { address } from '@/constants/address';
 
-// API endpoints for different chains
+// API endpoints for different chains (using internal API routes)
 const API_ENDPOINTS = {
   celo: '/api/transactions?chain=celo&address=',
   base: '/api/transactions?chain=base&address=',
-  arbitrum: '/api/transactions?chain=arbitrum&address='
+  arbitrum: '/api/transactions?chain=arbitrum&address=',
+  optimism: '/api/transactions?chain=optimism&address=',
+  avalanche: '/api/transactions?chain=avalanche&address='
 };
 
 // Interface for real transaction data
@@ -23,7 +25,8 @@ export interface RealTransaction {
   gasPrice: string;
 }
 
-// Interface for token transfer data from APIs
+// Interface for token transfer data from APIs (currently unused but kept for future use)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface TokenTransfer {
   // Common fields
   hash?: string;
@@ -62,19 +65,48 @@ interface TokenTransfer {
   };
 }
 
-// Helper function to safely get address from different formats
+// Helper function to safely get address from different formats (legacy - kept for fallback)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getAddress = (address: { hash?: string } | string | undefined): string => {
   if (typeof address === 'string') return address;
   if (address && typeof address === 'object' && address.hash) return address.hash;
   return '';
 };
 
+// Helper function to decode wrap amount from transaction input (legacy - kept for fallback)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const decodeWrapAmount = (input: string): number => {
+  try {
+    // Expected input format for wrap(uint32 domainID, address receiver, uint256 amount):
+    // 0x + method_signature (4 bytes) + domainID (32 bytes) + receiver_address (32 bytes) + amount (32 bytes)
+    // Method signature for wrap(uint32,address,uint256)
+    // Total length: 2 (0x) + 8 (method_signature) + 64 (domainID) + 64 (receiver) + 64 (amount) = 202 characters
+    if (input && input.length >= 202) {
+      // Extract the amount parameter (third parameter), which starts at index 138
+      const amountHex = input.substring(138, 138 + 64); // From index 138, take 64 characters
+      const parameterValue = BigInt('0x' + amountHex);
+      // Convert from wei to token units (18 decimals)
+      const amount = Number(parameterValue) / Math.pow(10, 18);
+      
+      console.log('🔍 Decoded wrap parameters:', {
+        amount: amount,
+        inputLength: input.length
+      });
+      return amount;
+    }
+  } catch (error) {
+    console.error('Error decoding wrap amount:', error);
+  }
+  return 0;
+};
+
 // Helper function to decode unwrap amount from transaction input
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const decodeUnwrapAmount = (input: string): number => {
   try {
     // Expected input format for unwrap(address receiver, uint256 amount):
     // 0x + method_signature (4 bytes) + receiver_address (32 bytes) + amount (32 bytes)
-    // Method signature: 0x39f47693 (unwrap(address,uint256) - actual contract signature)
+    // Method signature for unwrap(address,uint256)
     // Total length: 2 (0x) + 8 (method_signature) + 64 (receiver) + 64 (amount) = 138 characters
     if (input && input.length >= 138) {
       // Extract the amount parameter (second parameter), which starts at index 74
@@ -83,12 +115,7 @@ const decodeUnwrapAmount = (input: string): number => {
       // Convert from wei to token units (18 decimals as per contract)
       const amount = Number(parameterValue) / Math.pow(10, 18);
       
-      // Also extract receiver address for verification
-      const receiverHex = input.substring(10, 74); // From index 10, take 64 characters
-      const receiverAddress = '0x' + receiverHex.substring(24); // Remove padding, keep last 20 bytes
-      
       console.log('🔍 Decoded unwrap parameters:', {
-        receiverAddress: receiverAddress,
         amount: amount
       });
       return amount;
@@ -100,15 +127,15 @@ const decodeUnwrapAmount = (input: string): number => {
 };
 
 /**
- * Get real transactions from Celo (wraps to Base/Arbitrum)
+ * Get real transactions from Celo (wraps to Base/Arbitrum/Optimism/Avalanche)
+ * Now using Etherscan V2 API for consistency
  */
 export const getCeloTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
     const treasuryAddress = address.mainnet.treasury;
-    const cCOPAddress = '0x8A567e2aE79CA692Bd748aB832081C45de4041eA'; // cCOP token address on Celo
     
-    // Use token transfers API instead of general transactions
-    const url = `${API_ENDPOINTS.celo}${walletAddress}&contractaddress=${cCOPAddress}`;
+    // Get regular transactions using Etherscan V2 API
+    const url = `${API_ENDPOINTS.celo}${walletAddress}`;
     
     const response = await fetch(url);
     
@@ -118,69 +145,66 @@ export const getCeloTransactions = async (walletAddress: string): Promise<RealTr
     
     const data = await response.json();
     
-    // Handle both Etherscan-style and Blockscout-style responses
-    let tokenTransfers: TokenTransfer[] = [];
-    
+    // Handle Etherscan V2-style response for normal transactions
     if (data.status === '1' && data.result && Array.isArray(data.result)) {
-      // Etherscan-style response
-      tokenTransfers = data.result as TokenTransfer[];
-    } else if (data.items && Array.isArray(data.items)) {
-      // Blockscout-style response
-      tokenTransfers = data.items as TokenTransfer[];
-    }
-    
-    if (tokenTransfers.length > 0) {
-      console.log(`📋 Found ${tokenTransfers.length} total cCOP token transfers on Celo`);
+      console.log(`📋 Found ${data.result.length} total transactions on Celo`);
       
       const transactions: RealTransaction[] = [];
-      for (const tx of tokenTransfers) {
-        // Look for cCOP token transfers TO the treasury contract (wraps)
-        const fromAddress = getAddress(tx.from);
-        const toAddress = getAddress(tx.to);
-        const contractAddress = tx.token?.address || tx.token?.contract_address_hash || tx.token_contract_address_hash || tx.contractAddress;
+      for (const tx of data.result) {
+        // Look for transactions FROM the wallet TO the treasury contract that call wrap function
+        const isFromWallet = tx.from?.toLowerCase() === walletAddress.toLowerCase();
+        const isToTreasury = tx.to?.toLowerCase() === treasuryAddress.toLowerCase();
         
-        const isFromWallet = fromAddress?.toLowerCase() === walletAddress.toLowerCase();
-        const isToTreasury = toAddress?.toLowerCase() === treasuryAddress.toLowerCase();
-        const isCCOPTransfer = contractAddress?.toLowerCase() === cCOPAddress.toLowerCase();
+        // Check if this is a wrap function call by looking at input data
+        // wrap(uint32 domainID, address receiver, uint256 amount) has method signature 0x3c7580e6
+        const isWrapCall = tx.input && tx.input.startsWith('0x3c7580e6');
         
-        if (isFromWallet && isToTreasury && isCCOPTransfer) {
-          // Use the actual token transfer amount (not transaction value)
-          const tokenAmount = parseFloat(tx.total?.value || tx.value || '0') / Math.pow(10, parseInt(tx.token?.decimals || tx.token_decimals || tx.tokenDecimal || '18'));
+        if (isFromWallet && isToTreasury && isWrapCall) {
+          // Extract amount from function call input using ABI decoding
+          let tokenAmount = 0;
           
-          const txHash = tx.transaction_hash || tx.tx_hash || tx.hash || '';
+          // Use the decoded amount from the server API
+          tokenAmount = tx.decodedAmount || 0;
           
-          // Only include if the token amount is reasonable
+          console.log('🔍 Processing Celo wrap transaction:', {
+            amount: tokenAmount,
+            hash: tx.hash
+          });
+          
+          const txHash = tx.hash || '';
+          
+          // Only include if we successfully extracted the amount
           if (tokenAmount > 0 && txHash) {
             transactions.push({
               id: txHash,
               type: 'wrap',
               chain: 'Celo',
               amount: tokenAmount.toFixed(2),
-              timestamp: parseInt(tx.timestamp || tx.timeStamp || '0') * 1000,
+              timestamp: parseInt(tx.timeStamp || '0') * 1000,
               txHash: txHash,
-              status: 'completed', // Token transfers are usually completed
-              fromAddress: fromAddress || '',
-              toAddress: toAddress || '',
-              blockNumber: tx.block_number?.toString() || tx.blockNumber || '0',
-              gasUsed: tx.gas_used?.toString() || tx.gasUsed || '0',
-              gasPrice: tx.gas_price?.toString() || tx.gasPrice || '0'
+              status: tx.txreceipt_status === '1' ? 'completed' : 'failed',
+              fromAddress: tx.from || '',
+              toAddress: tx.to || '',
+              blockNumber: tx.blockNumber || '0',
+              gasUsed: tx.gasUsed || '0',
+              gasPrice: tx.gasPrice || '0'
             });
           }
         }
       }
       
-      console.log(`🎉 Found ${transactions.length} cCOP wraps to treasury on Celo`);
+      console.log(`🎉 Found ${transactions.length} wrap function calls to treasury on Celo`);
       return transactions;
     }
     
     // If we get here, no valid transactions found
-    console.log('⚠️ No valid Celo token transfers found, using fallback data');
-    return generateMockTransactions(walletAddress, 'Celo');
+    console.log('⚠️ No valid Celo transactions found, returning empty array');
+    return [];
     
   } catch (error) {
-    console.error('❌ Error fetching Celo token transfers:', error);
-    console.log('🔄 Using fallback mock data for Celo');
-    return generateMockTransactions(walletAddress, 'Celo');
+    console.error('❌ Error fetching Celo transactions:', error);
+    console.log('🔄 Returning empty array for Celo due to error');
+    return [];
   }
 };
 
@@ -207,31 +231,40 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
       
       const transactions: RealTransaction[] = [];
       for (const tx of data.result) {
-        // Filter for transactions that call the unwrap method on wcCOP contract
+        // Filter for transactions FROM the wallet TO the wcCOP contract with unwrap method
+        const isFromWallet = tx.from?.toLowerCase() === walletAddress.toLowerCase();
         const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
         
-        // Try functionName first, fallback to method ID from input
-        const isUnwrapCall = tx.functionName === 'unwrap' || 
-                           (tx.input && tx.input.substring(0, 10) === '0x39f47693'); // unwrap method ID
+        // Check for unwrap function calls - look for methodId 0x39f47693 or functionName 'unwrap'
+        const isUnwrapCall = tx.methodId === '0x39f47693' || 
+                           tx.functionName?.includes('unwrap') ||
+                           (tx.input && tx.input.startsWith('0x39f47693'));
         
-        if (isToWCCOPContract && isUnwrapCall) {
-          // For unwrap calls, we need to decode the input to get the amount
-          const tokenAmount = decodeUnwrapAmount(tx.input);
+        console.log(`🔍 Checking Base tx ${tx.hash}: from=${tx.from?.slice(0,8)}, to=${tx.to?.slice(0,8)}, methodId=${tx.methodId}, isFromWallet=${isFromWallet}, isToWCCOP=${isToWCCOPContract}, isUnwrap=${isUnwrapCall}`);
+        
+        if (isFromWallet && isToWCCOPContract && isUnwrapCall) {
+          // Use the decoded amount from the server API
+          console.log('✅ Processing valid unwrap transaction:', tx.hash);
+          const tokenAmount = tx.decodedAmount || 0;
+          console.log('💰 Server decoded amount:', tokenAmount, 'cCOP');
           
-          transactions.push({
-            id: tx.hash,
-            type: 'unwrap',
-            chain: 'Base',
-            amount: tokenAmount.toFixed(2),
-            timestamp: parseInt(tx.timeStamp) * 1000,
-            txHash: tx.hash,
-            status: tx.isError === '1' ? 'failed' : 'completed',
-            fromAddress: tx.from,
-            toAddress: tx.to,
-            blockNumber: tx.blockNumber,
-            gasUsed: tx.gasUsed,
-            gasPrice: tx.gasPrice
-          });
+          if (tokenAmount > 0) {
+            transactions.push({
+              id: tx.hash,
+              type: 'unwrap',
+              chain: 'Base',
+              amount: tokenAmount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: tx.isError === '1' ? 'failed' : 'completed',
+              fromAddress: tx.from,
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed,
+              gasPrice: tx.gasPrice
+            });
+            console.log('✅ Added unwrap transaction with amount:', tokenAmount);
+          }
         }
       }
       
@@ -240,13 +273,13 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
     }
     
     // If we get here, no valid transactions found
-    console.log('⚠️ No valid Base token transfers found, using fallback data');
-    return generateRealisticMockTransactions(walletAddress, 'Base');
+    console.log('⚠️ No valid Base token transfers found, returning empty array');
+    return [];
     
   } catch (error) {
     console.error('❌ Error fetching Base transactions:', error);
-    console.log('🔄 Using fallback mock data for Base');
-    return generateRealisticMockTransactions(walletAddress, 'Base');
+    console.log('🔄 Returning empty array for Base due to error');
+    return [];
   }
 };
 
@@ -276,13 +309,13 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
         // Filter for transactions that call the unwrap method on wcCOP contract
         const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
         
-        // Try functionName first, fallback to method ID from input
+        // Check for unwrap function calls (unwrap method calls on wcCOP contract)
         const isUnwrapCall = tx.functionName === 'unwrap' || 
-                           (tx.input && tx.input.substring(0, 10) === '0x39f47693'); // unwrap method ID
+                           (tx.input && tx.input.length >= 138); // unwrap(address,uint256) has this length
         
         if (isToWCCOPContract && isUnwrapCall) {
-          // For unwrap calls, we need to decode the input to get the amount
-          const tokenAmount = decodeUnwrapAmount(tx.input);
+          // Use the decoded amount from the server API
+          const tokenAmount = tx.decodedAmount || 0;
           
           transactions.push({
             id: tx.hash,
@@ -306,18 +339,150 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
     }
     
     // If we get here, no valid transactions found
-    console.log('⚠️ No valid Arbitrum token transfers found, using fallback data');
-    return generateRealisticMockTransactions(walletAddress, 'Arbitrum');
+    console.log('⚠️ No valid Arbitrum token transfers found, returning empty array');
+    return [];
     
   } catch (error) {
     console.error('❌ Error fetching Arbitrum transactions:', error);
-    console.log('🔄 Using fallback mock data for Arbitrum');
-    return generateRealisticMockTransactions(walletAddress, 'Arbitrum');
+    console.log('🔄 Returning empty array for Arbitrum due to error');
+    return [];
   }
 };
 
 /**
- * Generate realistic mock transactions for Base/Arbitrum (when API key is invalid)
+ * Get real transactions from Optimism (unwraps from Optimism)
+ */
+export const getOptimismTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
+  try {
+    const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Optimism
+    
+    const url = `${API_ENDPOINTS.optimism}${walletAddress}`;
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Optimism API error: ${response.status} - ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Handle Etherscan V2 API response structure (action=txlist)
+    if (data.result && Array.isArray(data.result)) {
+      console.log(`📋 Found ${data.result.length} total transactions on Optimism`);
+      
+      const transactions: RealTransaction[] = [];
+      for (const tx of data.result) {
+        // Filter for transactions that call the unwrap method on wcCOP contract
+        const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
+        
+        // Check for unwrap function calls (unwrap method calls on wcCOP contract)
+        const isUnwrapCall = tx.functionName === 'unwrap' || 
+                           (tx.input && tx.input.length >= 138); // unwrap(address,uint256) has this length
+        
+        if (isToWCCOPContract && isUnwrapCall) {
+          // Use the decoded amount from the server API
+          const tokenAmount = tx.decodedAmount || 0;
+          
+          transactions.push({
+            id: tx.hash,
+            type: 'unwrap',
+            chain: 'Optimism',
+            amount: tokenAmount.toFixed(2),
+            timestamp: parseInt(tx.timeStamp) * 1000,
+            txHash: tx.hash,
+            status: tx.isError === '1' ? 'failed' : 'completed',
+            fromAddress: tx.from,
+            toAddress: tx.to,
+            blockNumber: tx.blockNumber,
+            gasUsed: tx.gasUsed,
+            gasPrice: tx.gasPrice
+          });
+        }
+      }
+      
+      console.log(`🎉 Found ${transactions.length} wcCOP unwrap transactions on Optimism`);
+      return transactions;
+    }
+    
+    // If we get here, no valid transactions found
+    console.log('⚠️ No valid Optimism transactions found, returning empty array');
+    return [];
+    
+  } catch (error) {
+    console.error('❌ Error fetching Optimism transactions:', error);
+    console.log('🔄 Returning empty array for Optimism due to error');
+    return [];
+  }
+};
+
+/**
+ * Get real transactions from Avalanche (unwraps from Avalanche)
+ */
+export const getAvalancheTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
+  try {
+    const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Avalanche
+    
+    const url = `${API_ENDPOINTS.avalanche}${walletAddress}`;
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Avalanche API error: ${response.status} - ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Handle Etherscan V2 API response structure (action=txlist)
+    if (data.result && Array.isArray(data.result)) {
+      console.log(`📋 Found ${data.result.length} total transactions on Avalanche`);
+      
+      const transactions: RealTransaction[] = [];
+      for (const tx of data.result) {
+        // Filter for transactions that call the unwrap method on wcCOP contract
+        const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
+        
+        // Check for unwrap function calls (unwrap method calls on wcCOP contract)
+        const isUnwrapCall = tx.functionName === 'unwrap' || 
+                           (tx.input && tx.input.length >= 138); // unwrap(address,uint256) has this length
+        
+        if (isToWCCOPContract && isUnwrapCall) {
+          // Use the decoded amount from the server API
+          const tokenAmount = tx.decodedAmount || 0;
+          
+          transactions.push({
+            id: tx.hash,
+            type: 'unwrap',
+            chain: 'Avalanche',
+            amount: tokenAmount.toFixed(2),
+            timestamp: parseInt(tx.timeStamp) * 1000,
+            txHash: tx.hash,
+            status: tx.isError === '1' ? 'failed' : 'completed',
+            fromAddress: tx.from,
+            toAddress: tx.to,
+            blockNumber: tx.blockNumber,
+            gasUsed: tx.gasUsed,
+            gasPrice: tx.gasPrice
+          });
+        }
+      }
+      
+      console.log(`🎉 Found ${transactions.length} wcCOP unwrap transactions on Avalanche`);
+      return transactions;
+    }
+    
+    // If we get here, no valid transactions found
+    console.log('⚠️ No valid Avalanche transactions found, returning empty array');
+    return [];
+    
+  } catch (error) {
+    console.error('❌ Error fetching Avalanche transactions:', error);
+    console.log('🔄 Returning empty array for Avalanche due to error');
+    return [];
+  }
+};
+
+/**
+ * Generate realistic mock transactions for Base/Arbitrum/Optimism/Avalanche (when API key is invalid)
  */
 const generateRealisticMockTransactions = (walletAddress: string, chain: string): RealTransaction[] => {
   const mockTxs: RealTransaction[] = [];
@@ -388,21 +553,37 @@ export const getAllRealTransactions = async (walletAddress: string): Promise<Rea
   try {
     console.log('🚀 Fetching transactions from all chains for wallet:', walletAddress);
     
-    // Fetch transactions from all chains concurrently
-    const [celoTxs, baseTxs, arbitrumTxs] = await Promise.all([
-      getCeloTransactions(walletAddress),
-      getBaseTransactions(walletAddress),
-      getArbitrumTransactions(walletAddress)
-    ]);
+    // Fetch transactions from all chains sequentially with delays to avoid rate limiting
+    console.log('🔄 Fetching Celo transactions...');
+    const celoTxs = await getCeloTransactions(walletAddress);
+    
+    // Wait 1 second between API calls to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log('🔄 Fetching Base transactions...');
+    const baseTxs = await getBaseTransactions(walletAddress);
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log('🔄 Fetching Arbitrum transactions...');
+    const arbitrumTxs = await getArbitrumTransactions(walletAddress);
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log('🔄 Fetching Optimism transactions...');
+    const optimismTxs = await getOptimismTransactions(walletAddress);
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log('🔄 Fetching Avalanche transactions...');
+    const avalancheTxs = await getAvalancheTransactions(walletAddress);
     
     // Combine all transactions and sort by timestamp (newest first)
-    const allTransactions = [...celoTxs, ...baseTxs, ...arbitrumTxs]
+    const allTransactions = [...celoTxs, ...baseTxs, ...arbitrumTxs, ...optimismTxs, ...avalancheTxs]
       .sort((a, b) => b.timestamp - a.timestamp);
     
     console.log(`🎉 Total transactions found: ${allTransactions.length}`);
-    console.log(`   - Celo: ${celoTxs.length}`);
-    console.log(`   - Base: ${baseTxs.length}`);
-    console.log(`   - Arbitrum: ${arbitrumTxs.length}`);
+    console.log(`   - Celo: ${celoTxs.length} ${celoTxs.length > 0 ? '✅' : '❌'}`);
+    console.log(`   - Base: ${baseTxs.length} ${baseTxs.length > 0 ? '✅' : '❌'}`); 
+    console.log(`   - Arbitrum: ${arbitrumTxs.length} ${arbitrumTxs.length > 0 ? '✅' : '❌'}`);
+    console.log(`   - Optimism: ${optimismTxs.length} ${optimismTxs.length > 0 ? '✅' : '❌'}`);
+    console.log(`   - Avalanche: ${avalancheTxs.length} ${avalancheTxs.length > 0 ? '✅' : '❌'}`);
     
     return allTransactions;
   } catch (error) {
