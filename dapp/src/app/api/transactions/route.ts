@@ -151,13 +151,13 @@ export async function GET(request: NextRequest) {
       status: data.status,
       message: data.message,
       resultCount: data.result?.length || 0,
-      firstFewTxHashes: (Array.isArray(data.result) ? data.result.slice(0, 5).map((tx: any) => ({
+      firstFewTxHashes: (Array.isArray(data.result) ? data.result.slice(0, 5).map((tx: Record<string, unknown>) => ({
         hash: tx.hash,
         to: tx.to,
         methodId: tx.methodId,
         blockNumber: tx.blockNumber,
         functionName: tx.functionName,
-        input: tx.input?.substring(0, 20) + '...'
+        input: typeof tx.input === 'string' ? tx.input.substring(0, 20) + '...' : undefined
       })) : [])
     });
     
@@ -170,11 +170,11 @@ export async function GET(request: NextRequest) {
       const tokenData = await fetchTokenTransfers(chain, address, wcCOPAddress, API_KEYS[chain as keyof typeof API_KEYS]);
       if (tokenData && tokenData.result && Array.isArray(tokenData.result)) {
         // Convert token transfers to transaction format for processing
-        const tokenTxs = tokenData.result.map((tx: any) => ({
+        const tokenTxs = tokenData.result.map((tx: Record<string, unknown>) => ({
           ...tx,
           // Mark as potential unwrap if it's wcCOP being sent FROM the user (burn operation)
           isTokenTransfer: true,
-          to: tx.to?.toLowerCase() === '0x0000000000000000000000000000000000000000' ? wcCOPAddress : tx.to
+          to: (typeof tx.to === 'string' && tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000') ? wcCOPAddress : tx.to
         }));
         data.result = tokenTxs;
         console.log(`🪙 Using ${tokenTxs.length} token transfers for ${chain.toUpperCase()}`);
@@ -183,8 +183,7 @@ export async function GET(request: NextRequest) {
     
     // Process transactions to extract correct values
     if (data.result && Array.isArray(data.result)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const processedTransactions: any[] = [];
+      const processedTransactions: Record<string, unknown>[] = [];
       
       for (const tx of data.result) {
         const processedTx = { ...tx };
