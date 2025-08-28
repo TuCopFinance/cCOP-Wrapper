@@ -35,8 +35,9 @@ import {
   debugPriceFeed,
   formatHyperlanePrice,
   formatUSDValue,
-  formatTokenAmount,
+  formatTokenAmount as formatPriceAmount,
 } from "@/utils/price-feeds";
+import { formatNumber, formatPercentage, formatTokenAmount } from "@/utils/number-format";
 import Image from "next/image";
 import styles from "./WrapperComponent.module.css";
 import { SelfGasFeeSponsorshipComponent } from "./SelfGasFeeSponsorshipComponent";
@@ -762,7 +763,7 @@ export const WrapperComponent = () => {
                 Porcentaje del saldo:
               </span>
               <span className={styles.predictionValue}>
-                {amountPrediction.percentageOfBalance?.toFixed(1)}%
+                {amountPrediction.percentageOfBalance ? formatPercentage(amountPrediction.percentageOfBalance, 1) : ''}
               </span>
             </div>
             <div className={styles.predictionItem}>

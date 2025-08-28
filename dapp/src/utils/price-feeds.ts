@@ -1,6 +1,7 @@
 import { config } from '@/config';
 import { readContract } from '@wagmi/core';
 import { PRICE_FEED_ADDRESSES, FALLBACK_PRICES } from '@/constants/price-feeds';
+import { formatNumber, formatUSDAmount } from '@/utils/number-format';
 
 // Polygon chain ID for price feed reading
 const POLYGON_CHAIN_ID = 137;
@@ -88,7 +89,7 @@ export const getCOPUSDPrice = async (chainId: number): Promise<number> => {
  * @returns Formatted token string
  */
 export const formatTokenAmount = (amount: number, tokenSymbol: string, decimals: number = 2): string => {
-  return `${amount.toFixed(decimals)} ${tokenSymbol}`;
+  return `${formatNumber(amount, decimals)} ${tokenSymbol}`;
 };
 
 /**
@@ -112,7 +113,7 @@ export const formatGasAndTokenPrice = (amount: number, tokenSymbol: string): str
  * @returns Formatted string: "$0.35 USD (0.7060 CELO)"
  */
 export const formatGasAndTokenPriceWithUSD = (usdValue: number, tokenAmount: number, tokenSymbol: string): string => {
-  return `$${usdValue.toFixed(2)} USD (${tokenAmount.toFixed(4)} ${tokenSymbol})`;
+  return `${formatUSDAmount(usdValue, 2)} (${formatNumber(tokenAmount, 4)} ${tokenSymbol})`;
 };
 
 /**
@@ -123,7 +124,7 @@ export const formatGasAndTokenPriceWithUSD = (usdValue: number, tokenAmount: num
  */
 export const formatUSDValue = (value: number, includeApproximate: boolean = true): string => {
   const prefix = includeApproximate ? '~' : '';
-  return `${prefix}$${value.toFixed(2)} USD`;
+  return `${prefix}${formatUSDAmount(value, 2)}`;
 };
 
 /**
@@ -260,12 +261,12 @@ export const formatHyperlanePrice = async (quote: bigint, isWrapping: boolean): 
     
     const usdValue = quoteInEther * usdPrice;
     
-    return `${formatUSDValue(usdValue, false)} (${quoteInEther.toFixed(4)} ${tokenName})`;
+    return `${formatUSDValue(usdValue, false)} (${formatNumber(quoteInEther, 4)} ${tokenName})`;
   } catch (error) {
     console.error('Error formatting Hyperlane price:', error);
     // Fallback to original format
     const quoteInEther = Number(quote) / 1e18;
     const tokenName = isWrapping ? 'CELO' : 'ETH';
-    return `${quoteInEther.toFixed(4)} ${tokenName}`;
+    return `${formatNumber(quoteInEther, 4)} ${tokenName}`;
   }
 }; 

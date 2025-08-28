@@ -6,14 +6,43 @@ import {
   getAllRealTransactions,
   RealTransaction,
 } from "@/utils/transaction-service";
+import { formatTokenAmount } from "@/utils/number-format";
 import styles from "./TransactionHistory.module.css";
+import Image from "next/image";
 
 // Using RealTransaction interface from transaction-service
 
 export const TransactionHistory = () => {
   const [transactions, setTransactions] = useState<RealTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+    wraps: false,
+    unwraps: false,
+    'unwrap-Base': false,
+    'unwrap-Arbitrum': false,
+    'unwrap-Optimism': false,
+    'unwrap-Avalanche': false
+  });
   const account = getAccount(config);
+
+  // Toggle collapse state for a section
+  const toggleSection = (sectionKey: string) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey]
+    }));
+  };
+
+  // Helper function to get chain logo
+  const getChainLogo = (chain: string) => {
+    const chainLogos = {
+      'Base': '/assets/Base.png',
+      'Arbitrum': '/assets/Arbitrum.png', 
+      'Optimism': '/assets/Optimism.svg',
+      'Avalanche': '/assets/Avalanche.svg'
+    };
+    return chainLogos[chain as keyof typeof chainLogos] || '';
+  };
 
   // Calculate totals
   const calculateTotals = () => {
@@ -33,9 +62,9 @@ export const TransactionHistory = () => {
     const netWrapped = wrapTotal - unwrapTotal;
 
     return {
-      wrapTotal: wrapTotal.toFixed(2),
-      unwrapTotal: unwrapTotal.toFixed(2),
-      netWrapped: netWrapped.toFixed(2),
+      wrapTotal: formatTokenAmount(wrapTotal, 'cCOP', 0),
+      unwrapTotal: formatTokenAmount(unwrapTotal, 'wcCOP', 0),
+      netWrapped: formatTokenAmount(netWrapped, 'wcCOP', 0),
       wrapCount: transactions.filter((tx) => tx.type === "wrap").length,
       unwrapCount: transactions.filter((tx) => tx.type === "unwrap").length,
     };
@@ -89,7 +118,7 @@ export const TransactionHistory = () => {
             <span className={styles.summaryTitle}>Total Envuelto</span>
           </div>
           <div className={styles.summaryContent}>
-            <div className={styles.summaryAmount}>{totals.wrapTotal} cCOP</div>
+            <div className={styles.summaryAmount}>{totals.wrapTotal}</div>
             <div className={styles.summaryCount}>
               {totals.wrapCount} transacciones
             </div>
@@ -103,7 +132,7 @@ export const TransactionHistory = () => {
           </div>
           <div className={styles.summaryContent}>
             <div className={styles.summaryAmount}>
-              {totals.unwrapTotal} cCOP
+              {totals.unwrapTotal}
             </div>
             <div className={styles.summaryCount}>
               {totals.unwrapCount} transacciones
@@ -117,7 +146,7 @@ export const TransactionHistory = () => {
             <span className={styles.summaryTitle}>Neto Envuelto</span>
           </div>
           <div className={styles.summaryContent}>
-            <div className={styles.summaryAmount}>{totals.netWrapped} cCOP</div>
+            <div className={styles.summaryAmount}>{totals.netWrapped}</div>
             <div className={styles.summaryCount}>
               {totals.wrapCount + totals.unwrapCount} transacciones
             </div>
@@ -125,7 +154,7 @@ export const TransactionHistory = () => {
         </div>
       </div>
 
-      {/* Transactions by Type */}
+      {/* Transactions by Type - Two Column Layout */}
       <div className={styles.transactionsContainer}>
         {transactions.length === 0 ? (
           <div className={styles.emptyState}>
@@ -134,134 +163,198 @@ export const TransactionHistory = () => {
             <p>No se encontraron transacciones</p>
           </div>
         ) : (
-          <>
-            {/* Wrap Transactions */}
+          <div className={styles.twoColumnLayout}>
+            {/* Left Column - Wrap Transactions */}
+            <div className={styles.leftColumn}>
             {transactions.filter((tx) => tx.type === "wrap").length > 0 && (
               <div className={styles.transactionGroup}>
-                <h3 className={styles.groupTitle}>
-                  <span className={styles.groupIcon}>📦</span>
-                  Wraps - CELO → Base/Arbitrum/Optimism/Avalanche ({totals.wrapCount})
+                <h3 
+                  className={styles.groupTitle} 
+                  onClick={() => toggleSection('wraps')}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Image 
+                    src="/cCOP_token.png" 
+                    alt="Celo" 
+                    width={20} 
+                    height={20}
+                    className={styles.chainLogo}
+                  />
+                  Wrap ({totals.wrapCount} transacciones, {totals.wrapTotal})
+                  <span className={`${styles.collapseArrow} ${collapsedSections.wraps ? styles.collapsed : ''}`}>
+                    ▼
+                  </span>
                 </h3>
-                {transactions
-                  .filter((tx) => tx.type === "wrap")
-                  .map((tx) => (
-                    <div key={tx.id} className={styles.transactionCard}>
-                      <div className={styles.transactionHeader}>
-                        <div className={styles.transactionType}>
-                          <div
-                            className={`${styles.typeBadge} ${styles[tx.type]}`}
-                          >
-                            📦 Wrap
-                          </div>
-                          <span>{tx.chain}</span>
-                        </div>
-                        <div className={styles.transactionStatus}>
-                          <span
-                            className={styles.statusBadge}
-                            style={{
-                              backgroundColor:
-                                tx.status === "completed"
-                                  ? "#10b981"
+                {!collapsedSections.wraps && (
+                  <div className={styles.transactionList}>
+                    {transactions
+                      .filter((tx) => tx.type === "wrap")
+                      .map((tx) => (
+                        <div key={tx.id} className={styles.transactionCard}>
+                          <div className={styles.transactionHeader}>
+                            <div className={styles.transactionType}>
+                              <div
+                                className={`${styles.typeBadge} ${styles[tx.type]}`}
+                              >
+                                📦 Wrap
+                              </div>
+                              <span>{tx.chain}</span>
+                            </div>
+                            <div className={styles.transactionStatus}>
+                              <span
+                                className={styles.statusBadge}
+                                style={{
+                                  backgroundColor:
+                                    tx.status === "completed"
+                                      ? "#10b981"
+                                      : tx.status === "pending"
+                                      ? "#f59e0b"
+                                      : "#ef4444",
+                                }}
+                              >
+                                {tx.status === "completed"
+                                  ? "Completado"
                                   : tx.status === "pending"
-                                  ? "#f59e0b"
-                                  : "#ef4444",
-                            }}
-                          >
-                            {tx.status === "completed"
-                              ? "Completado"
-                              : tx.status === "pending"
-                              ? "Pendiente"
-                              : "Fallido"}
-                          </span>
-                        </div>
-                      </div>
+                                  ? "Pendiente"
+                                  : "Fallido"}
+                              </span>
+                            </div>
+                          </div>
 
-                      <div className={styles.transactionDetails}>
-                        <div className={styles.amountSection}>
-                          <span className={styles.amountLabel}>Cantidad:</span>
-                          <span className={styles.amount}>
-                            {tx.amount} cCOP → wcCOP
-                          </span>
-                        </div>
+                          <div className={styles.transactionDetails}>
+                            <div className={styles.amountSection}>
+                              <span className={styles.amountLabel}>Cantidad:</span>
+                              <span className={styles.amount}>
+                                {formatTokenAmount(parseFloat(tx.amount), 'cCOP', 0)} → wcCOP
+                              </span>
+                            </div>
 
-                        <div className={styles.timeSection}>
-                          <span className={styles.timeLabel}>Fecha:</span>
-                          <span className={styles.time}>
-                            {new Date(tx.timestamp).toLocaleString()}
-                          </span>
+                            <div className={styles.timeSection}>
+                              <span className={styles.timeLabel}>Fecha:</span>
+                              <span className={styles.time}>
+                                {new Date(tx.timestamp).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      ))}
+                  </div>
+                )}
               </div>
             )}
-
-            {/* Unwrap Transactions - Grouped by Chain */}
-            {['Base', 'Arbitrum', 'Optimism', 'Avalanche'].map((chain) => {
-              const chainUnwraps = transactions.filter((tx) => tx.type === "unwrap" && tx.chain === chain);
-              const chainTotal = chainUnwraps.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
-              
-              if (chainUnwraps.length === 0) return null;
-              
-              return (
-                <div key={chain} className={styles.transactionGroup}>
-                  <h3 className={styles.groupTitle}>
-                    <span className={styles.groupIcon}>📤</span>
-                    Unwraps - {chain} → CELO ({chainUnwraps.length} transacciones, {chainTotal.toFixed(2)} cCOP)
-                  </h3>
-                  {chainUnwraps.map((tx) => (
-                    <div key={tx.id} className={styles.transactionCard}>
-                      <div className={styles.transactionHeader}>
-                        <div className={styles.transactionType}>
-                          <div
-                            className={`${styles.typeBadge} ${styles[tx.type]}`}
+            </div>
+            
+            {/* Right Column - Unwrap Transactions */}
+            <div className={styles.rightColumn}>
+            {/* Unwrap Transactions - Main Section */}
+            {transactions.filter((tx) => tx.type === "unwrap").length > 0 && (
+              <div className={styles.transactionGroup}>
+                <h3 
+                  className={styles.groupTitle} 
+                  onClick={() => toggleSection('unwraps')}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className={styles.chainLogosGroup}>
+                    <Image src="/assets/Base.png" alt="Base" width={16} height={16} className={styles.chainLogoSmall} />
+                    <Image src="/assets/Arbitrum.png" alt="Arbitrum" width={16} height={16} className={styles.chainLogoSmall} />
+                    <Image src="/assets/Optimism.svg" alt="Optimism" width={16} height={16} className={styles.chainLogoSmall} />
+                    <Image src="/assets/Avalanche.svg" alt="Avalanche" width={16} height={16} className={styles.chainLogoSmall} />
+                  </div>
+                  Unwrap ({totals.unwrapCount} transacciones, {totals.unwrapTotal})
+                  <span className={`${styles.collapseArrow} ${collapsedSections.unwraps ? styles.collapsed : ''}`}>
+                    ▼
+                  </span>
+                </h3>
+                {!collapsedSections.unwraps && (
+                  <div className={styles.transactionList}>
+                    {/* Unwrap Transactions - Grouped by Chain */}
+                    {['Base', 'Arbitrum', 'Optimism', 'Avalanche'].map((chain) => {
+                      const chainUnwraps = transactions.filter((tx) => tx.type === "unwrap" && tx.chain === chain);
+                      const chainTotal = chainUnwraps.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+                      
+                      if (chainUnwraps.length === 0) return null;
+                      
+                      return (
+                        <div key={chain} className={`${styles.transactionGroup} ${styles.nestedGroup} ${styles[`nestedGroup${chain}`]}`}>
+                          <h4 
+                            className={`${styles.groupTitle} ${styles.nestedTitle}`}
+                            onClick={() => toggleSection(`unwrap-${chain}`)}
+                            style={{ cursor: 'pointer' }}
                           >
-                            📤 Unwrap
-                          </div>
-                          <span>{tx.chain}</span>
-                        </div>
-                        <div className={styles.transactionStatus}>
-                          <span
-                            className={styles.statusBadge}
-                            style={{
-                              backgroundColor:
-                                tx.status === "completed"
-                                  ? "#10b981"
-                                  : tx.status === "pending"
-                                  ? "#f59e0b"
-                                  : "#ef4444",
-                            }}
-                          >
-                            {tx.status === "completed"
-                              ? "Completado"
-                              : tx.status === "pending"
-                              ? "Pendiente"
-                              : "Fallido"}
-                          </span>
-                        </div>
-                      </div>
+                            <Image 
+                              src={getChainLogo(chain)} 
+                              alt={chain} 
+                              width={18} 
+                              height={18}
+                              className={styles.chainLogo}
+                            />
+                            {chain} ({chainUnwraps.length} transacciones, {formatTokenAmount(chainTotal, 'wcCOP', 0)})
+                            <span className={`${styles.collapseArrow} ${collapsedSections[`unwrap-${chain}`] ? styles.collapsed : ''}`}>
+                              ▼
+                            </span>
+                          </h4>
+                          {!collapsedSections[`unwrap-${chain}`] && (
+                            <div className={styles.transactionList}>
+                              {chainUnwraps.map((tx) => (
+                                <div key={tx.id} className={styles.transactionCard}>
+                                  <div className={styles.transactionHeader}>
+                                    <div className={styles.transactionType}>
+                                      <div
+                                        className={`${styles.typeBadge} ${styles[tx.type]}`}
+                                      >
+                                        📤 Unwrap
+                                      </div>
+                                      <span>{tx.chain}</span>
+                                    </div>
+                                    <div className={styles.transactionStatus}>
+                                      <span
+                                        className={styles.statusBadge}
+                                        style={{
+                                          backgroundColor:
+                                            tx.status === "completed"
+                                              ? "#10b981"
+                                              : tx.status === "pending"
+                                              ? "#f59e0b"
+                                              : "#ef4444",
+                                        }}
+                                      >
+                                        {tx.status === "completed"
+                                          ? "Completado"
+                                          : tx.status === "pending"
+                                          ? "Pendiente"
+                                          : "Fallido"}
+                                      </span>
+                                    </div>
+                                  </div>
 
-                      <div className={styles.transactionDetails}>
-                        <div className={styles.amountSection}>
-                          <span className={styles.amountLabel}>Cantidad:</span>
-                          <span className={styles.amount}>
-                            {tx.amount} wcCOP → cCOP
-                          </span>
-                        </div>
+                                  <div className={styles.transactionDetails}>
+                                    <div className={styles.amountSection}>
+                                      <span className={styles.amountLabel}>Cantidad:</span>
+                                      <span className={styles.amount}>
+                                        {formatTokenAmount(parseFloat(tx.amount), 'wcCOP', 0)} → cCOP
+                                      </span>
+                                    </div>
 
-                        <div className={styles.timeSection}>
-                          <span className={styles.timeLabel}>Fecha:</span>
-                          <span className={styles.time}>
-                            {new Date(tx.timestamp).toLocaleString()}
-                          </span>
+                                    <div className={styles.timeSection}>
+                                      <span className={styles.timeLabel}>Fecha:</span>
+                                      <span className={styles.time}>
+                                        {new Date(tx.timestamp).toLocaleString()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+            </div>
+          </div>
         )}
       </div>
     </div>

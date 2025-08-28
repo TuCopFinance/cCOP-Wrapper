@@ -7,7 +7,7 @@ interface TokenBalances {
   avax?: string;
 }
 import { useGlobalBalances } from "../context/BalanceContext";
-import { formatTokenAmount } from "@/utils/price-feeds";
+import { formatTokenAmount } from "@/utils/number-format";
 import {
   FiRefreshCcw,
   FiChevronDown,
@@ -172,7 +172,7 @@ export const BalanceIndicators = () => {
                 ? "Loading..."
                 : parseFloat(balances.celo) > 0
                 ? formatTokenAmount(parseFloat(balances.celo), "cCOP")
-                : "0.00 cCOP"}
+                : "0,00 cCOP"}
             </p>
             <button
               className={styles.addTokenBtn}
@@ -195,7 +195,7 @@ export const BalanceIndicators = () => {
                 ? "Loading..."
                 : parseFloat(balances.op || "0") > 0
                 ? formatTokenAmount(parseFloat(balances.op || "0"), "wcCOP")
-                : "0.00 wcCOP"}
+                : "0,00 wcCOP"}
             </p>
             <button
               className={styles.addTokenBtn}
@@ -218,7 +218,7 @@ export const BalanceIndicators = () => {
                 ? "Loading..."
                 : parseFloat(balances.avax || "0") > 0
                 ? formatTokenAmount(parseFloat(balances.avax || "0"), "wcCOP")
-                : "0.00 wcCOP"}
+                : "0,00 wcCOP"}
             </p>
             <button
               className={styles.addTokenBtn}
@@ -241,7 +241,7 @@ export const BalanceIndicators = () => {
                 ? "Loading..."
                 : parseFloat(balances.base) > 0
                 ? formatTokenAmount(parseFloat(balances.base), "wcCOP")
-                : "0.00 wcCOP"}
+                : "0,00 wcCOP"}
             </p>
             <button
               className={styles.addTokenBtn}
@@ -264,7 +264,7 @@ export const BalanceIndicators = () => {
                 ? "Loading..."
                 : parseFloat(balances.arb) > 0
                 ? formatTokenAmount(parseFloat(balances.arb), "wcCOP")
-                : "0.00 wcCOP"}
+                : "0,00 wcCOP"}
             </p>
             <button
               className={styles.addTokenBtn}

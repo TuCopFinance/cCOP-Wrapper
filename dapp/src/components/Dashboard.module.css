@@ -1,6 +1,6 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  background-color: var(--background);
   padding: 20px;
   color: #fff;
 }
@@ -11,10 +11,9 @@
   align-items: flex-start;
   margin-bottom: 32px;
   padding: 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
+  background: var(--box);
+  border: 1px solid #444444;
+  border-radius: 8px;
 }
 
 .headerContent {
@@ -22,13 +21,10 @@
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   margin: 0 0 8px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #fff;
 }
 
 .subtitle {
@@ -39,7 +35,7 @@
 }
 
 .backButton {
-  background: linear-gradient(135deg, var(--primary), rgba(0, 123, 255, 0.8));
+  background: var(--primary);
   color: white;
   border: none;
   padding: 12px 20px;
@@ -54,8 +50,8 @@
 }
 
 .backButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  background: var(--secondary);
+  transform: translateY(-1px);
 }
 
 .connectSection {
@@ -63,10 +59,9 @@
   justify-content: center;
   align-items: center;
   min-height: 400px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
+  background: var(--box);
+  border: 1px solid #444444;
+  border-radius: 8px;
 }
 
 @media (max-width: 768px) {

@@ -247,22 +247,32 @@
 }
 
 .actionButtonInactive {
-  color: #888888;
-  background-color: #444444;
-  border: none;
-  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
   cursor: not-allowed;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .actionButtonActive {
   color: #ffffff;
-  background-color: var(--primary);
-  border: none;
-  border-radius: 4px;
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.actionButtonActive:hover {
+  background: var(--secondary);
+  border-color: var(--secondary);
+  transform: translateY(-1px);
 }
 
 /* Amount Container Styles */

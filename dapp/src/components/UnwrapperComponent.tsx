@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { formatNumber, formatPercentage } from "@/utils/number-format";
 import styles from "./UnwrapperComponent.module.css";
 import {
   getAccount,
@@ -882,7 +883,7 @@ export const UnwrapperComponent = () => {
                 Porcentaje del saldo:
               </span>
               <span className={styles.predictionValue}>
-                {amountPrediction.percentageOfBalance?.toFixed(1)}%
+                {amountPrediction.percentageOfBalance ? formatPercentage(amountPrediction.percentageOfBalance, 1) : ''}
               </span>
             </div>
             <div className={styles.predictionItem}>

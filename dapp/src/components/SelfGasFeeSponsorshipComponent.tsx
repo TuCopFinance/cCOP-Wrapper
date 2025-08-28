@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { address } from "@/constants/address";
 import GasFeeSponsorship from "@/constants/abis/GasFeeSponsorship.json";
 import { chainID } from "@/constants/chainID";
+import { formatNumber } from "@/utils/number-format";
 
 const GasFeeSponsorshipContract = {
   address: address.mainnet.GasFeeSponsorship as `0x${string}`,
@@ -220,7 +221,7 @@ export const SelfGasFeeSponsorshipComponent = ({
           >
             <p>
               Has verificado tu humanidad, se te ha depositado{" "}
-              {(Number(quote) / 1e18).toFixed(6)} CELO en tu cuenta
+              {formatNumber(Number(quote) / 1e18, 6)} CELO en tu cuenta
             </p>
             <button
               onClick={() => {
