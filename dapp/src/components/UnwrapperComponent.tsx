@@ -18,7 +18,7 @@ import toast from "react-hot-toast";
 import { waitForIsDelivered } from "../utils/hyperlane";
 import type { Abi } from "viem";
 import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
-import { BalanceIndicators } from "./BalanceIndicators";
+import { BalanceIndicatorsUnwrap } from "./BalanceIndicatorsUnwrap";
 import { useWalletClient } from "wagmi";
 import {
   isMobile,
@@ -36,6 +36,7 @@ import {
   formatHyperlanePrice,
   formatUSDValue,
   formatTokenAmount,
+  getFallbackIndicator,
 } from "@/utils/price-feeds";
 import Image from "next/image";
 
@@ -412,7 +413,15 @@ export const UnwrapperComponent = () => {
           setHasSufficientAmount(data[0].result >= amountFixed);
 
           // Format the price in USD
-          formatHyperlanePrice(data[1].result, false).then(setFormattedPrice);
+          const targetChainId =
+            chainToUnwrap === "base"
+              ? chainID.mainnet.base
+              : chainToUnwrap === "arbitrum"
+              ? chainID.mainnet.arb
+              : chainToUnwrap === "optimism"
+              ? chainID.mainnet.op
+              : chainID.mainnet.avax;
+          formatHyperlanePrice(data[1].result, false, targetChainId).then(setFormattedPrice);
         } else {
           console.error("Failed to get valid data from contracts");
           console.error("Data[0] type:", typeof data[0].result);
@@ -833,7 +842,7 @@ export const UnwrapperComponent = () => {
   // Render
   return (
     <>
-      <BalanceIndicators />
+      <BalanceIndicatorsUnwrap />
 
       <div className={styles.amountContainer}>
         <label className={styles.amountLabel}>Amount</label>
@@ -1036,7 +1045,12 @@ export const UnwrapperComponent = () => {
 
           {formattedPrice && (
             <div className={styles.costItem}>
-              <span className={styles.costLabel}>Precio de unwrapping:</span>
+              <span className={styles.costLabel}>
+                Precio de unwrapping:
+                <span style={{ color: '#ef4444', fontSize: '12px' }}>
+                  {getFallbackIndicator('cop')}
+                </span>
+              </span>
               <span className={styles.costValue}>{formattedPrice}</span>
             </div>
           )}
@@ -1045,7 +1059,14 @@ export const UnwrapperComponent = () => {
             amountValidation?.isValid &&
             amountPrediction.gasEstimate && (
               <div className={styles.costItem}>
-                <span className={styles.costLabel}>Gas estimado:</span>
+                <span className={styles.costLabel}>
+                  Gas estimado:
+                  <span style={{ color: '#ef4444', fontSize: '12px' }}>
+                    {getFallbackIndicator(
+                      chainToUnwrap === 'avalanche' ? 'avax' : 'eth'
+                    )}
+                  </span>
+                </span>
                 <span className={styles.costValue}>
                   {amountPrediction.gasEstimate}
                 </span>

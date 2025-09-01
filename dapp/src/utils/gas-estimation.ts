@@ -5,7 +5,7 @@ import { chainID } from '@/constants/chainID';
 import Treasury from '@/constants/abis/Treasury.json';
 import WrappedCCOP from '@/constants/abis/WrappedCCOP.json';
 import { formatEther, parseEther } from 'viem';
-import { formatGasAndTokenPriceWithUSD, getCELOUSDPrice, getETHUSDPrice } from '@/utils/price-feeds';
+import { formatGasAndTokenPriceWithUSD, getCELOUSDPrice, getETHUSDPrice, getAVAXUSDPrice } from '@/utils/price-feeds';
 
 // Gas estimation constants
 const GAS_ESTIMATES = {
@@ -31,9 +31,11 @@ export const getGasTokenName = (chainId: number): string => {
   switch (chainId) {
     case chainID.mainnet.celo:
       return 'CELO';
+    case chainID.mainnet.avax:
+      return 'AVAX';
     case chainID.mainnet.base:
     case chainID.mainnet.arb:
-  case chainID.mainnet.avax:
+    case chainID.mainnet.op:
       return 'ETH';
     default:
       return 'ETH';
@@ -66,12 +68,20 @@ export const calculateApproximateGas = async (amount: string, chainId: number): 
   try {
     if (chainId === chainID.mainnet.celo) {
       usdPrice = await getCELOUSDPrice();
+    } else if (chainId === chainID.mainnet.avax) {
+      usdPrice = await getAVAXUSDPrice();
     } else {
       usdPrice = await getETHUSDPrice();
     }
   } catch (error) {
     console.error('Error getting USD price for gas estimation:', error);
-    usdPrice = chainId === chainID.mainnet.celo ? 0.5 : 3000; // Fallback prices
+    if (chainId === chainID.mainnet.celo) {
+      usdPrice = 0.5; // Fallback CELO price
+    } else if (chainId === chainID.mainnet.avax) {
+      usdPrice = 35; // Fallback AVAX price
+    } else {
+      usdPrice = 3000; // Fallback ETH price
+    }
   }
   
   // Calculate USD value
@@ -213,17 +223,25 @@ export const estimateUnwrapGas = async (
     
     const tokenName = getGasTokenName(targetChainId);
     
-    // Get ETH USD price
-    let ethUsdPrice: number;
+    // Get USD price for the gas token
+    let usdPrice: number;
     try {
-      ethUsdPrice = await getETHUSDPrice();
+      if (targetChainId === chainID.mainnet.avax) {
+        usdPrice = await getAVAXUSDPrice();
+      } else {
+        usdPrice = await getETHUSDPrice();
+      }
     } catch (error) {
-      console.error('Error getting ETH USD price:', error);
-      ethUsdPrice = 3000; // Fallback price
+      console.error('Error getting USD price for unwrap gas estimation:', error);
+      if (targetChainId === chainID.mainnet.avax) {
+        usdPrice = 35; // Fallback AVAX price
+      } else {
+        usdPrice = 3000; // Fallback ETH price
+      }
     }
     
     // Calculate USD value
-    const usdValue = roundedGasCost * ethUsdPrice;
+    const usdValue = roundedGasCost * usdPrice;
     
     // Format the result with USD value first
     const result = formatGasAndTokenPriceWithUSD(usdValue, roundedGasCost, tokenName);

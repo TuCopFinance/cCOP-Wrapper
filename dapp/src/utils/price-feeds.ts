@@ -1,7 +1,8 @@
 import { config } from '@/config';
 import { readContract } from '@wagmi/core';
-import { PRICE_FEED_ADDRESSES, FALLBACK_PRICES } from '@/constants/price-feeds';
+import { PRICE_FEED_ADDRESSES, FALLBACK_PRICES, TOKEN_PRICE_FEEDS } from '@/constants/price-feeds';
 import { formatNumber, formatUSDAmount } from '@/utils/number-format';
+// Remove toast import as we'll use inline indicators instead
 
 // Polygon chain ID for price feed reading
 const POLYGON_CHAIN_ID = 137;
@@ -31,6 +32,34 @@ let priceCache: {
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Track which price feeds are using fallback prices
+// null = not called yet, false = working, true = using fallback
+export const fallbackPriceStatus = {
+  copUsd: null as boolean | null,
+  celoUsd: null as boolean | null,
+  ethUsd: null as boolean | null,
+  avaxUsd: null as boolean | null,
+};
+
+// Force reset on every module load to ensure clean state
+fallbackPriceStatus.copUsd = null;
+fallbackPriceStatus.celoUsd = null;
+fallbackPriceStatus.ethUsd = null;
+fallbackPriceStatus.avaxUsd = null;
+
+// Debug: let's see the initial state
+console.log('🚀 Initial fallbackPriceStatus (force reset):', fallbackPriceStatus);
+
+/**
+ * Reset fallback status (useful for testing)
+ */
+export const resetFallbackStatus = (): void => {
+  fallbackPriceStatus.copUsd = null;
+  fallbackPriceStatus.celoUsd = null;
+  fallbackPriceStatus.ethUsd = null;
+  fallbackPriceStatus.avaxUsd = null;
+};
+
 /**
  * Get the latest COP/USD price from Chainlink price feeds
  * @param chainId - The chain ID to get the price for
@@ -44,39 +73,33 @@ export const getCOPUSDPrice = async (chainId: number): Promise<number> => {
       return priceCache.price;
     }
 
-    const priceFeedAddress = PRICE_FEED_ADDRESSES[chainId as keyof typeof PRICE_FEED_ADDRESSES];
+    console.log('Reading COP/USD price from Celo Chainlink feed:', TOKEN_PRICE_FEEDS.COP_USD);
     
-    // If no price feed address is configured, use fallback
-    if (!priceFeedAddress || priceFeedAddress === "0x0000000000000000000000000000000000000000") {
-      console.log('No Chainlink price feed configured for chain', chainId, 'using fallback price');
-      return FALLBACK_PRICES.COP_USD;
-    }
-
-    // Always read from Polygon chain since we're using Polygon price feeds
-    console.log('Reading COP/USD price from Polygon price feed:', priceFeedAddress);
+    // Read from Celo mainnet COP/USD price feed
     const result = await readContract(config, {
-      address: priceFeedAddress as `0x${string}`,
+      address: TOKEN_PRICE_FEEDS.COP_USD as `0x${string}`,
       abi: CHAINLINK_PRICE_FEED_ABI,
       functionName: 'latestRoundData',
-      chainId: POLYGON_CHAIN_ID, // Always use Polygon chain ID
+      chainId: 42220, // Celo Mainnet
     });
 
-    // Chainlink prices are typically returned with 8 decimals
-    // result is a tuple: [roundId, answer, startedAt, updatedAt, answeredInRound]
+    // Chainlink COP/USD prices are typically returned with 8 decimals
     const price = Number(result[1]) / 100000000;
     
-    console.log('Chainlink COP/USD price for chain', chainId, ':', price);
+    console.log('Chainlink COP/USD price:', price);
     
-    // Cache the price
+    // Cache the price and reset fallback status
     priceCache = {
       price,
       timestamp: Date.now()
     };
     
+    fallbackPriceStatus.copUsd = false;
     return price;
   } catch (error) {
     console.error('Error fetching COP/USD price from Chainlink:', error);
     console.log('Using fallback COP/USD price:', FALLBACK_PRICES.COP_USD);
+    fallbackPriceStatus.copUsd = true;
     return FALLBACK_PRICES.COP_USD;
   }
 };
@@ -177,6 +200,35 @@ export const clearPriceCache = (): void => {
 };
 
 /**
+ * Get fallback indicator text for UI labels
+ * @param tokenType - The token type ('celo', 'eth', 'avax', 'cop')
+ * @returns Red warning text if fallback is being used, empty string otherwise
+ */
+export const getFallbackIndicator = (tokenType: 'celo' | 'eth' | 'avax' | 'cop'): string => {
+  const statusMap = {
+    celo: fallbackPriceStatus.celoUsd,
+    eth: fallbackPriceStatus.ethUsd,
+    avax: fallbackPriceStatus.avaxUsd,
+    cop: fallbackPriceStatus.copUsd,
+  };
+  
+  const result = statusMap[tokenType] === true ? ' (precio estimado)' : '';
+  
+  console.log(`🔍 getFallbackIndicator(${tokenType}):`, {
+    status: statusMap[tokenType],
+    statusType: typeof statusMap[tokenType],
+    strictComparison: statusMap[tokenType] === true,
+    fullStatus: fallbackPriceStatus,
+    result: result,
+    resultLength: result.length
+  });
+  
+  // Only show warning if explicitly set to true (fallback is being used)
+  // null = not called yet, false = working, true = using fallback
+  return result;
+};
+
+/**
  * Debug function to test price feed functionality
  */
 export const debugPriceFeed = async (chainId: number, amount: string): Promise<void> => {
@@ -210,12 +262,26 @@ export const debugPriceFeed = async (chainId: number, amount: string): Promise<v
  */
 export const getCELOUSDPrice = async (): Promise<number> => {
   try {
-    // For now, using fallback price since we don't have CELO/USD feed configured
-    // TODO: Add actual CELO/USD price feed address
-    console.log('Using fallback CELO/USD price:', FALLBACK_PRICES.CELO_USD);
-    return FALLBACK_PRICES.CELO_USD;
+    console.log('Reading CELO/USD price from Chainlink feed:', TOKEN_PRICE_FEEDS.CELO_USD);
+    
+    // Read from Celo mainnet CELO/USD price feed
+    const result = await readContract(config, {
+      address: TOKEN_PRICE_FEEDS.CELO_USD as `0x${string}`,
+      abi: CHAINLINK_PRICE_FEED_ABI,
+      functionName: 'latestRoundData',
+      chainId: 42220, // Celo Mainnet
+    });
+
+    // Chainlink CELO/USD prices are typically returned with 8 decimals
+    const price = Number(result[1]) / 100000000;
+    
+    console.log('Chainlink CELO/USD price:', price);
+    fallbackPriceStatus.celoUsd = false;
+    return price;
   } catch (error) {
-    console.error('Error fetching CELO/USD price:', error);
+    console.error('Error fetching CELO/USD price from Chainlink:', error);
+    console.log('Using fallback CELO/USD price:', FALLBACK_PRICES.CELO_USD);
+    fallbackPriceStatus.celoUsd = true;
     return FALLBACK_PRICES.CELO_USD;
   }
 };
@@ -226,23 +292,68 @@ export const getCELOUSDPrice = async (): Promise<number> => {
  */
 export const getETHUSDPrice = async (): Promise<number> => {
   try {
-    // For now, using fallback price since we don't have ETH/USD feed configured
-    // TODO: Add actual ETH/USD price feed address
-    console.log('Using fallback ETH/USD price:', FALLBACK_PRICES.ETH_USD);
-    return FALLBACK_PRICES.ETH_USD;
+    console.log('Reading ETH/USD price from Chainlink feed:', TOKEN_PRICE_FEEDS.ETH_USD);
+    
+    // Read from Ethereum mainnet ETH/USD price feed
+    const result = await readContract(config, {
+      address: TOKEN_PRICE_FEEDS.ETH_USD as `0x${string}`,
+      abi: CHAINLINK_PRICE_FEED_ABI,
+      functionName: 'latestRoundData',
+      chainId: 1, // Ethereum Mainnet
+    });
+
+    // Chainlink ETH/USD prices are typically returned with 8 decimals
+    const price = Number(result[1]) / 100000000;
+    
+    console.log('Chainlink ETH/USD price:', price);
+    fallbackPriceStatus.ethUsd = false;
+    return price;
   } catch (error) {
-    console.error('Error fetching ETH/USD price:', error);
+    console.error('Error fetching ETH/USD price from Chainlink:', error);
+    console.log('Using fallback ETH/USD price:', FALLBACK_PRICES.ETH_USD);
+    fallbackPriceStatus.ethUsd = true;
     return FALLBACK_PRICES.ETH_USD;
+  }
+};
+
+/**
+ * Get the latest AVAX/USD price from Chainlink price feeds
+ * @returns The AVAX/USD price as a number
+ */
+export const getAVAXUSDPrice = async (): Promise<number> => {
+  try {
+    console.log('Reading AVAX/USD price from Chainlink feed:', TOKEN_PRICE_FEEDS.AVAX_USD);
+    
+    // Read from Avalanche mainnet AVAX/USD price feed
+    const result = await readContract(config, {
+      address: TOKEN_PRICE_FEEDS.AVAX_USD as `0x${string}`,
+      abi: CHAINLINK_PRICE_FEED_ABI,
+      functionName: 'latestRoundData',
+      chainId: 43114, // Avalanche Mainnet
+    });
+
+    // Chainlink AVAX/USD prices are typically returned with 8 decimals
+    const price = Number(result[1]) / 100000000;
+    
+    console.log('Chainlink AVAX/USD price:', price);
+    fallbackPriceStatus.avaxUsd = false;
+    return price;
+  } catch (error) {
+    console.error('Error fetching AVAX/USD price from Chainlink:', error);
+    console.log('Using fallback AVAX/USD price:', FALLBACK_PRICES.AVAX_USD);
+    fallbackPriceStatus.avaxUsd = true;
+    return FALLBACK_PRICES.AVAX_USD;
   }
 };
 
 /**
  * Format Hyperlane price in USD with original token amount in parentheses
  * @param quote - The quote amount in wei
- * @param isWrapping - Whether this is for wrapping (CELO) or unwrapping (ETH)
- * @returns Formatted price string like "$X.XX USD (Y.YYYY CELO/ETH)"
+ * @param isWrapping - Whether this is for wrapping (CELO) or unwrapping (ETH/AVAX)
+ * @param chainId - Optional chain ID to determine if AVAX should be used (only for unwrapping)
+ * @returns Formatted price string like "$X.XX USD (Y.YYYY CELO/ETH/AVAX)"
  */
-export const formatHyperlanePrice = async (quote: bigint, isWrapping: boolean): Promise<string> => {
+export const formatHyperlanePrice = async (quote: bigint, isWrapping: boolean, chainId?: number): Promise<string> => {
   try {
     const quoteInEther = Number(quote) / 1e18;
     
@@ -250,13 +361,19 @@ export const formatHyperlanePrice = async (quote: bigint, isWrapping: boolean): 
     let tokenName: string;
     
     if (isWrapping) {
-      // Wrapping uses CELO
+      // Wrapping always uses CELO
       usdPrice = await getCELOUSDPrice();
       tokenName = 'CELO';
     } else {
-      // Unwrapping uses ETH
-      usdPrice = await getETHUSDPrice();
-      tokenName = 'ETH';
+      // Unwrapping: check if it's Avalanche
+      if (chainId === 43114) { // Avalanche chain ID
+        usdPrice = await getAVAXUSDPrice();
+        tokenName = 'AVAX';
+      } else {
+        // Default to ETH for other chains
+        usdPrice = await getETHUSDPrice();
+        tokenName = 'ETH';
+      }
     }
     
     const usdValue = quoteInEther * usdPrice;
@@ -266,7 +383,14 @@ export const formatHyperlanePrice = async (quote: bigint, isWrapping: boolean): 
     console.error('Error formatting Hyperlane price:', error);
     // Fallback to original format
     const quoteInEther = Number(quote) / 1e18;
-    const tokenName = isWrapping ? 'CELO' : 'ETH';
+    let tokenName: string;
+    if (isWrapping) {
+      tokenName = 'CELO';
+    } else if (chainId === 43114) {
+      tokenName = 'AVAX';
+    } else {
+      tokenName = 'ETH';
+    }
     return `${formatNumber(quoteInEther, 4)} ${tokenName}`;
   }
 }; 

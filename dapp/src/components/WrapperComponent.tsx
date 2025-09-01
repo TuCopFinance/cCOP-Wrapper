@@ -18,7 +18,7 @@ import { waitForIsDelivered } from "../utils/hyperlane";
 import type { Abi } from "viem";
 import { generateReferralTag, submitDivviReferral } from "@/utils/divvi";
 import { getReferralTag } from "@divvi/referral-sdk";
-import { BalanceIndicators } from "./BalanceIndicators";
+import { BalanceIndicatorsWrap } from "./BalanceIndicatorsWrap";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import {
   isMobile,
@@ -36,6 +36,7 @@ import {
   formatHyperlanePrice,
   formatUSDValue,
   formatTokenAmount as formatPriceAmount,
+  getFallbackIndicator,
 } from "@/utils/price-feeds";
 import { formatNumber, formatPercentage, formatTokenAmount } from "@/utils/number-format";
 import Image from "next/image";
@@ -713,7 +714,7 @@ export const WrapperComponent = () => {
   // --- Render ---
   return (
     <>
-      <BalanceIndicators />
+      <BalanceIndicatorsWrap />
 
       <div className={styles.amountContainer}>
         <label className={styles.amountLabel}>Amount</label>
@@ -885,7 +886,12 @@ export const WrapperComponent = () => {
 
           {formattedPrice && (
             <div className={styles.costItem}>
-              <span className={styles.costLabel}>Precio de wrapping:</span>
+              <span className={styles.costLabel}>
+                Precio de wrapping:
+                <span style={{ color: '#ef4444', fontSize: '12px' }}>
+                  {getFallbackIndicator('cop')}
+                </span>
+              </span>
               <span className={styles.costValue}>{formattedPrice}</span>
             </div>
           )}
@@ -895,7 +901,12 @@ export const WrapperComponent = () => {
             amountPrediction.gasEstimate && (
               <>
                 <div className={styles.costItem}>
-                  <span className={styles.costLabel}>Gas estimado:</span>
+                  <span className={styles.costLabel}>
+                    Gas estimado:
+                    <span style={{ color: '#ef4444', fontSize: '12px' }}>
+                      {getFallbackIndicator('celo')}
+                    </span>
+                  </span>
                   <span className={styles.costValue}>
                     {amountPrediction.gasEstimate}
                   </span>

@@ -1,0 +1,251 @@
+import React, { useState } from "react";
+interface TokenBalances {
+  base: string;
+  arb: string;
+  celo: string;
+  op?: string;
+  avax?: string;
+}
+import { useGlobalBalances } from "../context/BalanceContext";
+import { formatTokenAmount } from "@/utils/number-format";
+import {
+  FiRefreshCcw,
+  FiChevronDown,
+  FiChevronUp,
+  FiPlus,
+} from "react-icons/fi";
+import { useWalletClient } from "wagmi";
+import Image from "next/image";
+import { switchChain } from "@wagmi/core";
+import { config } from "@/config";
+import { chainID } from "@/constants/chainID";
+import { address } from "@/constants/address";
+import toast from "react-hot-toast";
+import styles from "./BalanceIndicators.module.css";
+
+export const BalanceIndicatorsUnwrap = () => {
+  const { balances, isLoading, error, refresh } = useGlobalBalances() as {
+    balances: TokenBalances;
+    isLoading: boolean;
+    error: string | null;
+    refresh: () => void;
+  };
+  const [showDetails, setShowDetails] = useState(false);
+  const { data: walletClient } = useWalletClient();
+
+  const total = [
+    balances.base,
+    balances.arb,
+    balances.op || "0",
+    balances.avax || "0",
+  ].reduce((acc, v) => acc + parseFloat(v), 0);
+
+  console.log("=== BALANCE INDICATORS UNWRAP RENDER ===");
+  console.log("wcCOP balances (excluding Celo):", {
+    base: balances.base,
+    arb: balances.arb,
+    op: balances.op,
+    avax: balances.avax,
+  });
+  console.log("Total wcCOP:", formatTokenAmount(total, "wcCOP"));
+
+  const handleRefresh = () => {
+    console.log("Manual refresh triggered");
+    refresh();
+  };
+
+  const addTokenToWallet = async (network: "base" | "arb" | "op" | "avax") => {
+    if (!walletClient) {
+      toast.error("No wallet client detected", {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+      return;
+    }
+
+    try {
+      const targetChainId = chainID.mainnet[network];
+      await switchChain(config, { chainId: targetChainId });
+
+      const tokenConfig = {
+        base: {
+          address: address.mainnet.wrapToken.base as `0x${string}`,
+          symbol: "wcCOP",
+          decimals: 18,
+          image: "/cCOP_token.png",
+        },
+        arb: {
+          address: address.mainnet.wrapToken.arb as `0x${string}`,
+          symbol: "wcCOP",
+          decimals: 18,
+          image: "/cCOP_token.png",
+        },
+        op: {
+          address: address.mainnet.wrapToken.op as `0x${string}`,
+          symbol: "wcCOP",
+          decimals: 18,
+          image: "/cCOP_token.png",
+        },
+        avax: {
+          address: address.mainnet.wrapToken.avax as `0x${string}`,
+          symbol: "wcCOP",
+          decimals: 18,
+          image: "/cCOP_token.png",
+        },
+      } as const;
+
+      const success = await walletClient.watchAsset({
+        type: "ERC20",
+        options: tokenConfig[network],
+      });
+
+      if (success) {
+        toast.success(`wcCOP added to your wallet`, {
+          position: "bottom-right",
+          style: { background: "#333", color: "#fff" },
+        });
+      } else {
+        toast.error("User rejected adding the token", {
+          position: "bottom-right",
+          style: { background: "#333", color: "#fff" },
+        });
+      }
+    } catch (error) {
+      console.error("Error adding token to wallet:", error);
+      toast.error("Failed to add token to wallet", {
+        position: "bottom-right",
+        style: { background: "#333", color: "#fff" },
+      });
+    }
+  };
+
+  return (
+    <div className={styles.balanceIndicators}>
+      <div className={styles.balanceMenuBox}>
+        <button
+          className={
+            showDetails ? styles.refreshBtnOpen : styles.refreshBtnClose
+          }
+          onClick={handleRefresh}
+          title="Refresh balances"
+        >
+          <FiRefreshCcw />
+        </button>
+        <div
+          className={
+            showDetails ? styles.totalDataBoxOpen : styles.totalDataBoxClose
+          }
+          onClick={() => setShowDetails((v) => !v)}
+        >
+          <div className={styles.textTotalBox}>
+            <p className={styles.defaultLabel}>
+              {isLoading
+                ? "Loading..."
+                : error
+                ? "Error loading balances"
+                : `Total: ${formatTokenAmount(total, "wcCOP")}`}
+            </p>
+          </div>
+          {showDetails ? <FiChevronUp /> : <FiChevronDown />}
+        </div>
+      </div>
+
+      {showDetails && (
+        <div className={styles.listOfAssets}>
+          <div className={`${styles.indicator} ${styles.base}`}>
+            <Image
+              src="/assets/Base.png"
+              alt="wcCOP Token"
+              width={24}
+              height={24}
+            />
+            <p>
+              Base:{" "}
+              {isLoading
+                ? "Loading..."
+                : parseFloat(balances.base) > 0
+                ? formatTokenAmount(parseFloat(balances.base), "wcCOP")
+                : "0,00 wcCOP"}
+            </p>
+            <button
+              className={styles.addTokenBtn}
+              onClick={() => addTokenToWallet("base")}
+              title="Add wcCOP to wallet"
+            >
+              <FiPlus />
+            </button>
+          </div>
+          <div className={`${styles.indicator} ${styles.arb}`}>
+            <Image
+              src="/assets/Arbitrum.png"
+              alt="wcCOP Token"
+              width={24}
+              height={24}
+            />
+            <p>
+              Arbitrum:{" "}
+              {isLoading
+                ? "Loading..."
+                : parseFloat(balances.arb) > 0
+                ? formatTokenAmount(parseFloat(balances.arb), "wcCOP")
+                : "0,00 wcCOP"}
+            </p>
+            <button
+              className={styles.addTokenBtn}
+              onClick={() => addTokenToWallet("arb")}
+              title="Add wcCOP to wallet"
+            >
+              <FiPlus />
+            </button>
+          </div>
+          <div className={`${styles.indicator} ${styles.op}`}>
+            <Image
+              src="/assets/Optimism.svg"
+              alt="wcCOP Token"
+              width={24}
+              height={24}
+            />
+            <p>
+              Optimism:{" "}
+              {isLoading
+                ? "Loading..."
+                : parseFloat(balances.op || "0") > 0
+                ? formatTokenAmount(parseFloat(balances.op || "0"), "wcCOP")
+                : "0,00 wcCOP"}
+            </p>
+            <button
+              className={styles.addTokenBtn}
+              onClick={() => addTokenToWallet("op")}
+              title="Add wcCOP to wallet"
+            >
+              <FiPlus />
+            </button>
+          </div>
+          <div className={`${styles.indicator} ${styles.avax}`}>
+            <Image
+              src="/assets/Avalanche.svg"
+              alt="wcCOP Token"
+              width={24}
+              height={24}
+            />
+            <p>
+              Avalanche:{" "}
+              {isLoading
+                ? "Loading..."
+                : parseFloat(balances.avax || "0") > 0
+                ? formatTokenAmount(parseFloat(balances.avax || "0"), "wcCOP")
+                : "0,00 wcCOP"}
+            </p>
+            <button
+              className={styles.addTokenBtn}
+              onClick={() => addTokenToWallet("avax")}
+              title="Add wcCOP to wallet"
+            >
+              <FiPlus />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
