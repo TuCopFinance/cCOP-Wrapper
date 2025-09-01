@@ -4,8 +4,8 @@ import { PRICE_FEED_ADDRESSES, FALLBACK_PRICES, TOKEN_PRICE_FEEDS } from '@/cons
 import { formatNumber, formatUSDAmount } from '@/utils/number-format';
 // Remove toast import as we'll use inline indicators instead
 
-// Polygon chain ID for price feed reading
-const POLYGON_CHAIN_ID = 137;
+// Polygon chain ID for price feed reading (currently unused)
+// const POLYGON_CHAIN_ID = 137;
 
 // Chainlink Price Feed ABI (simplified for latestRoundData)
 const CHAINLINK_PRICE_FEED_ABI = [
@@ -65,7 +65,7 @@ export const resetFallbackStatus = (): void => {
  * @param chainId - The chain ID to get the price for
  * @returns The COP/USD price as a number
  */
-export const getCOPUSDPrice = async (chainId: number): Promise<number> => {
+export const getCOPUSDPrice = async (chainId: number): Promise<number> => { // eslint-disable-line @typescript-eslint/no-unused-vars
   try {
     // Check cache first
     if (priceCache && Date.now() - priceCache.timestamp < CACHE_DURATION) {
