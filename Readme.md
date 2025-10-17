@@ -128,6 +128,7 @@ Our dApp provides a secure, decentralized, and intuitive way to bridge cCOP toke
 │   └── next.config.ts # Next.js configuration
 │
 ├── docs/              # Documentation
+│   ├── CONTRACTS.md   # Smart contracts documentation
 │   ├── FARCASTER.md   # Farcaster miniapp integration guide
 │   └── DIVVI_INTEGRATION.md # Divvi referral system integration
 │
@@ -337,6 +338,7 @@ This project is licensed under the MIT License. See the [license](license) file 
 
 ## Additional Documentation
 
+- [Smart Contracts](docs/CONTRACTS.md) - Contract architecture and testing
 - [Farcaster Miniapp Integration](docs/FARCASTER.md) - Setup and deployment guide
 - [Divvi Referral Integration](docs/DIVVI_INTEGRATION.md) - Referral tracking implementation
 
