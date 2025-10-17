@@ -1,6 +1,6 @@
-# Farcaster Miniapp Setup Guide
+# Farcaster Miniapp Integration
 
-This guide explains how to complete the Farcaster miniapp integration for the cCOP Wrapper application.
+Complete guide for the Farcaster miniapp integration for cCOP Wrapper.
 
 ## Prerequisites
 
@@ -190,11 +190,22 @@ If you encounter issues during setup:
 3. Review the Farcaster documentation
 4. Test with the Farcaster embed tool
 
+## Important: Ready() Call Implementation
+
+The app includes multiple safeguards to ensure `sdk.actions.ready()` is called properly:
+
+1. **100ms delay** before calling ready() ensures DOM is fully rendered
+2. **Multiple detection methods** for Farcaster environment (SDK context, window properties, user agent)
+3. **Safety mechanism** that calls ready() after 500ms as fallback
+4. **Graceful error handling** prevents infinite loading screen
+
+All of this is handled automatically by the FarcasterContext. You don't need to manually call ready().
+
 ## Next Steps
 
 After completing the integration:
-1. Monitor the webhook endpoint for events
-2. Consider adding social features (cast composition)
-3. Implement analytics to track miniapp usage
-4. Optimize the user experience based on feedback
+1. Generate account association signature (see above)
+2. Update manifest with your FID and signature
+3. Deploy and test in Farcaster client
+4. Monitor the webhook endpoint for events
 
