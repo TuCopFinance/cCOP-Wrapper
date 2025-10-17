@@ -205,7 +205,7 @@ NEXT_PUBLIC_ENABLE_TESTNETS=
 
 This dApp is fully integrated as a Farcaster miniapp, allowing users to bridge tokens directly within the Farcaster ecosystem.
 
-**For complete setup instructions, see [../docs/FARCASTER.md](../docs/FARCASTER.md)**
+**For complete setup instructions, see [../docs/farcaster.md](../docs/farcaster.md)**
 
 ### Key Features
 
