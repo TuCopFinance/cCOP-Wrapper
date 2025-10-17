@@ -127,6 +127,10 @@ Our dApp provides a secure, decentralized, and intuitive way to bridge cCOP toke
 │   ├── package.json   # Frontend dependencies
 │   └── next.config.ts # Next.js configuration
 │
+├── docs/              # Documentation
+│   ├── FARCASTER.md   # Farcaster miniapp integration guide
+│   └── DIVVI_INTEGRATION.md # Divvi referral system integration
+│
 └── README.md          # This file
 ```
 
@@ -330,6 +334,11 @@ pnpm build     # Production build test
 ## License
 
 This project is licensed under the MIT License. See the [license](license) file for more details.
+
+## Additional Documentation
+
+- [Farcaster Miniapp Integration](docs/FARCASTER.md) - Setup and deployment guide
+- [Divvi Referral Integration](docs/DIVVI_INTEGRATION.md) - Referral tracking implementation
 
 ## Links
 

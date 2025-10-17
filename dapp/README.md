@@ -205,45 +205,14 @@ NEXT_PUBLIC_ENABLE_TESTNETS=
 
 This dApp is fully integrated as a Farcaster miniapp, allowing users to bridge tokens directly within the Farcaster ecosystem.
 
-### Features
+**For complete setup instructions, see [../docs/FARCASTER.md](../docs/FARCASTER.md)**
+
+### Key Features
 
 - **Auto-Connect**: Automatically connects to Farcaster wallet when opened in miniapp
 - **User Context**: Displays Farcaster user information (username, profile picture)
 - **Seamless Experience**: Full wrapping and unwrapping functionality within Farcaster
 - **Webhook Support**: Receives notifications and events from Farcaster
-
-### Manifest Configuration
-
-The Farcaster manifest is located at `public/.well-known/farcaster.json` and includes:
-- App metadata (name, description, icons)
-- Webhook endpoint configuration
-- Account association (domain ownership proof)
-- Frame metadata for display
-
-### Account Association Setup
-
-To complete the Farcaster integration, you need to generate the account association signature:
-
-1. Obtain your Farcaster FID (Farcaster ID)
-2. Generate the domain ownership proof using the Farcaster CLI or API
-3. Update the `accountAssociation` fields in `public/.well-known/farcaster.json`:
-   - `header`: Base64-encoded header with FID and key
-   - `payload`: Base64-encoded payload with domain
-   - `signature`: Cryptographic signature proving ownership
-
-### Testing as Miniapp
-
-1. Deploy the app to a public URL (e.g., Vercel, Netlify)
-2. Ensure the manifest is accessible at `https://your-domain.com/.well-known/farcaster.json`
-3. Submit your miniapp to Farcaster for review
-4. Test using the Farcaster client
-
-### Webhook Events
-
-The webhook endpoint at `/api/webhook` handles:
-- `frame_added`: When miniapp is added to Farcaster
-- `frame_removed`: When miniapp is removed
-- `notification`: Custom notification events
 
 ## Troubleshooting
 
