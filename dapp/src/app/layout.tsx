@@ -5,6 +5,7 @@ import { headers } from "next/headers"; // added
 import "./globals.css";
 import ContextProvider from "@/context";
 import { BalanceProvider } from "@/context/BalanceContext";
+import { FarcasterProvider } from "@/context/FarcasterContext";
 
 export const metadata: Metadata = {
   title: "cCOP wrapper",
@@ -23,10 +24,12 @@ export default async function RootLayout({
     <html lang="en">
       <body>
         <ContextProvider cookies={cookies}>
-          <BalanceProvider>
-            {children}
-            <Toaster/>
-          </BalanceProvider>
+          <FarcasterProvider>
+            <BalanceProvider>
+              {children}
+              <Toaster/>
+            </BalanceProvider>
+          </FarcasterProvider>
         </ContextProvider>
       </body>
     </html>

@@ -1,0 +1,33 @@
+{
+  "version": "1",
+  "accountAssociation": {
+    "header": "PLACEHOLDER_HEADER",
+    "payload": "PLACEHOLDER_PAYLOAD",
+    "signature": "PLACEHOLDER_SIGNATURE"
+  },
+  "app": {
+    "name": "cCOP Wrapper",
+    "description": "Cross-chain bridge for cCOP tokens - Wrap and unwrap cCOP between Celo, Base, Arbitrum, Optimism, and Avalanche using Hyperlane's secure infrastructure.",
+    "homeUrl": "https://copwrapper.xyz",
+    "iconUrl": "https://copwrapper.xyz/icon.png",
+    "splashImageUrl": "https://copwrapper.xyz/splash.png",
+    "buttonTitle": "🌉 Bridge",
+    "webhookUrl": "https://copwrapper.xyz/api/webhook",
+    "categories": ["finance", "defi", "bridge"],
+    "requiredCapabilities": ["wallet.getEthereumProvider", "actions.signIn"]
+  },
+  "frame": {
+    "name": "cCOP Wrapper",
+    "version": "1",
+    "iconUrl": "https://copwrapper.xyz/icon.png",
+    "homeUrl": "https://copwrapper.xyz",
+    "imageUrl": "https://copwrapper.xyz/image.png",
+    "splashImageUrl": "https://copwrapper.xyz/splash.png",
+    "splashBackgroundColor": "#1a1a1a",
+    "webhookUrl": "https://copwrapper.xyz/api/webhook",
+    "description": "Secure cross-chain bridge for cCOP tokens. Lock cCOP on Celo and mint wcCOP on Base, Arbitrum, Optimism, or Avalanche.",
+    "subtitle": "Cross-Chain cCOP Bridge",
+    "primaryCategory": "finance"
+  }
+}
+

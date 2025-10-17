@@ -8,8 +8,9 @@ This dApp provides a user-friendly interface for bridging cCOP tokens between Ce
 
 ## Features
 
-- **Multi-Chain Support**: Connect to Celo, Base, and Arbitrum networks
+- **Multi-Chain Support**: Connect to Celo, Base, Arbitrum, Optimism, and Avalanche networks
 - **Wallet Integration**: Support for multiple wallets via Reown AppKit/WalletConnect
+- **Farcaster Miniapp**: Full integration as a Farcaster miniapp with auto-connect
 - **Token Wrapping**: Lock cCOP on Celo and mint wcCOP on destination chains
 - **Token Unwrapping**: Burn wcCOP and unlock cCOP on Celo
 - **Real-Time Updates**: Live balance tracking and transaction status
@@ -21,6 +22,9 @@ This dApp provides a user-friendly interface for bridging cCOP tokens between Ce
 - **Framework**: Next.js 15.3.0 with App Router
 - **Language**: TypeScript
 - **Wallet Integration**: Reown AppKit v1.7.10 (WalletConnect v2)
+- **Farcaster Integration**: 
+  - @farcaster/miniapp-sdk (Core SDK)
+  - @farcaster/miniapp-wagmi-connector (Wallet connector)
 - **Blockchain Interaction**: 
   - Wagmi v2.12.31 (React hooks for Ethereum)
   - Viem v2.21.44 (TypeScript Ethereum library)
@@ -35,6 +39,8 @@ This dApp provides a user-friendly interface for bridging cCOP tokens between Ce
 - **Celo** (Chain ID: 42220) - Source chain for cCOP
 - **Base** (Chain ID: 8453) - Destination chain for wcCOP
 - **Arbitrum** (Chain ID: 42161) - Destination chain for wcCOP
+- **Optimism** (Chain ID: 10) - Destination chain for wcCOP
+- **Avalanche** (Chain ID: 43114) - Destination chain for wcCOP
 
 ### Testnet  
 - **Celo Alfajores** (Chain ID: 44787) - Test cCOP and Treasury
@@ -95,9 +101,13 @@ src/
 │   ├── chainID.tsx        # Supported chain configurations
 │   └── abis/              # Smart contract ABIs
 ├── context/                # React context providers
+│   ├── BalanceContext.tsx # Balance management context
+│   └── FarcasterContext.tsx # Farcaster miniapp context
 ├── hooks/                  # Custom React hooks
 │   └── useClientMount.ts  # Client-side mounting hook
 └── utils/                  # Utility functions
+    ├── farcaster.ts       # Farcaster utilities
+    └── ...                # Other utilities
 ```
 
 ## Configuration
@@ -191,6 +201,50 @@ NEXT_PUBLIC_PROJECT_ID=
 NEXT_PUBLIC_ENABLE_TESTNETS=
 ```
 
+## Farcaster Miniapp Integration
+
+This dApp is fully integrated as a Farcaster miniapp, allowing users to bridge tokens directly within the Farcaster ecosystem.
+
+### Features
+
+- **Auto-Connect**: Automatically connects to Farcaster wallet when opened in miniapp
+- **User Context**: Displays Farcaster user information (username, profile picture)
+- **Seamless Experience**: Full wrapping and unwrapping functionality within Farcaster
+- **Webhook Support**: Receives notifications and events from Farcaster
+
+### Manifest Configuration
+
+The Farcaster manifest is located at `public/.well-known/farcaster.json` and includes:
+- App metadata (name, description, icons)
+- Webhook endpoint configuration
+- Account association (domain ownership proof)
+- Frame metadata for display
+
+### Account Association Setup
+
+To complete the Farcaster integration, you need to generate the account association signature:
+
+1. Obtain your Farcaster FID (Farcaster ID)
+2. Generate the domain ownership proof using the Farcaster CLI or API
+3. Update the `accountAssociation` fields in `public/.well-known/farcaster.json`:
+   - `header`: Base64-encoded header with FID and key
+   - `payload`: Base64-encoded payload with domain
+   - `signature`: Cryptographic signature proving ownership
+
+### Testing as Miniapp
+
+1. Deploy the app to a public URL (e.g., Vercel, Netlify)
+2. Ensure the manifest is accessible at `https://your-domain.com/.well-known/farcaster.json`
+3. Submit your miniapp to Farcaster for review
+4. Test using the Farcaster client
+
+### Webhook Events
+
+The webhook endpoint at `/api/webhook` handles:
+- `frame_added`: When miniapp is added to Farcaster
+- `frame_removed`: When miniapp is removed
+- `notification`: Custom notification events
+
 ## Troubleshooting
 
 ### Common Issues
@@ -215,6 +269,12 @@ NEXT_PUBLIC_ENABLE_TESTNETS=
    - Check Hyperlane explorer for message status
    - Be patient with cross-chain finalization
 
+5. **Farcaster Miniapp Issues**
+   - Ensure manifest is properly configured and accessible
+   - Check browser console for SDK initialization errors
+   - Verify account association is correctly signed
+   - Test wallet connection within Farcaster client
+
 ## Contributing
 
 1. Fork the repository
@@ -232,6 +292,8 @@ NEXT_PUBLIC_ENABLE_TESTNETS=
 - [Wagmi Documentation](https://wagmi.sh)
 - [Viem Documentation](https://viem.sh)
 - [Hyperlane Documentation](https://docs.hyperlane.xyz/)
+- [Farcaster Documentation](https://docs.farcaster.xyz/)
+- [Farcaster Miniapp Guide](https://docs.base.org/mini-apps/)
 
 ## License
 
