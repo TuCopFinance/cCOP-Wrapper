@@ -10,7 +10,8 @@ import {
   isFarcasterMiniapp, 
   getFarcasterContext, 
   getFarcasterUser,
-  initializeFarcasterSDK 
+  initializeFarcasterSDK,
+  ensureReadyCalled
 } from '@/utils/farcaster';
 
 interface FarcasterUser {
@@ -57,10 +58,18 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
     const checkMiniapp = isFarcasterMiniapp();
     setIsMiniapp(checkMiniapp);
 
+    // Always call the safety mechanism to prevent infinite loading
+    const safetyTimer = setTimeout(() => {
+      ensureReadyCalled();
+    }, 500);
+
     if (checkMiniapp) {
-      // Initialize SDK
-      initializeFarcasterSDK()
-        .then(async (success) => {
+      // Wait for the next tick to ensure the app has rendered
+      const timer = setTimeout(async () => {
+        try {
+          // Initialize SDK
+          const success = await initializeFarcasterSDK();
+          
           if (success) {
             setIsReady(true);
             
@@ -71,18 +80,30 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
             const farcasterUser = await getFarcasterUser();
             setUser(farcasterUser);
             
-            console.log('Farcaster miniapp detected and initialized:', {
+            console.log('✅ Farcaster miniapp detected and initialized:', {
               user: farcasterUser,
               context: farcasterContext,
             });
+          } else {
+            console.warn('⚠️ Farcaster SDK initialization failed');
+            setIsReady(true); // Mark as ready anyway to avoid infinite loading
           }
-        })
-        .catch((error) => {
-          console.error('Failed to initialize Farcaster SDK:', error);
-        });
+        } catch (error) {
+          console.error('❌ Failed to initialize Farcaster SDK:', error);
+          setIsReady(true); // Mark as ready anyway to avoid infinite loading
+        }
+      }, 100); // Small delay to ensure DOM is ready
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(safetyTimer);
+      };
     } else {
-      // Not in miniapp, mark as ready immediately
+      // Not in miniapp, but still call ready() as safety measure
+      ensureReadyCalled();
       setIsReady(true);
+      
+      return () => clearTimeout(safetyTimer);
     }
   }, []);
 
