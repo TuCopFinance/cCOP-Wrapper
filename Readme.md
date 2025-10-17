@@ -129,6 +129,7 @@ Our dApp provides a secure, decentralized, and intuitive way to bridge cCOP toke
 │
 ├── docs/              # Documentation
 │   ├── contracts.md   # Smart contracts documentation
+│   ├── dapp.md        # Frontend/dApp documentation
 │   ├── farcaster.md   # Farcaster miniapp integration guide
 │   └── divvi-integration.md # Divvi referral system integration
 │
@@ -339,6 +340,7 @@ This project is licensed under the MIT License. See the [license](license) file 
 ## Additional Documentation
 
 - [Smart Contracts](docs/contracts.md) - Contract architecture and testing
+- [Frontend/dApp](docs/dapp.md) - Frontend setup and development guide
 - [Farcaster Miniapp Integration](docs/farcaster.md) - Setup and deployment guide
 - [Divvi Referral Integration](docs/divvi-integration.md) - Referral tracking implementation
 
