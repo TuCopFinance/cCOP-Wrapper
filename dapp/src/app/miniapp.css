@@ -154,11 +154,13 @@
 .farcaster-miniapp [class*="chainSelector"] {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
-  gap: 8px !important;
+  gap: 6px !important;
   overflow-x: visible !important;
   padding-bottom: 0 !important;
   align-items: stretch !important;
   justify-items: stretch !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .farcaster-miniapp [class*="chainOption"] {
@@ -168,13 +170,16 @@
   visibility: visible !important;
   opacity: 1 !important;
   width: 100% !important;
-  height: 42px !important;
-  min-height: 42px !important;
+  height: 38px !important;
+  min-height: 38px !important;
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  padding: 8px 12px !important;
-  font-size: 12px !important;
+  padding: 6px 8px !important;
+  font-size: 11px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
 }
 
 /* Ensure normal display when NOT in miniapp */
@@ -195,6 +200,16 @@ body:not(.farcaster-miniapp) [class*="chainOption"] {
 
 .farcaster-miniapp .chainSelectorContainer {
   margin-top: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.farcaster-miniapp [class*="chainSelectorContainer"] {
+  margin-top: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
 }
 
 .farcaster-miniapp .addressSelector {
