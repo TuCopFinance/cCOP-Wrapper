@@ -23,6 +23,30 @@ export function isFarcasterMiniapp(): boolean {
       return true;
     }
 
+    // Check if URL is from Farcaster web app
+    const isFarcasterHost = window.location.hostname.includes('farcaster') ||
+                           window.location.hostname.includes('warpcast');
+
+    if (isFarcasterHost) {
+      console.log('🎯 Farcaster miniapp detected via hostname');
+      return true;
+    }
+
+    // Check if running in iframe (common for miniapps)
+    const isInIframe = window !== window.top;
+    if (isInIframe) {
+      // Check parent/top origin if possible
+      try {
+        const parentOrigin = document.referrer;
+        if (parentOrigin && (parentOrigin.includes('farcaster') || parentOrigin.includes('warpcast'))) {
+          console.log('🎯 Farcaster miniapp detected via iframe parent');
+          return true;
+        }
+      } catch {
+        // Cross-origin iframe, can't access parent
+      }
+    }
+
     // Secondary: Check for Farcaster-specific window properties
     const windowWithFarcaster = window as Window & { farcaster?: unknown; fc?: unknown };
     if (windowWithFarcaster.farcaster || windowWithFarcaster.fc) {
