@@ -1,9 +1,9 @@
 {
   "version": "1",
   "accountAssociation": {
-    "header": "PLACEHOLDER_HEADER",
-    "payload": "PLACEHOLDER_PAYLOAD",
-    "signature": "PLACEHOLDER_SIGNATURE"
+    "header": "eyJmaWQiOjEzMzE3NjIsInR5cGUiOiJhdXRoIiwia2V5IjoiMHgzRUQ0ZDhjYjU5NzUwYjE3YTExZTk3MTdGMEQ3NThBNTUzNDI2NmVEIn0",
+    "payload": "eyJkb21haW4iOiJjb3B3cmFwcGVyLnh5eiJ9",
+    "signature": "BVXbSBbAM1y69ztGluclQt5pYx7rlDSHnRbrZ5VXmYNc1AwUdEOYpso4nOshtB+QfCw1eiLZ43tzhFq7R/991xw="
   },
   "app": {
     "name": "cCOP Wrapper",
