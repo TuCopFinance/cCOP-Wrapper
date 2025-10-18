@@ -161,6 +161,9 @@
   justify-items: stretch !important;
   width: 100% !important;
   max-width: 100% !important;
+  margin: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 .farcaster-miniapp [class*="chainOption"] {
@@ -182,12 +185,13 @@
   white-space: nowrap !important;
 }
 
-/* Ensure normal display when NOT in miniapp */
+/* Ensure normal desktop display when NOT in miniapp - horizontal layout */
 body:not(.farcaster-miniapp) [class*="chainSelector"] {
   display: flex !important;
   flex-direction: row !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
+  gap: 12px !important;
 }
 
 body:not(.farcaster-miniapp) [class*="chainOption"] {
@@ -196,6 +200,31 @@ body:not(.farcaster-miniapp) [class*="chainOption"] {
   width: auto !important;
   height: auto !important;
   min-height: 50px !important;
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+}
+
+/* Mobile (non-miniapp) - also use 2x2 grid for smaller screens */
+@media (max-width: 768px) {
+  body:not(.farcaster-miniapp) [class*="chainSelector"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    overflow-x: visible !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+  }
+
+  body:not(.farcaster-miniapp) [class*="chainOption"] {
+    min-width: unset !important;
+    width: 100% !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
 }
 
 .farcaster-miniapp .chainSelectorContainer {

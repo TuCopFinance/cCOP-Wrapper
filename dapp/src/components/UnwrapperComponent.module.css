@@ -169,21 +169,27 @@
 .chainSelectorContainer {
   margin-bottom: var(--spacing-xl);
   width: 100%;
+  max-width: 100%;
 }
 
 .chainSelectorHeader {
   margin-bottom: var(--spacing-md);
+  width: 100%;
 }
 
 .chainSelector {
   display: flex;
   gap: var(--spacing-md);
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   padding-bottom: 4px;
+  justify-content: flex-start;
+  align-items: stretch;
+  min-height: 50px;
 }
 
 .chainSelector::-webkit-scrollbar {
