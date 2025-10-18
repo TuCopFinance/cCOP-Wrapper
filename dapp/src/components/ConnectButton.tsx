@@ -28,14 +28,18 @@ export const ConnectButton = () => {
 
   return (
     <div className="connect-button-container">
-      {isMiniapp && user && (
+      {isMiniapp && user ? (
+        // In Farcaster miniapp, show only user info (wallet is auto-connected)
         <div style={{ 
           fontSize: '12px', 
           color: '#888', 
-          marginRight: '8px',
           display: 'flex',
           alignItems: 'center',
-          gap: '4px'
+          gap: '4px',
+          padding: '8px 12px',
+          background: 'rgba(255, 255, 255, 0.05)',
+          borderRadius: '8px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
         }}>
           {user.pfpUrl && (
             <Image 
@@ -50,8 +54,10 @@ export const ConnectButton = () => {
           )}
           <span>@{user.username || user.fid}</span>
         </div>
+      ) : (
+        // In regular webapp, show wallet connection button
+        <appkit-button />
       )}
-      <appkit-button />
     </div>
   );
 };
