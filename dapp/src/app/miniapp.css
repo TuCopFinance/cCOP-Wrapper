@@ -153,7 +153,7 @@
 /* Optimize chain selector for miniapp - 2x2 grid */
 .farcaster-miniapp .chainSelector {
   display: grid !important;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr !important;
   gap: 8px !important;
   overflow-x: visible !important;
   padding-bottom: 0 !important;
@@ -162,6 +162,11 @@
 .farcaster-miniapp .chainOption {
   min-width: unset !important;
   flex: unset !important;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: auto !important;
+  height: auto !important;
 }
 
 .farcaster-miniapp .chainSelectorContainer {

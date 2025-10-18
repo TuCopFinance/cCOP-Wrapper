@@ -914,7 +914,9 @@ export const UnwrapperComponent = () => {
                   ? parseFloat(baseBalance)
                   : chainToUnwrap === "arbitrum"
                   ? parseFloat(arbBalance)
-                  : parseFloat(opBalance);
+                  : chainToUnwrap === "optimism"
+                  ? parseFloat(opBalance)
+                  : parseFloat(avaxBalance);
               const amount25 = (currentBalance * 0.25).toFixed(2);
               console.log(
                 `25% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount25}`
@@ -934,7 +936,9 @@ export const UnwrapperComponent = () => {
                   ? parseFloat(baseBalance)
                   : chainToUnwrap === "arbitrum"
                   ? parseFloat(arbBalance)
-                  : parseFloat(opBalance);
+                  : chainToUnwrap === "optimism"
+                  ? parseFloat(opBalance)
+                  : parseFloat(avaxBalance);
               const amount50 = (currentBalance * 0.5).toFixed(2);
               console.log(
                 `50% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount50}`
@@ -954,7 +958,9 @@ export const UnwrapperComponent = () => {
                   ? parseFloat(baseBalance)
                   : chainToUnwrap === "arbitrum"
                   ? parseFloat(arbBalance)
-                  : parseFloat(opBalance);
+                  : chainToUnwrap === "optimism"
+                  ? parseFloat(opBalance)
+                  : parseFloat(avaxBalance);
               const amount75 = (currentBalance * 0.75).toFixed(2);
               console.log(
                 `75% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}, Amount: ${amount75}`
@@ -972,7 +978,11 @@ export const UnwrapperComponent = () => {
               const currentBalance =
                 chainToUnwrap === "base"
                   ? parseFloat(baseBalance)
-                  : parseFloat(arbBalance);
+                  : chainToUnwrap === "arbitrum"
+                  ? parseFloat(arbBalance)
+                  : chainToUnwrap === "optimism"
+                  ? parseFloat(opBalance)
+                  : parseFloat(avaxBalance);
               console.log(
                 `100% Button - Chain: ${chainToUnwrap}, Balance: ${currentBalance}`
               );
