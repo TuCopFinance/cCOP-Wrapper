@@ -1000,7 +1000,7 @@ export const UnwrapperComponent = () => {
 
       <div className={styles.chainSelectorContainer}>
         <div className={styles.chainSelectorHeader}>
-          <label className={styles.chainSelectorLabel}>Chain to unwrap:</label>
+          <label className={styles.chainSelectorLabel}>Unwrap from:</label>
         </div>
         <div className={styles.chainSelector}>
           <button

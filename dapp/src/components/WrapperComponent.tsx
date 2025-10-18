@@ -829,7 +829,7 @@ export const WrapperComponent = () => {
       </div>
       <div className={styles.chainSelectorContainer}>
         <div className={styles.chainSelectorHeader}>
-          <label className={styles.chainSelectorLabel}>Wrap on:</label>
+          <label className={styles.chainSelectorLabel}>Wrap to:</label>
         </div>
         <div className={styles.chainSelector}>
           <button
