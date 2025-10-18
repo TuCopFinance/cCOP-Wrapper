@@ -184,6 +184,21 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   padding-bottom: 4px;
+  min-height: 50px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .chainSelector {
+    gap: 8px;
+    padding: 0 4px 4px 4px;
+  }
+  
+  .chainOption {
+    min-width: 100px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
 }
 
 .chainSelector::-webkit-scrollbar {
@@ -224,6 +239,8 @@
   font-size: 14px;
   min-height: 50px;
   white-space: nowrap;
+  visibility: visible;
+  opacity: 1;
 }
 
 .chainOption:hover,
