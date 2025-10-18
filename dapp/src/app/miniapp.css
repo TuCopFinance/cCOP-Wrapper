@@ -1,0 +1,166 @@
+/* Farcaster Miniapp Optimizations */
+/* Automatically applied when running in Farcaster miniapp */
+
+/* Smaller header for miniapp */
+.farcaster-miniapp .header {
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  height: auto;
+  border-radius: 16px;
+}
+
+.farcaster-miniapp .header h1 {
+  font-size: 18px;
+  margin-left: 8px;
+}
+
+.farcaster-miniapp .headerContainerLeft img {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+/* Smaller dashboard link */
+.farcaster-miniapp .dashboardLink {
+  font-size: 12px;
+  padding: 6px 12px;
+  gap: 4px;
+}
+
+/* Reduce spacing */
+.farcaster-miniapp .content {
+  padding: 0 12px;
+}
+
+/* Smaller buttons throughout */
+.farcaster-miniapp button {
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  min-height: 40px !important;
+}
+
+/* Smaller chain options */
+.farcaster-miniapp .chainOption,
+.farcaster-miniapp .selfButton {
+  padding: 10px 14px !important;
+  min-height: 42px !important;
+  font-size: 13px !important;
+}
+
+.farcaster-miniapp .chainOption span,
+.farcaster-miniapp .selfButton span {
+  font-size: 13px !important;
+}
+
+.farcaster-miniapp .chainOption img {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Smaller action buttons */
+.farcaster-miniapp .actionButtonInactive,
+.farcaster-miniapp .actionButtonActive {
+  height: 38px !important;
+  font-size: 14px !important;
+  padding: 0 !important;
+}
+
+/* Smaller percentage buttons */
+.farcaster-miniapp .percentageButton {
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+}
+
+/* Reduce form element sizes */
+.farcaster-miniapp input {
+  font-size: 14px !important;
+}
+
+.farcaster-miniapp .amountInput {
+  font-size: 16px !important;
+  padding: 10px 14px !important;
+}
+
+/* Smaller validation and prediction text */
+.farcaster-miniapp .validationMessage {
+  font-size: 11px !important;
+  padding: 6px 10px !important;
+}
+
+.farcaster-miniapp .predictionItem {
+  font-size: 11px !important;
+  margin-bottom: 4px !important;
+}
+
+.farcaster-miniapp .predictionLabel,
+.farcaster-miniapp .costLabel {
+  font-size: 11px !important;
+}
+
+.farcaster-miniapp .predictionValue,
+.farcaster-miniapp .costValue {
+  font-size: 11px !important;
+}
+
+/* Smaller section labels */
+.farcaster-miniapp .sectionLabel {
+  font-size: 12px !important;
+}
+
+/* Compact transaction costs */
+.farcaster-miniapp .transactionCostsContainer {
+  padding: 10px !important;
+  margin-top: 12px !important;
+}
+
+.farcaster-miniapp .costItem {
+  font-size: 11px !important;
+  padding: 4px 0 !important;
+}
+
+/* Reduce menu box padding */
+.farcaster-miniapp .menuBox {
+  padding: 16px !important;
+}
+
+/* Smaller toggle switch */
+.farcaster-miniapp .toggleSwitch {
+  height: 40px !important;
+  padding: 3px !important;
+}
+
+.farcaster-miniapp .toggleLabelLeft,
+.farcaster-miniapp .toggleLabelRight {
+  font-size: 13px !important;
+  padding: 8px 16px !important;
+}
+
+/* Hide dashboard link in miniapp for space */
+.farcaster-miniapp .dashboardLink {
+  display: none;
+}
+
+/* Compact footer */
+.farcaster-miniapp .footer {
+  padding: 12px !important;
+  font-size: 11px !important;
+}
+
+/* Reduce gaps and margins */
+.farcaster-miniapp .chainSelector {
+  gap: 8px !important;
+}
+
+.farcaster-miniapp .chainSelectorContainer {
+  margin-top: 12px !important;
+}
+
+.farcaster-miniapp .addressSelector {
+  margin-top: 12px !important;
+}
+
+/* Smaller MAX button */
+.farcaster-miniapp .maxButton {
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+}
+

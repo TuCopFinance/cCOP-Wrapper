@@ -3,9 +3,11 @@ import { Toaster } from 'react-hot-toast';
 
 import { headers } from "next/headers"; // added
 import "./globals.css";
+import "./miniapp.css";
 import ContextProvider from "@/context";
 import { BalanceProvider } from "@/context/BalanceContext";
 import { FarcasterProvider } from "@/context/FarcasterContext";
+import { MiniappWrapper } from "@/components/MiniappWrapper";
 
 export const metadata: Metadata = {
   title: "cCOP wrapper",
@@ -25,10 +27,12 @@ export default async function RootLayout({
       <body>
         <ContextProvider cookies={cookies}>
           <FarcasterProvider>
-            <BalanceProvider>
-              {children}
-              <Toaster/>
-            </BalanceProvider>
+            <MiniappWrapper>
+              <BalanceProvider>
+                {children}
+                <Toaster/>
+              </BalanceProvider>
+            </MiniappWrapper>
           </FarcasterProvider>
         </ContextProvider>
       </body>
