@@ -179,6 +179,7 @@
 
 .chainSelector {
   display: flex;
+  flex-direction: row;
   gap: var(--spacing-md);
   width: 100%;
   max-width: 100%;
@@ -192,22 +193,17 @@
   min-height: 50px;
 }
 
-.chainSelector::-webkit-scrollbar {
-  height: 4px;
-}
+/* Ensure horizontal layout on desktop */
+@media (min-width: 769px) {
+  .chainSelector {
+    display: flex;
+    flex-direction: row;
+  }
 
-.chainSelector::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-}
-
-.chainSelector::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-}
-
-.chainSelector::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  .chainOption {
+    flex: 0 0 auto;
+    min-width: 120px;
+  }
 }
 
 /* Mobile responsiveness - 2x2 grid */
@@ -228,6 +224,24 @@
     padding: 8px 12px;
     font-size: 12px;
   }
+}
+
+.chainSelector::-webkit-scrollbar {
+  height: 4px;
+}
+
+.chainSelector::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.chainSelector::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.chainSelector::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .chainOption {

@@ -179,6 +179,7 @@
 
 .chainSelector {
   display: flex;
+  flex-direction: row;
   gap: var(--spacing-md);
   width: 100%;
   max-width: 100%;
@@ -190,6 +191,19 @@
   min-height: 50px;
   justify-content: flex-start;
   align-items: stretch;
+}
+
+/* Ensure horizontal layout on desktop */
+@media (min-width: 769px) {
+  .chainSelector {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .chainOption {
+    flex: 0 0 auto;
+    min-width: 120px;
+  }
 }
 
 /* Mobile responsiveness - 2x2 grid */
