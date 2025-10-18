@@ -177,6 +177,22 @@
   font-size: 12px !important;
 }
 
+/* Ensure normal display when NOT in miniapp */
+body:not(.farcaster-miniapp) [class*="chainSelector"] {
+  display: flex !important;
+  flex-direction: row !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+body:not(.farcaster-miniapp) [class*="chainOption"] {
+  flex: 0 0 auto !important;
+  min-width: 120px !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 50px !important;
+}
+
 .farcaster-miniapp .chainSelectorContainer {
   margin-top: 12px !important;
 }

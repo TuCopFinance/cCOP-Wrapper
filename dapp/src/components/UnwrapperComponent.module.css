@@ -204,23 +204,17 @@
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* Mobile responsiveness */
+/* Mobile responsiveness - only for non-miniapp */
 @media (max-width: 768px) {
   .chainSelector {
     gap: 8px;
     padding: 0 4px 4px 4px;
-    align-items: center;
   }
   
   .chainOption {
     min-width: 100px;
     padding: 8px 12px;
     font-size: 12px;
-    height: 42px;
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 }
 
