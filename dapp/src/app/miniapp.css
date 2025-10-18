@@ -145,9 +145,18 @@
   font-size: 11px !important;
 }
 
-/* Reduce gaps and margins */
+/* Optimize chain selector for miniapp - 2x2 grid */
 .farcaster-miniapp .chainSelector {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
   gap: 8px !important;
+  overflow-x: visible !important;
+  padding-bottom: 0 !important;
+}
+
+.farcaster-miniapp .chainOption {
+  min-width: unset !important;
+  flex: unset !important;
 }
 
 .farcaster-miniapp .chainSelectorContainer {

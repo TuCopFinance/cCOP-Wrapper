@@ -179,10 +179,34 @@
   display: flex;
   gap: var(--spacing-md);
   width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+}
+
+.chainSelector::-webkit-scrollbar {
+  height: 4px;
+}
+
+.chainSelector::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.chainSelector::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.chainSelector::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .chainOption {
-  flex: 1;
+  flex: 0 0 auto;
+  min-width: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,6 +222,7 @@
   font-weight: 600;
   font-size: 14px;
   min-height: 50px;
+  white-space: nowrap;
 }
 
 .chainOption:hover {
