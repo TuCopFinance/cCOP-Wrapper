@@ -10,31 +10,33 @@ import { sdk } from '@farcaster/miniapp-sdk';
  */
 export function isFarcasterMiniapp(): boolean {
   if (typeof window === 'undefined') return false;
-  
+
   try {
-    // Multiple detection methods for better reliability
-    
-    // Method 1: Check for Farcaster context
-    if (sdk.context !== null && sdk.context !== undefined) {
-      console.log('🎯 Farcaster miniapp detected via SDK context');
+    // Primary detection: Check user agent or referrer FIRST
+    // This is the most reliable method
+    const isFarcasterUserAgent = navigator.userAgent.includes('Farcaster');
+    const isFarcasterReferrer = document.referrer.includes('farcaster') ||
+                                document.referrer.includes('warpcast');
+
+    if (isFarcasterUserAgent || isFarcasterReferrer) {
+      console.log('🎯 Farcaster miniapp detected via user agent/referrer');
       return true;
     }
-    
-    // Method 2: Check for Farcaster-specific window properties
+
+    // Secondary: Check for Farcaster-specific window properties
     const windowWithFarcaster = window as Window & { farcaster?: unknown; fc?: unknown };
     if (windowWithFarcaster.farcaster || windowWithFarcaster.fc) {
       console.log('🎯 Farcaster miniapp detected via window object');
       return true;
     }
-    
-    // Method 3: Check user agent or referrer
-    if (navigator.userAgent.includes('Farcaster') || 
-        document.referrer.includes('farcaster') ||
-        document.referrer.includes('warpcast')) {
-      console.log('🎯 Farcaster miniapp detected via user agent/referrer');
+
+    // Last resort: Check SDK context only if other methods failed
+    // SDK context alone is not reliable as it may exist outside Farcaster
+    if (sdk.context && typeof sdk.context === 'object' && 'user' in sdk.context) {
+      console.log('🎯 Farcaster miniapp detected via SDK context');
       return true;
     }
-    
+
     console.log('ℹ️ Not running in Farcaster miniapp');
     return false;
   } catch (error) {
