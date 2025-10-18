@@ -206,9 +206,9 @@
   }
 }
 
-/* Mobile responsiveness - 2x2 grid */
+/* Mobile responsiveness - 2x2 grid (but NOT in miniapp - miniapp.css handles that) */
 @media (max-width: 768px) {
-  .chainSelector {
+  :global(body:not(.farcaster-miniapp)) .chainSelector {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
@@ -216,7 +216,7 @@
     padding: 0;
   }
 
-  .chainOption {
+  :global(body:not(.farcaster-miniapp)) .chainOption {
     min-width: unset;
     width: 100%;
     height: 42px;

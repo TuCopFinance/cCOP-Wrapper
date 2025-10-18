@@ -28,7 +28,13 @@
 
 /* Reduce spacing - minimal padding for miniapp */
 .farcaster-miniapp .content {
-  padding: 0 8px;
+  padding: 0 4px !important;
+}
+
+/* Remove all left margins and padding from main containers */
+.farcaster-miniapp .content > * {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
 }
 
 /* Smaller buttons throughout */
@@ -215,12 +221,16 @@
   margin-bottom: 8px !important;
 }
 
-.farcaster-miniapp [class*="chainSelectorLabel"] {
+.farcaster-miniapp [class*="chainSelectorLabel"],
+.farcaster-miniapp [class*="sectionLabel"],
+.farcaster-miniapp [class*="amountLabel"] {
   padding-left: 0 !important;
   margin-left: 0 !important;
 }
 
-.farcaster-miniapp [class*="chainSelectorLabel"]::before {
+.farcaster-miniapp [class*="chainSelectorLabel"]::before,
+.farcaster-miniapp [class*="sectionLabel"]::before,
+.farcaster-miniapp [class*="amountLabel"]::before {
   display: none !important;
 }
 
