@@ -208,11 +208,21 @@
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    padding: 6px 8px !important;
+    padding: 4px 6px !important;
     font-size: 11px !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     white-space: nowrap !important;
+    gap: 4px !important;
+  }
+
+  [class*="chainOption"] img {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  [class*="chainOption"] span {
+    font-size: 11px !important;
   }
 }
 
@@ -228,11 +238,21 @@
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  padding: 6px 8px !important;
+  padding: 4px 6px !important;
   font-size: 11px !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
   white-space: nowrap !important;
+  gap: 4px !important;
+}
+
+.farcaster-miniapp [class*="chainOption"] img {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.farcaster-miniapp [class*="chainOption"] span {
+  font-size: 11px !important;
 }
 
 .farcaster-miniapp .chainSelectorContainer {
