@@ -259,20 +259,24 @@ body.farcaster-miniapp [class*="chainOption"] span {
   line-height: 1.2 !important;
 }
 
-.farcaster-miniapp .chainSelectorContainer {
+.farcaster-miniapp .chainSelectorContainer,
+.farcaster-miniapp div.chainSelectorContainer,
+html.farcaster-miniapp .chainSelectorContainer,
+body.farcaster-miniapp .chainSelectorContainer,
+.farcaster-miniapp [class*="chainSelectorContainer"],
+.farcaster-miniapp div[class*="chainSelectorContainer"],
+html.farcaster-miniapp [class*="chainSelectorContainer"],
+body.farcaster-miniapp [class*="chainSelectorContainer"] {
   margin-top: 12px !important;
+  margin-bottom: 12px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   width: 100% !important;
   max-width: 100% !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   padding: 0 !important;
-}
-
-.farcaster-miniapp [class*="chainSelectorContainer"] {
-  margin-top: 12px !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: hidden !important;
-  padding: 0 !important;
+  height: auto !important;
+  min-height: auto !important;
 }
 
 .farcaster-miniapp [class*="chainSelectorHeader"],
@@ -295,8 +299,14 @@ body.farcaster-miniapp [class*="chainSelectorLabel"],
   padding-left: 0 !important;
   margin-left: 0 !important;
   padding: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
   margin: 0 !important;
   margin-bottom: 8px !important;
+  position: static !important;
+  left: auto !important;
+  transform: none !important;
 }
 
 .farcaster-miniapp [class*="chainSelectorLabel"]::before,
