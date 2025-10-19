@@ -1,12 +1,20 @@
 import { address } from '@/constants/address';
 
-// API endpoints for different chains (using internal API routes)
-const API_ENDPOINTS = {
-  celo: '/api/transactions?chain=celo&address=',
-  base: '/api/transactions?chain=base&address=',
-  arbitrum: '/api/transactions?chain=arbitrum&address=',
-  optimism: '/api/transactions?chain=optimism&address=',
-  avalanche: '/api/transactions?chain=avalanche&address='
+// Get the base URL for API calls
+// In production, use the full domain. In development, use relative paths.
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Client-side: use window.location.origin to get the actual app domain
+    return window.location.origin;
+  }
+  // Server-side: use environment variable or default
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://copwrapper.xyz';
+};
+
+// Helper to build API URL for a specific chain
+const getApiUrl = (chain: string, walletAddress: string) => {
+  const baseUrl = getBaseUrl();
+  return `${baseUrl}/api/transactions?chain=${chain}&address=${walletAddress}`;
 };
 
 // Interface for real transaction data
@@ -135,7 +143,7 @@ export const getCeloTransactions = async (walletAddress: string): Promise<RealTr
     const treasuryAddress = address.mainnet.treasury;
     
     // Get regular transactions using Etherscan V2 API
-    const url = `${API_ENDPOINTS.celo}${walletAddress}`;
+    const url = getApiUrl('celo', walletAddress);
     
     const response = await fetch(url);
 
@@ -222,7 +230,7 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
   try {
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Base
     
-    const url = `${API_ENDPOINTS.base}${walletAddress}`;
+    const url = getApiUrl('base', walletAddress);
     
     const response = await fetch(url);
     
@@ -297,7 +305,7 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
   try {
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Arbitrum
     
-    const url = `${API_ENDPOINTS.arbitrum}${walletAddress}`;
+    const url = getApiUrl('arbitrum', walletAddress);
     
     const response = await fetch(url);
     
@@ -363,7 +371,7 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
   try {
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Optimism
     
-    const url = `${API_ENDPOINTS.optimism}${walletAddress}`;
+    const url = getApiUrl('optimism', walletAddress);
     
     const response = await fetch(url);
     
@@ -429,7 +437,7 @@ export const getAvalancheTransactions = async (walletAddress: string): Promise<R
   try {
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Avalanche
     
-    const url = `${API_ENDPOINTS.avalanche}${walletAddress}`;
+    const url = getApiUrl('avalanche', walletAddress);
     
     const response = await fetch(url);
     
