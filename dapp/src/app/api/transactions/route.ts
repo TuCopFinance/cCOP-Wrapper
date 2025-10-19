@@ -50,10 +50,13 @@ const decodeWrapAmount = (input: string): number => {
   return 0;
 };
 
-// Helper function to fetch token transfers for unwrap detection
+// Helper function to fetch token transfers for wrap/unwrap detection
 const fetchTokenTransfers = async (chain: string, address: string, contractAddress: string, apiKey: string) => {
   let chainId: string;
   switch (chain) {
+    case 'base':
+      chainId = '8453';
+      break;
     case 'arbitrum':
       chainId = '42161';
       break;
@@ -68,7 +71,7 @@ const fetchTokenTransfers = async (chain: string, address: string, contractAddre
   }
 
   const tokenUrl = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=tokentx&contractaddress=${contractAddress}&address=${address}&page=1&offset=1000&sort=desc&apikey=${apiKey}`;
-  
+
   try {
     console.log(`🪙 Fetching token transfers for ${chain.toUpperCase()}:`, tokenUrl.replace(apiKey, 'HIDDEN_API_KEY'));
     const response = await fetch(tokenUrl, {
@@ -76,13 +79,19 @@ const fetchTokenTransfers = async (chain: string, address: string, contractAddre
         'User-Agent': 'cCOP-Wrapper/1.0',
       },
     });
-    
+
     if (response.ok) {
       const tokenData = await response.json();
       console.log(`🪙 ${chain.toUpperCase()} Token transfers response:`, {
         status: tokenData.status,
         message: tokenData.message,
-        resultCount: tokenData.result?.length || 0
+        resultCount: tokenData.result?.length || 0,
+        firstTx: tokenData.result?.[0] ? {
+          hash: tokenData.result[0].hash,
+          from: tokenData.result[0].from,
+          to: tokenData.result[0].to,
+          value: tokenData.result[0].value
+        } : null
       });
       return tokenData;
     }
@@ -164,20 +173,32 @@ export async function GET(request: NextRequest) {
     // Log the full URL for debugging API calls
     console.log(`🌐 ${chain.toUpperCase()} API URL:`, url.replace(API_KEYS[chain as keyof typeof API_KEYS], 'HIDDEN_API_KEY'));
 
-    // For chains with no regular transactions, try token transfers
-    if ((!data.result || data.result.length === 0) && ['arbitrum', 'optimism', 'avalanche'].includes(chain)) {
-      console.log(`🔍 No regular transactions found for ${chain.toUpperCase()}, trying token transfers...`);
+    // For L2 chains, ALWAYS fetch token transfers as they're more reliable than txlist
+    // Etherscan V2 API returns status:'0' even when there are token transfers
+    if (['arbitrum', 'optimism', 'avalanche', 'base'].includes(chain)) {
+      console.log(`🔍 Fetching token transfers for ${chain.toUpperCase()} (L2 chain - always check token transfers)...`);
       const tokenData = await fetchTokenTransfers(chain, address, wcCOPAddress, API_KEYS[chain as keyof typeof API_KEYS]);
-      if (tokenData && tokenData.result && Array.isArray(tokenData.result)) {
+      if (tokenData && tokenData.result && Array.isArray(tokenData.result) && tokenData.result.length > 0) {
         // Convert token transfers to transaction format for processing
         const tokenTxs = tokenData.result.map((tx: Record<string, unknown>) => ({
           ...tx,
-          // Mark as potential unwrap if it's wcCOP being sent FROM the user (burn operation)
+          // Mark as token transfer so we can process it correctly
           isTokenTransfer: true,
-          to: (typeof tx.to === 'string' && tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000') ? wcCOPAddress : tx.to
+          // Preserve original addresses for proper filtering
+          to: tx.to,
+          from: tx.from
         }));
-        data.result = tokenTxs;
-        console.log(`🪙 Using ${tokenTxs.length} token transfers for ${chain.toUpperCase()}`);
+
+        // Replace or merge with regular transactions
+        if (!data.result || data.result.length === 0 || data.status === '0') {
+          data.result = tokenTxs;
+          data.status = '1'; // Override status to indicate we found transactions
+          console.log(`🪙 Using ${tokenTxs.length} token transfers for ${chain.toUpperCase()}`);
+        } else {
+          // Merge both types of transactions
+          data.result = [...data.result, ...tokenTxs];
+          console.log(`🪙 Merged ${tokenTxs.length} token transfers with ${data.result.length - tokenTxs.length} regular transactions for ${chain.toUpperCase()}`);
+        }
       }
     }
     
