@@ -156,9 +156,9 @@ html.farcaster-miniapp [class*="chainSelector"],
 body.farcaster-miniapp [class*="chainSelector"] {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
-  gap: 8px !important;
+  gap: 6px !important;
   overflow-x: visible !important;
-  padding: 0 16px !important;
+  padding: 0 !important;
   align-items: stretch !important;
   justify-items: stretch !important;
   width: 100% !important;
@@ -291,17 +291,6 @@ body.farcaster-miniapp [class*="chainSelectorHeader"] {
   margin-bottom: 8px !important;
   text-align: left !important;
   display: block !important;
-}
-
-/* Fix header alignment for all Farcaster miniapps */
-.farcaster-miniapp [class*="chainSelectorHeader"],
-.farcaster-miniapp div[class*="chainSelectorHeader"] {
-  grid-column: 1 / -1 !important;
-}
-
-/* Add padding to header to match grid padding */
-.farcaster-miniapp [class*="chainSelectorHeader"] {
-  padding: 0 16px !important;
 }
 
 .farcaster-miniapp [class*="chainSelectorLabel"],
