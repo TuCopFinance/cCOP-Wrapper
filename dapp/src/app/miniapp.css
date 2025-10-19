@@ -161,9 +161,10 @@ body.farcaster-miniapp [class*="chainSelector"] {
   padding: 0 !important;
   align-items: stretch !important;
   justify-items: stretch !important;
+  justify-content: center !important;
   width: 100% !important;
   max-width: 100% !important;
-  margin: 0 !important;
+  margin: 0 auto !important;
   box-sizing: border-box !important;
   flex-direction: unset !important;
 }
@@ -290,8 +291,15 @@ body.farcaster-miniapp [class*="chainSelectorHeader"] {
   margin: 0 !important;
   margin-bottom: 8px !important;
   text-align: left !important;
-  grid-column: 1 / -1 !important;
   display: block !important;
+}
+
+/* Fix for Farcaster web only (not mobile app) - based on viewport width */
+@media (min-width: 360px) and (max-width: 500px) {
+  .farcaster-miniapp [class*="chainSelectorHeader"],
+  .farcaster-miniapp div[class*="chainSelectorHeader"] {
+    grid-column: 1 / -1 !important;
+  }
 }
 
 .farcaster-miniapp [class*="chainSelectorLabel"],
