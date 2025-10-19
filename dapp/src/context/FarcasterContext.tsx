@@ -80,7 +80,7 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
             const farcasterUser = await getFarcasterUser();
             setUser(farcasterUser);
             
-            console.log('✅ Farcaster miniapp detected and initialized:', {
+            console.log('✅ Farcaster miniapp detectado e inicializado:', {
               user: farcasterUser,
               context: farcasterContext,
             });

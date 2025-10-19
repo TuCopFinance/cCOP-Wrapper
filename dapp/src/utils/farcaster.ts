@@ -12,6 +12,13 @@ export function isFarcasterMiniapp(): boolean {
   if (typeof window === 'undefined') return false;
 
   try {
+    console.group('🔍 Detección de Farcaster Miniapp');
+    console.log('User Agent:', navigator.userAgent);
+    console.log('Referrer:', document.referrer);
+    console.log('Hostname:', window.location.hostname);
+    console.log('Viewport:', `${window.innerWidth}x${window.innerHeight}`);
+    console.log('Está en iframe:', window !== window.top);
+
     // Primary detection: Check user agent or referrer FIRST
     // This is the most reliable method
     const isFarcasterUserAgent = navigator.userAgent.includes('Farcaster');
@@ -19,7 +26,8 @@ export function isFarcasterMiniapp(): boolean {
                                 document.referrer.includes('warpcast');
 
     if (isFarcasterUserAgent || isFarcasterReferrer) {
-      console.log('🎯 Farcaster miniapp detected via user agent/referrer');
+      console.log('✅ Método de detección: User agent/referrer');
+      console.groupEnd();
       return true;
     }
 
@@ -28,7 +36,8 @@ export function isFarcasterMiniapp(): boolean {
                            window.location.hostname.includes('warpcast');
 
     if (isFarcasterHost) {
-      console.log('🎯 Farcaster miniapp detected via hostname');
+      console.log('✅ Método de detección: Hostname');
+      console.groupEnd();
       return true;
     }
 
@@ -39,7 +48,8 @@ export function isFarcasterMiniapp(): boolean {
       try {
         const parentOrigin = document.referrer;
         if (parentOrigin && (parentOrigin.includes('farcaster') || parentOrigin.includes('warpcast'))) {
-          console.log('🎯 Farcaster miniapp detected via iframe parent');
+          console.log('✅ Método de detección: Iframe parent');
+          console.groupEnd();
           return true;
         }
       } catch {
@@ -50,21 +60,24 @@ export function isFarcasterMiniapp(): boolean {
     // Secondary: Check for Farcaster-specific window properties
     const windowWithFarcaster = window as Window & { farcaster?: unknown; fc?: unknown };
     if (windowWithFarcaster.farcaster || windowWithFarcaster.fc) {
-      console.log('🎯 Farcaster miniapp detected via window object');
+      console.log('✅ Método de detección: Objeto window');
+      console.groupEnd();
       return true;
     }
 
     // Last resort: Check SDK context only if other methods failed
     // SDK context alone is not reliable as it may exist outside Farcaster
     if (sdk.context && typeof sdk.context === 'object' && 'user' in sdk.context) {
-      console.log('🎯 Farcaster miniapp detected via SDK context');
+      console.log('✅ Método de detección: Contexto SDK');
+      console.groupEnd();
       return true;
     }
 
-    console.log('ℹ️ Not running in Farcaster miniapp');
+    console.log('❌ NO detectado como Farcaster miniapp');
+    console.groupEnd();
     return false;
   } catch (error) {
-    console.warn('⚠️ Error detecting Farcaster miniapp:', error);
+    console.warn('⚠️ Error detectando Farcaster miniapp:', error);
     return false;
   }
 }

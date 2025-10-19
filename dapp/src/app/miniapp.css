@@ -44,23 +44,7 @@
   min-height: 40px !important;
 }
 
-/* Smaller chain options */
-.farcaster-miniapp .chainOption,
-.farcaster-miniapp .selfButton {
-  padding: 10px 14px !important;
-  min-height: 42px !important;
-  font-size: 13px !important;
-}
-
-.farcaster-miniapp .chainOption span,
-.farcaster-miniapp .selfButton span {
-  font-size: 13px !important;
-}
-
-.farcaster-miniapp .chainOption img {
-  width: 20px !important;
-  height: 20px !important;
-}
+/* Smaller chain options - REMOVED: Now handled by more specific selector below */
 
 /* Smaller action buttons */
 .farcaster-miniapp .actionButtonInactive,
@@ -166,7 +150,10 @@
    ======================================== */
 
 /* Chain Selector - Compact 2x2 grid for miniapp */
-.farcaster-miniapp [class*="chainSelector"] {
+.farcaster-miniapp [class*="chainSelector"],
+.farcaster-miniapp div[class*="chainSelector"],
+html.farcaster-miniapp [class*="chainSelector"],
+body.farcaster-miniapp [class*="chainSelector"] {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
   gap: 6px !important;
@@ -178,6 +165,7 @@
   max-width: 100% !important;
   margin: 0 !important;
   box-sizing: border-box !important;
+  flex-direction: unset !important;
 }
 
 /* FALLBACK: Also apply to very small viewports (catches Farcaster web if detection fails) */
@@ -226,7 +214,10 @@
   }
 }
 
-.farcaster-miniapp [class*="chainOption"] {
+.farcaster-miniapp [class*="chainOption"],
+.farcaster-miniapp button[class*="chainOption"],
+html.farcaster-miniapp [class*="chainOption"],
+body.farcaster-miniapp [class*="chainOption"] {
   min-width: unset !important;
   flex: unset !important;
   display: flex !important;
@@ -235,6 +226,7 @@
   width: 100% !important;
   height: 38px !important;
   min-height: 38px !important;
+  max-height: 38px !important;
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
@@ -244,15 +236,27 @@
   overflow: hidden !important;
   white-space: nowrap !important;
   gap: 4px !important;
+  line-height: 1.2 !important;
 }
 
-.farcaster-miniapp [class*="chainOption"] img {
+.farcaster-miniapp [class*="chainOption"] img,
+.farcaster-miniapp button[class*="chainOption"] img,
+html.farcaster-miniapp [class*="chainOption"] img,
+body.farcaster-miniapp [class*="chainOption"] img {
   width: 18px !important;
   height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
 }
 
-.farcaster-miniapp [class*="chainOption"] span {
+.farcaster-miniapp [class*="chainOption"] span,
+.farcaster-miniapp button[class*="chainOption"] span,
+html.farcaster-miniapp [class*="chainOption"] span,
+body.farcaster-miniapp [class*="chainOption"] span {
   font-size: 11px !important;
+  line-height: 1.2 !important;
 }
 
 .farcaster-miniapp .chainSelectorContainer {
