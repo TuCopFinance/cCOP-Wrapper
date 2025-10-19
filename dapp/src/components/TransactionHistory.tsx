@@ -73,18 +73,28 @@ export const TransactionHistory = () => {
   // Fetch real transactions from blockchain APIs
   useEffect(() => {
     const fetchRealTransactions = async () => {
+      console.log('🔍 Dashboard - Account info:', {
+        address: account.address,
+        connector: account.connector?.name,
+        chainId: account.chainId,
+        fullAccount: account
+      });
+
       if (!account.address) {
+        console.log('❌ No account address found');
         setTransactions([]);
         setLoading(false);
         return;
       }
 
+      console.log('✅ Fetching transactions for address:', account.address);
       setLoading(true);
       try {
         const realTransactions = await getAllRealTransactions(account.address);
+        console.log('📊 Transactions fetched:', realTransactions.length, 'transactions');
         setTransactions(realTransactions);
       } catch (error) {
-        console.error("Error fetching real transactions:", error);
+        console.error("❌ Error fetching real transactions:", error);
         setTransactions([]);
       } finally {
         setLoading(false);

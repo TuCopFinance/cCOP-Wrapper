@@ -138,13 +138,20 @@ export const getCeloTransactions = async (walletAddress: string): Promise<RealTr
     const url = `${API_ENDPOINTS.celo}${walletAddress}`;
     
     const response = await fetch(url);
-    
+
     if (!response.ok) {
+      console.error(`❌ Celo API error: ${response.status} - ${response.statusText}`);
       throw new Error(`Celo API error: ${response.status} - ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+    console.log('📦 Celo API raw response:', {
+      status: data.status,
+      message: data.message,
+      resultLength: data.result?.length,
+      firstTx: data.result?.[0]
+    });
+
     // Handle Etherscan V2-style response for normal transactions
     if (data.status === '1' && data.result && Array.isArray(data.result)) {
       console.log(`📋 Found ${data.result.length} total transactions on Celo`);
