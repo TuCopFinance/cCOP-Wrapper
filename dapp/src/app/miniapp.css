@@ -284,10 +284,14 @@ body.farcaster-miniapp [class*="chainSelectorContainer"] {
 html.farcaster-miniapp [class*="chainSelectorHeader"],
 body.farcaster-miniapp [class*="chainSelectorHeader"] {
   width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
   padding: 0 !important;
   margin: 0 !important;
   margin-bottom: 8px !important;
   text-align: left !important;
+  grid-column: 1 / -1 !important;
+  display: block !important;
 }
 
 .farcaster-miniapp [class*="chainSelectorLabel"],
