@@ -150,4 +150,18 @@ body {
     font-size: 10px;
     margin-left: 0;
   }
+
+  /* Dashboard link - icon only on mobile */
+  .dashboardLink {
+    font-size: 20px;
+    padding: 6px 8px;
+  }
+
+  .dashboardText {
+    display: none;
+  }
+
+  .dashboardIcon {
+    display: inline-block;
+  }
 }

@@ -19,12 +19,7 @@
   height: 28px !important;
 }
 
-/* Smaller dashboard link */
-.farcaster-miniapp .dashboardLink {
-  font-size: 12px;
-  padding: 6px 12px;
-  gap: 4px;
-}
+/* Smaller dashboard link - moved to line 127 */
 
 /* Reduce spacing - minimal padding for miniapp */
 .farcaster-miniapp .content {
@@ -124,9 +119,22 @@
   padding: 8px 16px !important;
 }
 
-/* Hide dashboard link in miniapp for space */
+/* Dashboard link - icon only in miniapp */
 .farcaster-miniapp .dashboardLink {
+  font-size: 20px;
+  padding: 6px 8px;
+  gap: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.farcaster-miniapp .dashboardText {
   display: none;
+}
+
+.farcaster-miniapp .dashboardIcon {
+  display: inline-block;
 }
 
 /* Clean up header in miniapp */
