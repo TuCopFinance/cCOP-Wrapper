@@ -275,23 +275,40 @@ body.farcaster-miniapp [class*="chainOption"] span {
   padding: 0 !important;
 }
 
-.farcaster-miniapp [class*="chainSelectorHeader"] {
+.farcaster-miniapp [class*="chainSelectorHeader"],
+.farcaster-miniapp div[class*="chainSelectorHeader"],
+html.farcaster-miniapp [class*="chainSelectorHeader"],
+body.farcaster-miniapp [class*="chainSelectorHeader"] {
   width: 100% !important;
   padding: 0 !important;
+  margin: 0 !important;
   margin-bottom: 8px !important;
+  text-align: left !important;
 }
 
 .farcaster-miniapp [class*="chainSelectorLabel"],
+.farcaster-miniapp label[class*="chainSelectorLabel"],
+html.farcaster-miniapp [class*="chainSelectorLabel"],
+body.farcaster-miniapp [class*="chainSelectorLabel"],
 .farcaster-miniapp [class*="sectionLabel"],
 .farcaster-miniapp [class*="amountLabel"] {
   padding-left: 0 !important;
   margin-left: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  margin-bottom: 8px !important;
 }
 
 .farcaster-miniapp [class*="chainSelectorLabel"]::before,
+.farcaster-miniapp label[class*="chainSelectorLabel"]::before,
+html.farcaster-miniapp [class*="chainSelectorLabel"]::before,
+body.farcaster-miniapp [class*="chainSelectorLabel"]::before,
 .farcaster-miniapp [class*="sectionLabel"]::before,
 .farcaster-miniapp [class*="amountLabel"]::before {
   display: none !important;
+  content: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .farcaster-miniapp .addressSelector {
