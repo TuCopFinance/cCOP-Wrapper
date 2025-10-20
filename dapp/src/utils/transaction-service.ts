@@ -266,7 +266,15 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
       console.log(`📋 [BASE] Total de transacciones recibidas: ${data.result.length}`);
 
       const transactions: RealTransaction[] = [];
+      const processedHashes = new Set<string>(); // Para evitar duplicados
+
       for (const tx of data.result) {
+        // Verificar si ya procesamos esta transacción (por hash)
+        if (processedHashes.has(tx.hash)) {
+          console.log(`⚠️ [BASE] TX duplicada detectada, omitiendo: ${tx.hash?.substring(0, 10)}`);
+          continue;
+        }
+
         console.log(`🔍 [BASE] Analizando TX ${tx.hash?.substring(0, 10)}...`, {
           from: tx.from?.substring(0, 10),
           to: tx.to?.substring(0, 10),
@@ -310,6 +318,7 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
               gasUsed: tx.gasUsed || '0',
               gasPrice: tx.gasPrice || '0'
             });
+            processedHashes.add(tx.hash);
             console.log(`✅ [BASE] WRAP detectado (recepción): ${amount} wcCOP`);
           } else if (isSending) {
             // Enviar wcCOP = unwrap de vuelta a Celo
@@ -327,6 +336,7 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
               gasUsed: tx.gasUsed || '0',
               gasPrice: tx.gasPrice || '0'
             });
+            processedHashes.add(tx.hash);
             console.log(`✅ [BASE] UNWRAP detectado (envío): ${amount} wcCOP`);
           }
         }
@@ -363,6 +373,7 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
                 gasUsed: tx.gasUsed,
                 gasPrice: tx.gasPrice
               });
+              processedHashes.add(tx.hash);
               console.log(`✅ [BASE] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
             }
           }
@@ -415,7 +426,15 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
       console.log(`📋 [ARBITRUM] Total de transacciones recibidas: ${data.result.length}`);
 
       const transactions: RealTransaction[] = [];
+      const processedHashes = new Set<string>(); // Para evitar duplicados
+
       for (const tx of data.result) {
+        // Verificar si ya procesamos esta transacción (por hash)
+        if (processedHashes.has(tx.hash)) {
+          console.log(`⚠️ [ARBITRUM] TX duplicada detectada, omitiendo: ${tx.hash?.substring(0, 10)}`);
+          continue;
+        }
+
         console.log(`🔍 [ARBITRUM] Analizando TX ${tx.hash?.substring(0, 10)}...`, {
           from: tx.from?.substring(0, 10),
           to: tx.to?.substring(0, 10),
@@ -459,6 +478,7 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
               gasUsed: tx.gasUsed || '0',
               gasPrice: tx.gasPrice || '0'
             });
+            processedHashes.add(tx.hash);
             console.log(`✅ [ARBITRUM] WRAP detectado (recepción): ${amount} wcCOP`);
           } else if (isSending) {
             // Enviar wcCOP = unwrap de vuelta a Celo
@@ -476,6 +496,7 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
               gasUsed: tx.gasUsed || '0',
               gasPrice: tx.gasPrice || '0'
             });
+            processedHashes.add(tx.hash);
             console.log(`✅ [ARBITRUM] UNWRAP detectado (envío): ${amount} wcCOP`);
           }
         }
@@ -509,6 +530,7 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
                 gasUsed: tx.gasUsed,
                 gasPrice: tx.gasPrice
               });
+              processedHashes.add(tx.hash);
               console.log(`✅ [ARBITRUM] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
             }
           }
@@ -561,7 +583,15 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
       console.log(`📋 [OPTIMISM] Total de transacciones recibidas: ${data.result.length}`);
 
       const transactions: RealTransaction[] = [];
+      const processedHashes = new Set<string>(); // Para evitar duplicados
+
       for (const tx of data.result) {
+        // Verificar si ya procesamos esta transacción (por hash)
+        if (processedHashes.has(tx.hash)) {
+          console.log(`⚠️ [OPTIMISM] TX duplicada detectada, omitiendo: ${tx.hash?.substring(0, 10)}`);
+          continue;
+        }
+
         console.log(`🔍 [OPTIMISM] Analizando TX ${tx.hash?.substring(0, 10)}...`, {
           from: tx.from?.substring(0, 10),
           to: tx.to?.substring(0, 10),
@@ -605,6 +635,7 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
               gasUsed: tx.gasUsed || '0',
               gasPrice: tx.gasPrice || '0'
             });
+            processedHashes.add(tx.hash);
             console.log(`✅ [OPTIMISM] WRAP detectado (recepción): ${amount} wcCOP`);
           } else if (isSending) {
             // Enviar wcCOP = unwrap de vuelta a Celo
@@ -622,6 +653,7 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
               gasUsed: tx.gasUsed || '0',
               gasPrice: tx.gasPrice || '0'
             });
+            processedHashes.add(tx.hash);
             console.log(`✅ [OPTIMISM] UNWRAP detectado (envío): ${amount} wcCOP`);
           }
         }
@@ -655,6 +687,7 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
                 gasUsed: tx.gasUsed,
                 gasPrice: tx.gasPrice
               });
+              processedHashes.add(tx.hash);
               console.log(`✅ [OPTIMISM] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
             }
           }
@@ -707,7 +740,15 @@ export const getAvalancheTransactions = async (walletAddress: string): Promise<R
       console.log(`📋 [AVALANCHE] Total de transacciones recibidas: ${data.result.length}`);
 
       const transactions: RealTransaction[] = [];
+      const processedHashes = new Set<string>(); // Para evitar duplicados
+
       for (const tx of data.result) {
+        // Verificar si ya procesamos esta transacción (por hash)
+        if (processedHashes.has(tx.hash)) {
+          console.log(`⚠️ [AVALANCHE] TX duplicada detectada, omitiendo: ${tx.hash?.substring(0, 10)}`);
+          continue;
+        }
+
         console.log(`🔍 [AVALANCHE] Analizando TX ${tx.hash?.substring(0, 10)}...`, {
           from: tx.from?.substring(0, 10),
           to: tx.to?.substring(0, 10),
@@ -751,6 +792,7 @@ export const getAvalancheTransactions = async (walletAddress: string): Promise<R
               gasUsed: tx.gasUsed || '0',
               gasPrice: tx.gasPrice || '0'
             });
+            processedHashes.add(tx.hash);
             console.log(`✅ [AVALANCHE] WRAP detectado (recepción): ${amount} wcCOP`);
           } else if (isSending) {
             // Enviar wcCOP = unwrap de vuelta a Celo
@@ -768,6 +810,7 @@ export const getAvalancheTransactions = async (walletAddress: string): Promise<R
               gasUsed: tx.gasUsed || '0',
               gasPrice: tx.gasPrice || '0'
             });
+            processedHashes.add(tx.hash);
             console.log(`✅ [AVALANCHE] UNWRAP detectado (envío): ${amount} wcCOP`);
           }
         }
@@ -801,6 +844,7 @@ export const getAvalancheTransactions = async (walletAddress: string): Promise<R
                 gasUsed: tx.gasUsed,
                 gasPrice: tx.gasPrice
               });
+              processedHashes.add(tx.hash);
               console.log(`✅ [AVALANCHE] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
             }
           }
