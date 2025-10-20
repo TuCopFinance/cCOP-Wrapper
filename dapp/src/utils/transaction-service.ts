@@ -280,7 +280,7 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
           transactionType: tx.transactionType
         });
 
-        // TIPO 1: Token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        // Procesar token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
         if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
           const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
           const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
@@ -330,8 +330,8 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
             console.log(`✅ [BASE] UNWRAP detectado (envío): ${amount} wcCOP`);
           }
         }
-        // TIPO 2: Llamada directa a función unwrap en el contrato
-        else {
+        // Procesar transacciones regulares (solo si NO es token transfer para evitar duplicados)
+        else if (!tx.isTokenTransfer) {
           const isFromWallet = tx.from?.toLowerCase() === walletAddress.toLowerCase();
           const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
           const isUnwrapCall = tx.methodId === '0x39f47693' ||
@@ -366,6 +366,8 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
               console.log(`✅ [BASE] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
             }
           }
+        } else {
+          console.log(`⏭️ [BASE] Transacción omitida (no relevante)`);
         }
       }
 
@@ -427,7 +429,7 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
           transactionType: tx.transactionType
         });
 
-        // TIPO 1: Token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        // Procesar token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
         if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
           const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
           const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
@@ -477,8 +479,8 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
             console.log(`✅ [ARBITRUM] UNWRAP detectado (envío): ${amount} wcCOP`);
           }
         }
-        // TIPO 2: Llamada directa a función unwrap en el contrato
-        else {
+        // Procesar transacciones regulares (solo si NO es token transfer para evitar duplicados)
+        else if (!tx.isTokenTransfer) {
           const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
           const isUnwrapCall = tx.functionName === 'unwrap' ||
                              (tx.input && tx.input.startsWith('0x39f47693'));
@@ -492,22 +494,26 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
           if (isToWCCOPContract && isUnwrapCall) {
             const tokenAmount = tx.decodedAmount || 0;
 
-            transactions.push({
-              id: tx.hash,
-              type: 'unwrap',
-              chain: 'Arbitrum',
-              amount: tokenAmount.toFixed(2),
-              timestamp: parseInt(tx.timeStamp) * 1000,
-              txHash: tx.hash,
-              status: tx.isError === '1' ? 'failed' : 'completed',
-              fromAddress: tx.from,
-              toAddress: tx.to,
-              blockNumber: tx.blockNumber,
-              gasUsed: tx.gasUsed,
-              gasPrice: tx.gasPrice
-            });
-            console.log(`✅ [ARBITRUM] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
+            if (tokenAmount > 0) {
+              transactions.push({
+                id: tx.hash,
+                type: 'unwrap',
+                chain: 'Arbitrum',
+                amount: tokenAmount.toFixed(2),
+                timestamp: parseInt(tx.timeStamp) * 1000,
+                txHash: tx.hash,
+                status: tx.isError === '1' ? 'failed' : 'completed',
+                fromAddress: tx.from,
+                toAddress: tx.to,
+                blockNumber: tx.blockNumber,
+                gasUsed: tx.gasUsed,
+                gasPrice: tx.gasPrice
+              });
+              console.log(`✅ [ARBITRUM] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
+            }
           }
+        } else {
+          console.log(`⏭️ [ARBITRUM] Transacción omitida (no relevante)`);
         }
       }
 
@@ -569,7 +575,7 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
           transactionType: tx.transactionType
         });
 
-        // TIPO 1: Token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        // Procesar token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
         if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
           const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
           const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
@@ -619,8 +625,8 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
             console.log(`✅ [OPTIMISM] UNWRAP detectado (envío): ${amount} wcCOP`);
           }
         }
-        // TIPO 2: Llamada directa a función unwrap en el contrato
-        else {
+        // Procesar transacciones regulares (solo si NO es token transfer para evitar duplicados)
+        else if (!tx.isTokenTransfer) {
           const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
           const isUnwrapCall = tx.functionName === 'unwrap' ||
                              (tx.input && tx.input.startsWith('0x39f47693'));
@@ -634,22 +640,26 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
           if (isToWCCOPContract && isUnwrapCall) {
             const tokenAmount = tx.decodedAmount || 0;
 
-            transactions.push({
-              id: tx.hash,
-              type: 'unwrap',
-              chain: 'Optimism',
-              amount: tokenAmount.toFixed(2),
-              timestamp: parseInt(tx.timeStamp) * 1000,
-              txHash: tx.hash,
-              status: tx.isError === '1' ? 'failed' : 'completed',
-              fromAddress: tx.from,
-              toAddress: tx.to,
-              blockNumber: tx.blockNumber,
-              gasUsed: tx.gasUsed,
-              gasPrice: tx.gasPrice
-            });
-            console.log(`✅ [OPTIMISM] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
+            if (tokenAmount > 0) {
+              transactions.push({
+                id: tx.hash,
+                type: 'unwrap',
+                chain: 'Optimism',
+                amount: tokenAmount.toFixed(2),
+                timestamp: parseInt(tx.timeStamp) * 1000,
+                txHash: tx.hash,
+                status: tx.isError === '1' ? 'failed' : 'completed',
+                fromAddress: tx.from,
+                toAddress: tx.to,
+                blockNumber: tx.blockNumber,
+                gasUsed: tx.gasUsed,
+                gasPrice: tx.gasPrice
+              });
+              console.log(`✅ [OPTIMISM] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
+            }
           }
+        } else {
+          console.log(`⏭️ [OPTIMISM] Transacción omitida (no relevante)`);
         }
       }
 
@@ -679,62 +689,142 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
 export const getAvalancheTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Avalanche
-    
+
     const url = getApiUrl('avalanche', walletAddress);
-    
+    console.log('🌐 [AVALANCHE] Llamando API:', url);
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       throw new Error(`Avalanche API error: ${response.status} - ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+    console.log('📦 [AVALANCHE] Respuesta API completa:', JSON.stringify(data, null, 2));
+
     // Handle Etherscan V2 API response structure (action=txlist)
     if (data.result && Array.isArray(data.result)) {
-      console.log(`📋 Found ${data.result.length} total transactions on Avalanche`);
-      
+      console.log(`📋 [AVALANCHE] Total de transacciones recibidas: ${data.result.length}`);
+
       const transactions: RealTransaction[] = [];
       for (const tx of data.result) {
-        // Filter for transactions that call the unwrap method on wcCOP contract
-        const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
-        
-        // Check for unwrap function calls (unwrap method calls on wcCOP contract)
-        const isUnwrapCall = tx.functionName === 'unwrap' || 
-                           (tx.input && tx.input.length >= 138); // unwrap(address,uint256) has this length
-        
-        if (isToWCCOPContract && isUnwrapCall) {
-          // Use the decoded amount from the server API
-          const tokenAmount = tx.decodedAmount || 0;
-          
-          transactions.push({
-            id: tx.hash,
-            type: 'unwrap',
-            chain: 'Avalanche',
-            amount: tokenAmount.toFixed(2),
-            timestamp: parseInt(tx.timeStamp) * 1000,
-            txHash: tx.hash,
-            status: tx.isError === '1' ? 'failed' : 'completed',
-            fromAddress: tx.from,
-            toAddress: tx.to,
-            blockNumber: tx.blockNumber,
-            gasUsed: tx.gasUsed,
-            gasPrice: tx.gasPrice
+        console.log(`🔍 [AVALANCHE] Analizando TX ${tx.hash?.substring(0, 10)}...`, {
+          from: tx.from?.substring(0, 10),
+          to: tx.to?.substring(0, 10),
+          contractAddress: tx.contractAddress?.substring(0, 10),
+          isTokenTransfer: tx.isTokenTransfer,
+          functionName: tx.functionName,
+          methodId: tx.methodId,
+          value: tx.value,
+          tokenSymbol: tx.tokenSymbol,
+          decodedAmount: tx.decodedAmount,
+          transactionType: tx.transactionType
+        });
+
+        // Procesar token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
+          const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
+          const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
+          const amount = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal || '18'));
+
+          console.log(`💸 [AVALANCHE] Token transfer detectado:`, {
+            isReceiving,
+            isSending,
+            amount,
+            from: tx.from,
+            to: tx.to
           });
+
+          if (isReceiving) {
+            // Recibir wcCOP = wrap completado desde Celo
+            transactions.push({
+              id: tx.hash,
+              type: 'wrap',
+              chain: 'Avalanche',
+              amount: amount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: 'completed',
+              fromAddress: tx.from || 'Bridge',
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed || '0',
+              gasPrice: tx.gasPrice || '0'
+            });
+            console.log(`✅ [AVALANCHE] WRAP detectado (recepción): ${amount} wcCOP`);
+          } else if (isSending) {
+            // Enviar wcCOP = unwrap de vuelta a Celo
+            transactions.push({
+              id: tx.hash,
+              type: 'unwrap',
+              chain: 'Avalanche',
+              amount: amount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: 'completed',
+              fromAddress: tx.from,
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed || '0',
+              gasPrice: tx.gasPrice || '0'
+            });
+            console.log(`✅ [AVALANCHE] UNWRAP detectado (envío): ${amount} wcCOP`);
+          }
+        }
+        // Procesar transacciones regulares (solo si NO es token transfer para evitar duplicados)
+        else if (!tx.isTokenTransfer) {
+          const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
+          const isUnwrapCall = tx.functionName === 'unwrap' ||
+                             (tx.input && tx.input.startsWith('0x39f47693'));
+
+          console.log(`🔧 [AVALANCHE] Revisando llamada a función:`, {
+            isToWCCOPContract,
+            isUnwrapCall,
+            decodedAmount: tx.decodedAmount
+          });
+
+          if (isToWCCOPContract && isUnwrapCall) {
+            const tokenAmount = tx.decodedAmount || 0;
+
+            if (tokenAmount > 0) {
+              transactions.push({
+                id: tx.hash,
+                type: 'unwrap',
+                chain: 'Avalanche',
+                amount: tokenAmount.toFixed(2),
+                timestamp: parseInt(tx.timeStamp) * 1000,
+                txHash: tx.hash,
+                status: tx.isError === '1' ? 'failed' : 'completed',
+                fromAddress: tx.from,
+                toAddress: tx.to,
+                blockNumber: tx.blockNumber,
+                gasUsed: tx.gasUsed,
+                gasPrice: tx.gasPrice
+              });
+              console.log(`✅ [AVALANCHE] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
+            }
+          }
+        } else {
+          console.log(`⏭️ [AVALANCHE] Transacción omitida (no relevante)`);
         }
       }
-      
-      console.log(`🎉 Found ${transactions.length} wcCOP unwrap transactions on Avalanche`);
+
+      console.log(`🎉 [AVALANCHE] Total transacciones procesadas: ${transactions.length}`);
+      console.log(`📊 [AVALANCHE] Detalle:`, transactions.map(t => ({
+        type: t.type,
+        amount: t.amount,
+        hash: t.txHash.substring(0, 10)
+      })));
       return transactions;
     }
-    
+
     // If we get here, no valid transactions found
-    console.log('⚠️ No valid Avalanche transactions found, returning empty array');
+    console.log('⚠️ [AVALANCHE] No se encontraron transacciones válidas, retornando array vacío');
     return [];
-    
+
   } catch (error) {
-    console.error('❌ Error fetching Avalanche transactions:', error);
-    console.log('🔄 Returning empty array for Avalanche due to error');
+    console.error('❌ [AVALANCHE] Error obteniendo transacciones:', error);
+    console.log('🔄 [AVALANCHE] Retornando array vacío debido al error');
     return [];
   }
 };
