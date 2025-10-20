@@ -141,53 +141,66 @@ const decodeUnwrapAmount = (input: string): number => {
 export const getCeloTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
     const treasuryAddress = address.mainnet.treasury;
-    
+
     // Get regular transactions using Etherscan V2 API
     const url = getApiUrl('celo', walletAddress);
-    
+    console.log('🌐 [CELO] Llamando API:', url);
+
     const response = await fetch(url);
 
     if (!response.ok) {
-      console.error(`❌ Celo API error: ${response.status} - ${response.statusText}`);
+      console.error(`❌ [CELO] Error en API: ${response.status} - ${response.statusText}`);
       throw new Error(`Celo API error: ${response.status} - ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log('📦 Celo API raw response:', {
+    console.log('📦 [CELO] Respuesta API:', {
       status: data.status,
       message: data.message,
       resultLength: data.result?.length,
-      firstTx: data.result?.[0]
+      firstTxHash: data.result?.[0]?.hash?.substring(0, 10)
     });
 
     // Handle Etherscan V2-style response for normal transactions
     if (data.status === '1' && data.result && Array.isArray(data.result)) {
-      console.log(`📋 Found ${data.result.length} total transactions on Celo`);
-      
+      console.log(`📋 [CELO] Total de transacciones recibidas: ${data.result.length}`);
+
       const transactions: RealTransaction[] = [];
       for (const tx of data.result) {
+        console.log(`🔍 [CELO] Analizando TX ${tx.hash?.substring(0, 10)}...`, {
+          from: tx.from?.substring(0, 10),
+          to: tx.to?.substring(0, 10),
+          methodId: tx.methodId,
+          inputStart: tx.input?.substring(0, 10),
+          decodedAmount: tx.decodedAmount
+        });
+
         // Look for transactions FROM the wallet TO the treasury contract that call wrap function
         const isFromWallet = tx.from?.toLowerCase() === walletAddress.toLowerCase();
         const isToTreasury = tx.to?.toLowerCase() === treasuryAddress.toLowerCase();
-        
+
         // Check if this is a wrap function call by looking at input data
         // wrap(uint32 domainID, address receiver, uint256 amount) has method signature 0x3c7580e6
         const isWrapCall = tx.input && tx.input.startsWith('0x3c7580e6');
-        
+
+        console.log(`🔧 [CELO] Validación:`, {
+          isFromWallet,
+          isToTreasury,
+          isWrapCall,
+          treasuryAddress: treasuryAddress.substring(0, 10)
+        });
+
         if (isFromWallet && isToTreasury && isWrapCall) {
-          // Extract amount from function call input using ABI decoding
-          let tokenAmount = 0;
-          
           // Use the decoded amount from the server API
-          tokenAmount = tx.decodedAmount || 0;
-          
-          console.log('🔍 Processing Celo wrap transaction:', {
+          const tokenAmount = tx.decodedAmount || 0;
+
+          console.log(`💰 [CELO] Procesando wrap transaction:`, {
             amount: tokenAmount,
-            hash: tx.hash
+            hash: tx.hash?.substring(0, 10)
           });
-          
+
           const txHash = tx.hash || '';
-          
+
           // Only include if we successfully extracted the amount
           if (tokenAmount > 0 && txHash) {
             transactions.push({
@@ -204,21 +217,27 @@ export const getCeloTransactions = async (walletAddress: string): Promise<RealTr
               gasUsed: tx.gasUsed || '0',
               gasPrice: tx.gasPrice || '0'
             });
+            console.log(`✅ [CELO] WRAP detectado (llamada a treasury): ${tokenAmount} cCOP`);
           }
         }
       }
-      
-      console.log(`🎉 Found ${transactions.length} wrap function calls to treasury on Celo`);
+
+      console.log(`🎉 [CELO] Total transacciones procesadas: ${transactions.length}`);
+      console.log(`📊 [CELO] Detalle:`, transactions.map(t => ({
+        type: t.type,
+        amount: t.amount,
+        hash: t.txHash.substring(0, 10)
+      })));
       return transactions;
     }
-    
+
     // If we get here, no valid transactions found
-    console.log('⚠️ No valid Celo transactions found, returning empty array');
+    console.log('⚠️ [CELO] No se encontraron transacciones válidas, retornando array vacío');
     return [];
-    
+
   } catch (error) {
-    console.error('❌ Error fetching Celo transactions:', error);
-    console.log('🔄 Returning empty array for Celo due to error');
+    console.error('❌ [CELO] Error obteniendo transacciones:', error);
+    console.log('🔄 [CELO] Retornando array vacío debido al error');
     return [];
   }
 };
@@ -229,71 +248,143 @@ export const getCeloTransactions = async (walletAddress: string): Promise<RealTr
 export const getBaseTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Base
-    
+
     const url = getApiUrl('base', walletAddress);
-    
+    console.log('🌐 [BASE] Llamando API:', url);
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       throw new Error(`Base API error: ${response.status} - ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+    console.log('📦 [BASE] Respuesta API completa:', JSON.stringify(data, null, 2));
+
     // Handle Etherscan V2 API response structure (action=txlist)
     if (data.result && Array.isArray(data.result)) {
-      console.log(`📋 Found ${data.result.length} total transactions on Base`);
-      
+      console.log(`📋 [BASE] Total de transacciones recibidas: ${data.result.length}`);
+
       const transactions: RealTransaction[] = [];
       for (const tx of data.result) {
-        // Filter for transactions FROM the wallet TO the wcCOP contract with unwrap method
-        const isFromWallet = tx.from?.toLowerCase() === walletAddress.toLowerCase();
-        const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
-        
-        // Check for unwrap function calls - look for methodId 0x39f47693 or functionName 'unwrap'
-        const isUnwrapCall = tx.methodId === '0x39f47693' || 
-                           tx.functionName?.includes('unwrap') ||
-                           (tx.input && tx.input.startsWith('0x39f47693'));
-        
-        console.log(`🔍 Checking Base tx ${tx.hash}: from=${tx.from?.slice(0,8)}, to=${tx.to?.slice(0,8)}, methodId=${tx.methodId}, isFromWallet=${isFromWallet}, isToWCCOP=${isToWCCOPContract}, isUnwrap=${isUnwrapCall}`);
-        
-        if (isFromWallet && isToWCCOPContract && isUnwrapCall) {
-          // Use the decoded amount from the server API
-          console.log('✅ Processing valid unwrap transaction:', tx.hash);
-          const tokenAmount = tx.decodedAmount || 0;
-          console.log('💰 Server decoded amount:', tokenAmount, 'cCOP');
-          
-          if (tokenAmount > 0) {
+        console.log(`🔍 [BASE] Analizando TX ${tx.hash?.substring(0, 10)}...`, {
+          from: tx.from?.substring(0, 10),
+          to: tx.to?.substring(0, 10),
+          contractAddress: tx.contractAddress?.substring(0, 10),
+          isTokenTransfer: tx.isTokenTransfer,
+          functionName: tx.functionName,
+          methodId: tx.methodId,
+          value: tx.value,
+          tokenSymbol: tx.tokenSymbol,
+          decodedAmount: tx.decodedAmount,
+          transactionType: tx.transactionType
+        });
+
+        // TIPO 1: Token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
+          const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
+          const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
+          const amount = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal || '18'));
+
+          console.log(`💸 [BASE] Token transfer detectado:`, {
+            isReceiving,
+            isSending,
+            amount,
+            from: tx.from,
+            to: tx.to
+          });
+
+          if (isReceiving) {
+            // Recibir wcCOP = wrap completado desde Celo
+            transactions.push({
+              id: tx.hash,
+              type: 'wrap',
+              chain: 'Base',
+              amount: amount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: 'completed',
+              fromAddress: tx.from || 'Bridge',
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed || '0',
+              gasPrice: tx.gasPrice || '0'
+            });
+            console.log(`✅ [BASE] WRAP detectado (recepción): ${amount} wcCOP`);
+          } else if (isSending) {
+            // Enviar wcCOP = unwrap de vuelta a Celo
             transactions.push({
               id: tx.hash,
               type: 'unwrap',
               chain: 'Base',
-              amount: tokenAmount.toFixed(2),
+              amount: amount.toFixed(2),
               timestamp: parseInt(tx.timeStamp) * 1000,
               txHash: tx.hash,
-              status: tx.isError === '1' ? 'failed' : 'completed',
+              status: 'completed',
               fromAddress: tx.from,
               toAddress: tx.to,
               blockNumber: tx.blockNumber,
-              gasUsed: tx.gasUsed,
-              gasPrice: tx.gasPrice
+              gasUsed: tx.gasUsed || '0',
+              gasPrice: tx.gasPrice || '0'
             });
-            console.log('✅ Added unwrap transaction with amount:', tokenAmount);
+            console.log(`✅ [BASE] UNWRAP detectado (envío): ${amount} wcCOP`);
+          }
+        }
+        // TIPO 2: Llamada directa a función unwrap en el contrato
+        else {
+          const isFromWallet = tx.from?.toLowerCase() === walletAddress.toLowerCase();
+          const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
+          const isUnwrapCall = tx.methodId === '0x39f47693' ||
+                             tx.functionName?.includes('unwrap') ||
+                             (tx.input && tx.input.startsWith('0x39f47693'));
+
+          console.log(`🔧 [BASE] Revisando llamada a función:`, {
+            isFromWallet,
+            isToWCCOPContract,
+            isUnwrapCall,
+            decodedAmount: tx.decodedAmount
+          });
+
+          if (isFromWallet && isToWCCOPContract && isUnwrapCall) {
+            const tokenAmount = tx.decodedAmount || 0;
+
+            if (tokenAmount > 0) {
+              transactions.push({
+                id: tx.hash,
+                type: 'unwrap',
+                chain: 'Base',
+                amount: tokenAmount.toFixed(2),
+                timestamp: parseInt(tx.timeStamp) * 1000,
+                txHash: tx.hash,
+                status: tx.isError === '1' ? 'failed' : 'completed',
+                fromAddress: tx.from,
+                toAddress: tx.to,
+                blockNumber: tx.blockNumber,
+                gasUsed: tx.gasUsed,
+                gasPrice: tx.gasPrice
+              });
+              console.log(`✅ [BASE] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
+            }
           }
         }
       }
-      
-      console.log(`🎉 Found ${transactions.length} wcCOP unwrap transactions on Base`);
+
+      console.log(`🎉 [BASE] Total transacciones procesadas: ${transactions.length}`);
+      console.log(`📊 [BASE] Detalle:`, transactions.map(t => ({
+        type: t.type,
+        amount: t.amount,
+        hash: t.txHash.substring(0, 10)
+      })));
       return transactions;
     }
-    
+
     // If we get here, no valid transactions found
-    console.log('⚠️ No valid Base token transfers found, returning empty array');
+    console.log('⚠️ [BASE] No se encontraron transacciones válidas, retornando array vacío');
     return [];
-    
+
   } catch (error) {
-    console.error('❌ Error fetching Base transactions:', error);
-    console.log('🔄 Returning empty array for Base due to error');
+    console.error('❌ [BASE] Error obteniendo transacciones:', error);
+    console.log('🔄 [BASE] Retornando array vacío debido al error');
     return [];
   }
 };
@@ -304,62 +395,138 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
 export const getArbitrumTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Arbitrum
-    
+
     const url = getApiUrl('arbitrum', walletAddress);
-    
+    console.log('🌐 [ARBITRUM] Llamando API:', url);
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       throw new Error(`Arbitrum API error: ${response.status} - ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+    console.log('📦 [ARBITRUM] Respuesta API completa:', JSON.stringify(data, null, 2));
+
     // Handle Etherscan V2 API response structure (action=txlist)
     if (data.result && Array.isArray(data.result)) {
-      console.log(`📋 Found ${data.result.length} total transactions on Arbitrum`);
-      
+      console.log(`📋 [ARBITRUM] Total de transacciones recibidas: ${data.result.length}`);
+
       const transactions: RealTransaction[] = [];
       for (const tx of data.result) {
-        // Filter for transactions that call the unwrap method on wcCOP contract
-        const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
-        
-        // Check for unwrap function calls (unwrap method calls on wcCOP contract)
-        const isUnwrapCall = tx.functionName === 'unwrap' || 
-                           (tx.input && tx.input.length >= 138); // unwrap(address,uint256) has this length
-        
-        if (isToWCCOPContract && isUnwrapCall) {
-          // Use the decoded amount from the server API
-          const tokenAmount = tx.decodedAmount || 0;
-          
-          transactions.push({
-            id: tx.hash,
-            type: 'unwrap',
-            chain: 'Arbitrum',
-            amount: tokenAmount.toFixed(2),
-            timestamp: parseInt(tx.timeStamp) * 1000,
-            txHash: tx.hash,
-            status: tx.isError === '1' ? 'failed' : 'completed',
-            fromAddress: tx.from,
-            toAddress: tx.to,
-            blockNumber: tx.blockNumber,
-            gasUsed: tx.gasUsed,
-            gasPrice: tx.gasPrice
+        console.log(`🔍 [ARBITRUM] Analizando TX ${tx.hash?.substring(0, 10)}...`, {
+          from: tx.from?.substring(0, 10),
+          to: tx.to?.substring(0, 10),
+          contractAddress: tx.contractAddress?.substring(0, 10),
+          isTokenTransfer: tx.isTokenTransfer,
+          functionName: tx.functionName,
+          methodId: tx.methodId,
+          value: tx.value,
+          tokenSymbol: tx.tokenSymbol,
+          decodedAmount: tx.decodedAmount,
+          transactionType: tx.transactionType
+        });
+
+        // TIPO 1: Token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
+          const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
+          const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
+          const amount = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal || '18'));
+
+          console.log(`💸 [ARBITRUM] Token transfer detectado:`, {
+            isReceiving,
+            isSending,
+            amount,
+            from: tx.from,
+            to: tx.to
           });
+
+          if (isReceiving) {
+            // Recibir wcCOP = wrap completado desde Celo
+            transactions.push({
+              id: tx.hash,
+              type: 'wrap',
+              chain: 'Arbitrum',
+              amount: amount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: 'completed',
+              fromAddress: tx.from || 'Bridge',
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed || '0',
+              gasPrice: tx.gasPrice || '0'
+            });
+            console.log(`✅ [ARBITRUM] WRAP detectado (recepción): ${amount} wcCOP`);
+          } else if (isSending) {
+            // Enviar wcCOP = unwrap de vuelta a Celo
+            transactions.push({
+              id: tx.hash,
+              type: 'unwrap',
+              chain: 'Arbitrum',
+              amount: amount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: 'completed',
+              fromAddress: tx.from,
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed || '0',
+              gasPrice: tx.gasPrice || '0'
+            });
+            console.log(`✅ [ARBITRUM] UNWRAP detectado (envío): ${amount} wcCOP`);
+          }
+        }
+        // TIPO 2: Llamada directa a función unwrap en el contrato
+        else {
+          const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
+          const isUnwrapCall = tx.functionName === 'unwrap' ||
+                             (tx.input && tx.input.startsWith('0x39f47693'));
+
+          console.log(`🔧 [ARBITRUM] Revisando llamada a función:`, {
+            isToWCCOPContract,
+            isUnwrapCall,
+            decodedAmount: tx.decodedAmount
+          });
+
+          if (isToWCCOPContract && isUnwrapCall) {
+            const tokenAmount = tx.decodedAmount || 0;
+
+            transactions.push({
+              id: tx.hash,
+              type: 'unwrap',
+              chain: 'Arbitrum',
+              amount: tokenAmount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: tx.isError === '1' ? 'failed' : 'completed',
+              fromAddress: tx.from,
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed,
+              gasPrice: tx.gasPrice
+            });
+            console.log(`✅ [ARBITRUM] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
+          }
         }
       }
-      
-      console.log(`🎉 Found ${transactions.length} wcCOP unwrap transactions on Arbitrum`);
+
+      console.log(`🎉 [ARBITRUM] Total transacciones procesadas: ${transactions.length}`);
+      console.log(`📊 [ARBITRUM] Detalle:`, transactions.map(t => ({
+        type: t.type,
+        amount: t.amount,
+        hash: t.txHash.substring(0, 10)
+      })));
       return transactions;
     }
-    
+
     // If we get here, no valid transactions found
-    console.log('⚠️ No valid Arbitrum token transfers found, returning empty array');
+    console.log('⚠️ [ARBITRUM] No se encontraron transacciones válidas, retornando array vacío');
     return [];
-    
+
   } catch (error) {
-    console.error('❌ Error fetching Arbitrum transactions:', error);
-    console.log('🔄 Returning empty array for Arbitrum due to error');
+    console.error('❌ [ARBITRUM] Error obteniendo transacciones:', error);
+    console.log('🔄 [ARBITRUM] Retornando array vacío debido al error');
     return [];
   }
 };
@@ -370,62 +537,138 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
 export const getOptimismTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Optimism
-    
+
     const url = getApiUrl('optimism', walletAddress);
-    
+    console.log('🌐 [OPTIMISM] Llamando API:', url);
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       throw new Error(`Optimism API error: ${response.status} - ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+    console.log('📦 [OPTIMISM] Respuesta API completa:', JSON.stringify(data, null, 2));
+
     // Handle Etherscan V2 API response structure (action=txlist)
     if (data.result && Array.isArray(data.result)) {
-      console.log(`📋 Found ${data.result.length} total transactions on Optimism`);
-      
+      console.log(`📋 [OPTIMISM] Total de transacciones recibidas: ${data.result.length}`);
+
       const transactions: RealTransaction[] = [];
       for (const tx of data.result) {
-        // Filter for transactions that call the unwrap method on wcCOP contract
-        const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
-        
-        // Check for unwrap function calls (unwrap method calls on wcCOP contract)
-        const isUnwrapCall = tx.functionName === 'unwrap' || 
-                           (tx.input && tx.input.length >= 138); // unwrap(address,uint256) has this length
-        
-        if (isToWCCOPContract && isUnwrapCall) {
-          // Use the decoded amount from the server API
-          const tokenAmount = tx.decodedAmount || 0;
-          
-          transactions.push({
-            id: tx.hash,
-            type: 'unwrap',
-            chain: 'Optimism',
-            amount: tokenAmount.toFixed(2),
-            timestamp: parseInt(tx.timeStamp) * 1000,
-            txHash: tx.hash,
-            status: tx.isError === '1' ? 'failed' : 'completed',
-            fromAddress: tx.from,
-            toAddress: tx.to,
-            blockNumber: tx.blockNumber,
-            gasUsed: tx.gasUsed,
-            gasPrice: tx.gasPrice
+        console.log(`🔍 [OPTIMISM] Analizando TX ${tx.hash?.substring(0, 10)}...`, {
+          from: tx.from?.substring(0, 10),
+          to: tx.to?.substring(0, 10),
+          contractAddress: tx.contractAddress?.substring(0, 10),
+          isTokenTransfer: tx.isTokenTransfer,
+          functionName: tx.functionName,
+          methodId: tx.methodId,
+          value: tx.value,
+          tokenSymbol: tx.tokenSymbol,
+          decodedAmount: tx.decodedAmount,
+          transactionType: tx.transactionType
+        });
+
+        // TIPO 1: Token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
+          const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
+          const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
+          const amount = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal || '18'));
+
+          console.log(`💸 [OPTIMISM] Token transfer detectado:`, {
+            isReceiving,
+            isSending,
+            amount,
+            from: tx.from,
+            to: tx.to
           });
+
+          if (isReceiving) {
+            // Recibir wcCOP = wrap completado desde Celo
+            transactions.push({
+              id: tx.hash,
+              type: 'wrap',
+              chain: 'Optimism',
+              amount: amount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: 'completed',
+              fromAddress: tx.from || 'Bridge',
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed || '0',
+              gasPrice: tx.gasPrice || '0'
+            });
+            console.log(`✅ [OPTIMISM] WRAP detectado (recepción): ${amount} wcCOP`);
+          } else if (isSending) {
+            // Enviar wcCOP = unwrap de vuelta a Celo
+            transactions.push({
+              id: tx.hash,
+              type: 'unwrap',
+              chain: 'Optimism',
+              amount: amount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: 'completed',
+              fromAddress: tx.from,
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed || '0',
+              gasPrice: tx.gasPrice || '0'
+            });
+            console.log(`✅ [OPTIMISM] UNWRAP detectado (envío): ${amount} wcCOP`);
+          }
+        }
+        // TIPO 2: Llamada directa a función unwrap en el contrato
+        else {
+          const isToWCCOPContract = tx.to?.toLowerCase() === wcCOPAddress.toLowerCase();
+          const isUnwrapCall = tx.functionName === 'unwrap' ||
+                             (tx.input && tx.input.startsWith('0x39f47693'));
+
+          console.log(`🔧 [OPTIMISM] Revisando llamada a función:`, {
+            isToWCCOPContract,
+            isUnwrapCall,
+            decodedAmount: tx.decodedAmount
+          });
+
+          if (isToWCCOPContract && isUnwrapCall) {
+            const tokenAmount = tx.decodedAmount || 0;
+
+            transactions.push({
+              id: tx.hash,
+              type: 'unwrap',
+              chain: 'Optimism',
+              amount: tokenAmount.toFixed(2),
+              timestamp: parseInt(tx.timeStamp) * 1000,
+              txHash: tx.hash,
+              status: tx.isError === '1' ? 'failed' : 'completed',
+              fromAddress: tx.from,
+              toAddress: tx.to,
+              blockNumber: tx.blockNumber,
+              gasUsed: tx.gasUsed,
+              gasPrice: tx.gasPrice
+            });
+            console.log(`✅ [OPTIMISM] UNWRAP detectado (función directa): ${tokenAmount} wcCOP`);
+          }
         }
       }
-      
-      console.log(`🎉 Found ${transactions.length} wcCOP unwrap transactions on Optimism`);
+
+      console.log(`🎉 [OPTIMISM] Total transacciones procesadas: ${transactions.length}`);
+      console.log(`📊 [OPTIMISM] Detalle:`, transactions.map(t => ({
+        type: t.type,
+        amount: t.amount,
+        hash: t.txHash.substring(0, 10)
+      })));
       return transactions;
     }
-    
+
     // If we get here, no valid transactions found
-    console.log('⚠️ No valid Optimism transactions found, returning empty array');
+    console.log('⚠️ [OPTIMISM] No se encontraron transacciones válidas, retornando array vacío');
     return [];
-    
+
   } catch (error) {
-    console.error('❌ Error fetching Optimism transactions:', error);
-    console.log('🔄 Returning empty array for Optimism due to error');
+    console.error('❌ [OPTIMISM] Error obteniendo transacciones:', error);
+    console.log('🔄 [OPTIMISM] Retornando array vacío debido al error');
     return [];
   }
 };
@@ -502,43 +745,67 @@ export const getAvalancheTransactions = async (walletAddress: string): Promise<R
  */
 export const getAllRealTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
-    console.log('🚀 Fetching transactions from all chains for wallet:', walletAddress);
-    
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('🚀 [INICIO] Obteniendo transacciones de todas las cadenas');
+    console.log('📍 Wallet:', walletAddress);
+    console.log('═══════════════════════════════════════════════════════════');
+
     // Fetch transactions from all chains sequentially with delays to avoid rate limiting
-    console.log('🔄 Fetching Celo transactions...');
+    console.log('\n🔄 [CELO] Iniciando búsqueda...');
     const celoTxs = await getCeloTransactions(walletAddress);
-    
+    console.log(`✓ [CELO] Completado: ${celoTxs.length} transacciones`);
+
     // Wait 1 second between API calls to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('🔄 Fetching Base transactions...');
+    console.log('\n🔄 [BASE] Iniciando búsqueda...');
     const baseTxs = await getBaseTransactions(walletAddress);
-    
+    console.log(`✓ [BASE] Completado: ${baseTxs.length} transacciones`);
+
     await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('🔄 Fetching Arbitrum transactions...');
+    console.log('\n🔄 [ARBITRUM] Iniciando búsqueda...');
     const arbitrumTxs = await getArbitrumTransactions(walletAddress);
-    
+    console.log(`✓ [ARBITRUM] Completado: ${arbitrumTxs.length} transacciones`);
+
     await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('🔄 Fetching Optimism transactions...');
+    console.log('\n🔄 [OPTIMISM] Iniciando búsqueda...');
     const optimismTxs = await getOptimismTransactions(walletAddress);
-    
+    console.log(`✓ [OPTIMISM] Completado: ${optimismTxs.length} transacciones`);
+
     await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('🔄 Fetching Avalanche transactions...');
+    console.log('\n🔄 [AVALANCHE] Iniciando búsqueda...');
     const avalancheTxs = await getAvalancheTransactions(walletAddress);
-    
+    console.log(`✓ [AVALANCHE] Completado: ${avalancheTxs.length} transacciones`);
+
     // Combine all transactions and sort by timestamp (newest first)
     const allTransactions = [...celoTxs, ...baseTxs, ...arbitrumTxs, ...optimismTxs, ...avalancheTxs]
       .sort((a, b) => b.timestamp - a.timestamp);
-    
-    console.log(`🎉 Total transactions found: ${allTransactions.length}`);
-    console.log(`   - Celo: ${celoTxs.length} ${celoTxs.length > 0 ? '✅' : '❌'}`);
-    console.log(`   - Base: ${baseTxs.length} ${baseTxs.length > 0 ? '✅' : '❌'}`); 
-    console.log(`   - Arbitrum: ${arbitrumTxs.length} ${arbitrumTxs.length > 0 ? '✅' : '❌'}`);
-    console.log(`   - Optimism: ${optimismTxs.length} ${optimismTxs.length > 0 ? '✅' : '❌'}`);
-    console.log(`   - Avalanche: ${avalancheTxs.length} ${avalancheTxs.length > 0 ? '✅' : '❌'}`);
-    
+
+    console.log('\n═══════════════════════════════════════════════════════════');
+    console.log('🎉 [RESUMEN] Total de transacciones encontradas:', allTransactions.length);
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log(`   📊 Celo:     ${celoTxs.length} txs ${celoTxs.length > 0 ? '✅' : '❌'}`);
+    console.log(`   📊 Base:     ${baseTxs.length} txs ${baseTxs.length > 0 ? '✅' : '❌'}`);
+    console.log(`   📊 Arbitrum: ${arbitrumTxs.length} txs ${arbitrumTxs.length > 0 ? '✅' : '❌'}`);
+    console.log(`   📊 Optimism: ${optimismTxs.length} txs ${optimismTxs.length > 0 ? '✅' : '❌'}`);
+    console.log(`   📊 Avalanche: ${avalancheTxs.length} txs ${avalancheTxs.length > 0 ? '✅' : '❌'}`);
+    console.log('═══════════════════════════════════════════════════════════');
+
+    if (allTransactions.length > 0) {
+      console.log('\n📋 [DETALLE] Transacciones por tipo:');
+      const wraps = allTransactions.filter(t => t.type === 'wrap');
+      const unwraps = allTransactions.filter(t => t.type === 'unwrap');
+      console.log(`   🔄 Wraps: ${wraps.length}`);
+      console.log(`   🔙 Unwraps: ${unwraps.length}`);
+      console.log('\n📋 [LISTADO] Todas las transacciones:');
+      allTransactions.forEach((tx, index) => {
+        console.log(`   ${index + 1}. [${tx.chain}] ${tx.type.toUpperCase()} - ${tx.amount} cCOP - ${tx.txHash.substring(0, 10)}...`);
+      });
+    }
+    console.log('═══════════════════════════════════════════════════════════\n');
+
     return allTransactions;
   } catch (error) {
-    console.error('❌ Error fetching all transactions:', error);
+    console.error('❌ [ERROR GLOBAL] Error obteniendo todas las transacciones:', error);
     return [];
   }
 }; 
