@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { getAccount } from "@wagmi/core";
-import { config } from "@/config";
+import { useAccount } from "wagmi";
 import {
   getAllRealTransactions,
   RealTransaction,
@@ -23,7 +22,7 @@ export const TransactionHistory = () => {
     'unwrap-Optimism': false,
     'unwrap-Avalanche': false
   });
-  const account = getAccount(config);
+  const account = useAccount();
 
   // Toggle collapse state for a section
   const toggleSection = (sectionKey: string) => {
