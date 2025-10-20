@@ -24,6 +24,15 @@ export const TransactionHistory = () => {
   });
   const account = useAccount();
 
+  // Log wallet connection for debugging
+  console.log('🔗 [WALLET CONNECTION]', {
+    address: account.address,
+    isConnected: account.isConnected,
+    connector: account.connector?.name,
+    status: account.status,
+    chainId: account.chainId
+  });
+
   // Toggle collapse state for a section
   const toggleSection = (sectionKey: string) => {
     setCollapsedSections(prev => ({
@@ -72,28 +81,34 @@ export const TransactionHistory = () => {
   // Fetch real transactions from blockchain APIs
   useEffect(() => {
     const fetchRealTransactions = async () => {
-      console.log('🔍 Dashboard - Account info:', {
+      console.log('═══════════════════════════════════════════════════════════');
+      console.log('🔍 [TX HISTORY] Dashboard - Account info:', {
         address: account.address,
         connector: account.connector?.name,
         chainId: account.chainId,
-        fullAccount: account
+        isConnected: account.isConnected,
+        isConnecting: account.isConnecting,
+        isDisconnected: account.isDisconnected,
+        status: account.status
       });
+      console.log('═══════════════════════════════════════════════════════════');
 
       if (!account.address) {
-        console.log('❌ No account address found');
+        console.log('❌ [TX HISTORY] No account address found - Status:', account.status);
         setTransactions([]);
         setLoading(false);
         return;
       }
 
-      console.log('✅ Fetching transactions for address:', account.address);
+      console.log('✅ [TX HISTORY] Fetching transactions for address:', account.address);
       setLoading(true);
       try {
         const realTransactions = await getAllRealTransactions(account.address);
-        console.log('📊 Transactions fetched:', realTransactions.length, 'transactions');
+        console.log('📊 [TX HISTORY] Transactions fetched:', realTransactions.length, 'transactions');
+        console.log('📋 [TX HISTORY] Transaction details:', realTransactions);
         setTransactions(realTransactions);
       } catch (error) {
-        console.error("❌ Error fetching real transactions:", error);
+        console.error("❌ [TX HISTORY] Error fetching real transactions:", error);
         setTransactions([]);
       } finally {
         setLoading(false);
@@ -101,7 +116,7 @@ export const TransactionHistory = () => {
     };
 
     fetchRealTransactions();
-  }, [account.address]);
+  }, [account.address, account.isConnected]);
 
   if (loading) {
     return (

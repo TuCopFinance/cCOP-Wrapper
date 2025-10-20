@@ -140,11 +140,15 @@ const decodeUnwrapAmount = (input: string): number => {
  */
 export const getCeloTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
+    console.log('💰 [CELO] Wallet recibida:', walletAddress);
+    console.log('💰 [CELO] Wallet (resumida):', `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`);
+
     const treasuryAddress = address.mainnet.treasury;
 
     // Get regular transactions using Etherscan V2 API
     const url = getApiUrl('celo', walletAddress);
     console.log('🌐 [CELO] Llamando API:', url);
+    console.log('🌐 [CELO] URL completa para verificar:', url);
 
     const response = await fetch(url);
 
@@ -247,10 +251,14 @@ export const getCeloTransactions = async (walletAddress: string): Promise<RealTr
  */
 export const getBaseTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
+    console.log('💰 [BASE] Wallet recibida:', walletAddress);
+    console.log('💰 [BASE] Wallet (resumida):', `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`);
+
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Base
 
     const url = getApiUrl('base', walletAddress);
     console.log('🌐 [BASE] Llamando API:', url);
+    console.log('🌐 [BASE] URL completa para verificar:', url);
 
     const response = await fetch(url);
 
@@ -388,10 +396,14 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
  */
 export const getArbitrumTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
+    console.log('💰 [ARBITRUM] Wallet recibida:', walletAddress);
+    console.log('💰 [ARBITRUM] Wallet (resumida):', `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`);
+
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Arbitrum
 
     const url = getApiUrl('arbitrum', walletAddress);
     console.log('🌐 [ARBITRUM] Llamando API:', url);
+    console.log('🌐 [ARBITRUM] URL completa para verificar:', url);
 
     const response = await fetch(url);
 
@@ -526,10 +538,14 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
  */
 export const getOptimismTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
+    console.log('💰 [OPTIMISM] Wallet recibida:', walletAddress);
+    console.log('💰 [OPTIMISM] Wallet (resumida):', `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`);
+
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Optimism
 
     const url = getApiUrl('optimism', walletAddress);
     console.log('🌐 [OPTIMISM] Llamando API:', url);
+    console.log('🌐 [OPTIMISM] URL completa para verificar:', url);
 
     const response = await fetch(url);
 
@@ -664,10 +680,14 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
  */
 export const getAvalancheTransactions = async (walletAddress: string): Promise<RealTransaction[]> => {
   try {
+    console.log('💰 [AVALANCHE] Wallet recibida:', walletAddress);
+    console.log('💰 [AVALANCHE] Wallet (resumida):', `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`);
+
     const wcCOPAddress = '0x5Cc112D9634a2D0cB3A0BA8dDC5dC05a010A3D22'; // wcCOP token address on Avalanche
 
     const url = getApiUrl('avalanche', walletAddress);
     console.log('🌐 [AVALANCHE] Llamando API:', url);
+    console.log('🌐 [AVALANCHE] URL completa para verificar:', url);
 
     const response = await fetch(url);
 
@@ -805,7 +825,8 @@ export const getAllRealTransactions = async (walletAddress: string): Promise<Rea
   try {
     console.log('═══════════════════════════════════════════════════════════');
     console.log('🚀 [INICIO] Obteniendo transacciones de todas las cadenas');
-    console.log('📍 Wallet:', walletAddress);
+    console.log('📍 Wallet Address:', walletAddress);
+    console.log('📍 Wallet (resumida):', `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`);
     console.log('═══════════════════════════════════════════════════════════');
 
     // Fetch transactions from all chains sequentially with delays to avoid rate limiting
