@@ -288,39 +288,20 @@ export const getBaseTransactions = async (walletAddress: string): Promise<RealTr
           transactionType: tx.transactionType
         });
 
-        // Procesar token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        // Procesar token transfer (solo unwrap = enviar wcCOP para quemar)
+        // Los wraps se cuentan en Celo, NO contamos minteos de wcCOP aquí
         if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
-          const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
           const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
           const amount = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal || '18'));
 
           console.log(`💸 [BASE] Token transfer detectado:`, {
-            isReceiving,
             isSending,
             amount,
             from: tx.from,
             to: tx.to
           });
 
-          if (isReceiving) {
-            // Recibir wcCOP = wrap completado desde Celo
-            transactions.push({
-              id: tx.hash,
-              type: 'wrap',
-              chain: 'Base',
-              amount: amount.toFixed(2),
-              timestamp: parseInt(tx.timeStamp) * 1000,
-              txHash: tx.hash,
-              status: 'completed',
-              fromAddress: tx.from || 'Bridge',
-              toAddress: tx.to,
-              blockNumber: tx.blockNumber,
-              gasUsed: tx.gasUsed || '0',
-              gasPrice: tx.gasPrice || '0'
-            });
-            processedHashes.add(tx.hash);
-            console.log(`✅ [BASE] WRAP detectado (recepción): ${amount} wcCOP`);
-          } else if (isSending) {
+          if (isSending) {
             // Enviar wcCOP = unwrap de vuelta a Celo
             transactions.push({
               id: tx.hash,
@@ -448,39 +429,20 @@ export const getArbitrumTransactions = async (walletAddress: string): Promise<Re
           transactionType: tx.transactionType
         });
 
-        // Procesar token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        // Procesar token transfer (solo unwrap = enviar wcCOP para quemar)
+        // Los wraps se cuentan en Celo, NO contamos minteos de wcCOP aquí
         if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
-          const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
           const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
           const amount = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal || '18'));
 
           console.log(`💸 [ARBITRUM] Token transfer detectado:`, {
-            isReceiving,
             isSending,
             amount,
             from: tx.from,
             to: tx.to
           });
 
-          if (isReceiving) {
-            // Recibir wcCOP = wrap completado desde Celo
-            transactions.push({
-              id: tx.hash,
-              type: 'wrap',
-              chain: 'Arbitrum',
-              amount: amount.toFixed(2),
-              timestamp: parseInt(tx.timeStamp) * 1000,
-              txHash: tx.hash,
-              status: 'completed',
-              fromAddress: tx.from || 'Bridge',
-              toAddress: tx.to,
-              blockNumber: tx.blockNumber,
-              gasUsed: tx.gasUsed || '0',
-              gasPrice: tx.gasPrice || '0'
-            });
-            processedHashes.add(tx.hash);
-            console.log(`✅ [ARBITRUM] WRAP detectado (recepción): ${amount} wcCOP`);
-          } else if (isSending) {
+          if (isSending) {
             // Enviar wcCOP = unwrap de vuelta a Celo
             transactions.push({
               id: tx.hash,
@@ -605,39 +567,20 @@ export const getOptimismTransactions = async (walletAddress: string): Promise<Re
           transactionType: tx.transactionType
         });
 
-        // Procesar token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        // Procesar token transfer (solo unwrap = enviar wcCOP para quemar)
+        // Los wraps se cuentan en Celo, NO contamos minteos de wcCOP aquí
         if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
-          const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
           const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
           const amount = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal || '18'));
 
           console.log(`💸 [OPTIMISM] Token transfer detectado:`, {
-            isReceiving,
             isSending,
             amount,
             from: tx.from,
             to: tx.to
           });
 
-          if (isReceiving) {
-            // Recibir wcCOP = wrap completado desde Celo
-            transactions.push({
-              id: tx.hash,
-              type: 'wrap',
-              chain: 'Optimism',
-              amount: amount.toFixed(2),
-              timestamp: parseInt(tx.timeStamp) * 1000,
-              txHash: tx.hash,
-              status: 'completed',
-              fromAddress: tx.from || 'Bridge',
-              toAddress: tx.to,
-              blockNumber: tx.blockNumber,
-              gasUsed: tx.gasUsed || '0',
-              gasPrice: tx.gasPrice || '0'
-            });
-            processedHashes.add(tx.hash);
-            console.log(`✅ [OPTIMISM] WRAP detectado (recepción): ${amount} wcCOP`);
-          } else if (isSending) {
+          if (isSending) {
             // Enviar wcCOP = unwrap de vuelta a Celo
             transactions.push({
               id: tx.hash,
@@ -762,39 +705,20 @@ export const getAvalancheTransactions = async (walletAddress: string): Promise<R
           transactionType: tx.transactionType
         });
 
-        // Procesar token transfer (wrap = recibir wcCOP, unwrap = enviar wcCOP)
+        // Procesar token transfer (solo unwrap = enviar wcCOP para quemar)
+        // Los wraps se cuentan en Celo, NO contamos minteos de wcCOP aquí
         if (tx.isTokenTransfer && tx.tokenSymbol === 'wcCOP') {
-          const isReceiving = tx.to?.toLowerCase() === walletAddress.toLowerCase();
           const isSending = tx.from?.toLowerCase() === walletAddress.toLowerCase();
           const amount = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal || '18'));
 
           console.log(`💸 [AVALANCHE] Token transfer detectado:`, {
-            isReceiving,
             isSending,
             amount,
             from: tx.from,
             to: tx.to
           });
 
-          if (isReceiving) {
-            // Recibir wcCOP = wrap completado desde Celo
-            transactions.push({
-              id: tx.hash,
-              type: 'wrap',
-              chain: 'Avalanche',
-              amount: amount.toFixed(2),
-              timestamp: parseInt(tx.timeStamp) * 1000,
-              txHash: tx.hash,
-              status: 'completed',
-              fromAddress: tx.from || 'Bridge',
-              toAddress: tx.to,
-              blockNumber: tx.blockNumber,
-              gasUsed: tx.gasUsed || '0',
-              gasPrice: tx.gasPrice || '0'
-            });
-            processedHashes.add(tx.hash);
-            console.log(`✅ [AVALANCHE] WRAP detectado (recepción): ${amount} wcCOP`);
-          } else if (isSending) {
+          if (isSending) {
             // Enviar wcCOP = unwrap de vuelta a Celo
             transactions.push({
               id: tx.hash,
