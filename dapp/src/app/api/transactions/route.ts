@@ -119,8 +119,8 @@ export async function GET(request: NextRequest) {
     switch (chain) {
       case 'celo':
         // For Celo, use Etherscan V2 unified API with chainid=42220 to get normal transactions
-        // Specifically target the block range where wrap transactions occurred (around 41M)
-        url = `https://api.etherscan.io/v2/api?chainid=42220&module=account&action=txlist&address=${address}&startblock=41000000&endblock=45000000&page=1&offset=10000&sort=desc&apikey=${API_KEYS.base}`;
+        // Get all historical transactions
+        url = `https://api.etherscan.io/v2/api?chainid=42220&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=10000&sort=desc&apikey=${API_KEYS.base}`;
         break;
       case 'base':
         // For Base, get all historical transactions
